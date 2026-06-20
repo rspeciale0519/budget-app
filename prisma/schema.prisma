@@ -122,6 +122,7 @@ model Account {
   updatedAt      DateTime      @updatedAt
   transactions   Transaction[]
   importBatches  ImportBatch[]
+  importMapping  ImportMapping?
 
   @@index([workspaceId])
 }
@@ -179,4 +180,199 @@ model Transaction {
 
   @@index([workspaceId, date])
   @@index([workspaceId, accountId, dedupeHash])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Obligations, planning, config & cross-workspace (Task 9).
+// ─────────────────────────────────────────────────────────────────────────
+
+enum BillStatus {
+  unpaid
+  scheduled
+  paid
+  overdue
+}
+
+enum BillType {
+  bill
+  invoice
+  payroll
+  tax
+  one_off
+}
+
+enum Frequency {
+  weekly
+  monthly
+  quarterly
+  annual
+  custom
+}
+
+enum TransferType {
+  owner_draw
+  distribution
+  salary
+  transfer
+}
+
+enum SignRule {
+  single_signed
+  separate_debit_credit
+  invert
+}
+
+enum MatchKind {
+  contains
+  equals
+}
+
+model Bill {
+  id                  String             @id @default(cuid())
+  workspaceId         String
+  vendor              String
+  amount              Decimal            @db.Decimal(14, 2)
+  dueDate             DateTime           @db.Date
+  status              BillStatus         @default(unpaid)
+  type                BillType           @default(bill)
+  categoryId          String?
+  payFromAccountId    String?
+  recurringScheduleId String?
+  paidTransactionId   String?
+  notes               String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  recurringSchedule   RecurringSchedule? @relation(fields: [recurringScheduleId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, dueDate])
+  @@index([workspaceId, status])
+}
+
+model RecurringSchedule {
+  id               String    @id @default(cuid())
+  workspaceId      String
+  frequency        Frequency
+  interval         Int       @default(1)
+  dayOfMonth       Int?
+  dayOfWeek        Int?
+  startDate        DateTime  @db.Date
+  endDate          DateTime? @db.Date
+  nextRunDate      DateTime  @db.Date
+  templateVendor   String
+  templateAmount   Decimal   @db.Decimal(14, 2)
+  templateCategoryId String?
+  createdAt        DateTime  @default(now())
+  bills            Bill[]
+
+  @@index([workspaceId, nextRunDate])
+}
+
+model Debt {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  name           String
+  type           String
+  currentBalance Decimal  @db.Decimal(14, 2)
+  apr            Decimal  @db.Decimal(6, 2)
+  minimumPayment Decimal  @db.Decimal(14, 2)
+  dueDay         Int
+  accountId      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([workspaceId])
+}
+
+model Goal {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  name         String
+  targetAmount Decimal   @db.Decimal(14, 2)
+  targetDate   DateTime? @db.Date
+  currentSaved Decimal   @db.Decimal(14, 2) @default(0)
+  status       String    @default("active")
+  notes        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([workspaceId])
+}
+
+model WorkspaceTransfer {
+  id                String       @id @default(cuid())
+  organizationId    String
+  fromWorkspaceId   String
+  toWorkspaceId     String
+  type              TransferType
+  amount            Decimal      @db.Decimal(14, 2)
+  date              DateTime     @db.Date
+  fromTransactionId String?
+  toTransactionId   String?
+  notes             String?
+  createdAt         DateTime     @default(now())
+
+  @@index([organizationId])
+  @@index([fromWorkspaceId])
+  @@index([toWorkspaceId])
+}
+
+model ImportMapping {
+  id         String   @id @default(cuid())
+  accountId  String   @unique
+  columnMap  Json
+  signRule   SignRule
+  dateFormat String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  account    Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+}
+
+model CategoryRule {
+  id          String    @id @default(cuid())
+  workspaceId String
+  match       MatchKind
+  pattern     String
+  categoryId  String
+  priority    Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  @@index([workspaceId, priority])
+}
+
+model Budget {
+  id          String  @id @default(cuid())
+  workspaceId String
+  categoryId  String
+  period      String  @default("monthly")
+  amount      Decimal @db.Decimal(14, 2)
+
+  @@unique([workspaceId, categoryId, period])
+}
+
+model Layout {
+  id             String   @id @default(cuid())
+  userId         String   @db.Uuid
+  organizationId String
+  name           String
+  config         Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  workspaceId    String?
+  userId         String   @db.Uuid
+  action         String
+  entityType     String
+  entityId       String
+  before         Json?
+  after          Json?
+  at             DateTime @default(now())
+
+  @@index([organizationId, at])
+  @@index([workspaceId])
 }
