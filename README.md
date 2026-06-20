@@ -15,9 +15,13 @@ be added later — but no AI is built today.
 
 ## Status
 
-🟡 **Design phase.** The full design is locked and written up; implementation has not started yet.
-The codebase below describes the **intended** structure and stack. Nothing in "Getting started"
-runs until Phase 1 is scaffolded.
+🟢 **Phase 1 (Data core) complete.** The stack is scaffolded and the data core is built and
+tested: schema + migrations, decimal money/calendar-date primitives, **forced Postgres RLS** with
+a proven cross-workspace isolation test, the full service layer (accounts, transactions, bills,
+CSV import, income bridge, audit, export), the `/api/v1` read seam, auth, workspace tabs, the
+dense dashboard (mock data), manual CRUD, the import wizard, and org bootstrap + membership.
+93 tests pass; `type-check`, `lint`, `test`, and `build` are all green. Phase 2 wires the
+dashboard to live data.
 
 - **Design spec:** [`docs/superpowers/specs/2026-06-20-budget-app-design.md`](docs/superpowers/specs/2026-06-20-budget-app-design.md)
 - **UI mockups:** [`docs/temp/budget-app-mockup-v1.html`](docs/temp/budget-app-mockup-v1.html) ·
@@ -228,11 +232,12 @@ pnpm build         # production build
 
 ## Roadmap
 
-**Phase 1 — Data core**
+**Phase 1 — Data core** ✅ **Complete**
 Schema & migrations · auth + org/workspace roles · accounts · categories · transactions · CSV
 import (mapping, sign rule, dedupe, balance check, preview, undo) · full manual CRUD ·
-presentational dashboard components (mock data) · workspace tabs + customization · RLS +
-service-layer authorization · audit log · data export · empty states.
+presentational dashboard components (mock data) · workspace tabs · **forced RLS** +
+service-layer authorization · audit log · data export · empty states · org bootstrap + invites ·
+`/api/v1` read seam.
 
 **Phase 2 — Budget dashboard (live)**
 Wire components to live data · safe-to-spend (drillable) · cash-flow forecast · paid vs. unpaid ·
