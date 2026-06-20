@@ -4,7 +4,16 @@ import { money, add } from "@/lib/money";
 import { fromDbDate } from "@/lib/calendar-date";
 
 function csvEscape(value: string): string {
-  return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+  return /[",\n\r]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+}
+
+/**
+ * Neutralize CSV formula injection in user-controlled free text: a leading
+ * =, +, -, @, tab, or CR can execute as a formula in spreadsheet apps. Apply
+ * to text fields only — never to numeric amounts (a negative number is valid).
+ */
+function guardFormula(value: string): string {
+  return /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
 }
 
 function toRow(cells: string[]): string {
@@ -22,8 +31,8 @@ export async function exportTransactionsCsv(actorUserId: string, workspaceId: st
     ...txns.map((t) =>
       toRow([
         fromDbDate(t.date),
-        t.description,
-        t.merchant ?? "",
+        guardFormula(t.description),
+        guardFormula(t.merchant ?? ""),
         t.amount.toFixed(2),
         t.categoryId ?? "",
         String(t.isTransfer),
@@ -42,7 +51,9 @@ export async function exportBillsCsv(actorUserId: string, workspaceId: string): 
   const header = ["vendor", "amount", "dueDate", "status", "type"];
   const lines = [
     toRow(header),
-    ...bills.map((b) => toRow([b.vendor, b.amount.toFixed(2), fromDbDate(b.dueDate), b.status, b.type])),
+    ...bills.map((b) =>
+      toRow([guardFormula(b.vendor), b.amount.toFixed(2), fromDbDate(b.dueDate), b.status, b.type]),
+    ),
   ];
   return lines.join("\n");
 }
@@ -71,7 +82,7 @@ export async function exportRollupCsv(actorUserId: string, organizationId: strin
         unpaid: money(billAgg._sum.amount?.toFixed(2) ?? "0"),
       };
     });
-    rows.push(toRow([ws.name, ws.type, data.balance.toFixed(2), data.unpaid.toFixed(2)]));
+    rows.push(toRow([guardFormula(ws.name), ws.type, data.balance.toFixed(2), data.unpaid.toFixed(2)]));
   }
   return [toRow(header), ...rows].join("\n");
 }

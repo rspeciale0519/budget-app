@@ -52,4 +52,14 @@ describe("export-service", () => {
   it("denies export to a non-member", async () => {
     await expect(exportTransactionsCsv(stranger, workspaceId)).rejects.toBeInstanceOf(ForbiddenError);
   });
+
+  it("neutralizes CSV formula injection in free-text fields", async () => {
+    const acc = await prismaAdmin.account.findFirstOrThrow({ where: { workspaceId } });
+    await prismaAdmin.transaction.create({
+      data: { workspaceId, accountId: acc.id, date: toUtcDate(calendarDate("2026-06-25")), amount: "-1.00", description: "=SUM(A1:A9)", source: "manual", dedupeHash: "evil1" },
+    });
+    const csv = await exportTransactionsCsv(admin, workspaceId);
+    expect(csv).toContain("'=SUM(A1:A9)");
+    expect(csv).not.toMatch(/(^|,)=SUM/m); // never a bare leading =
+  });
 });
