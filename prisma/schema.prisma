@@ -1,0 +1,13 @@
+// Ledger — Prisma schema.
+// Money columns use @db.Decimal(14,2); dates use @db.Date (calendar dates).
+// Models are added across Tasks 7–9.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
