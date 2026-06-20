@@ -419,4 +419,6 @@ client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
 secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
 # Google permits http://localhost / 127.0.0.1 redirect URIs for local dev.
 redirect_uri = "http://127.0.0.1:61970/auth/v1/callback"
-skip_nonce_check = true
+# Standard server-side OAuth callback flow → keep the OIDC nonce check ON.
+# (Only skip for Google One-Tap native client sign-in, which we do not use.)
+skip_nonce_check = false
