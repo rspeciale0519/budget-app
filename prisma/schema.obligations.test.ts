@@ -1,6 +1,6 @@
 import { describe, it, expect, afterAll } from "vitest";
 import { randomUUID } from "node:crypto";
-import { prisma } from "@/lib/prisma";
+import { prismaAdmin } from "@/lib/prisma-admin";
 import { calendarDate, toUtcDate, fromDbDate } from "@/lib/calendar-date";
 
 const cleanup = {
@@ -13,13 +13,13 @@ const cleanup = {
 };
 
 afterAll(async () => {
-  await prisma.bill.deleteMany({ where: { id: { in: cleanup.billIds } } });
-  await prisma.recurringSchedule.deleteMany({ where: { id: { in: cleanup.scheduleIds } } });
-  await prisma.workspaceTransfer.deleteMany({ where: { id: { in: cleanup.transferIds } } });
-  await prisma.debt.deleteMany({ where: { id: { in: cleanup.debtIds } } });
-  await prisma.goal.deleteMany({ where: { id: { in: cleanup.goalIds } } });
-  await prisma.auditLog.deleteMany({ where: { id: { in: cleanup.auditIds } } });
-  await prisma.$disconnect();
+  await prismaAdmin.bill.deleteMany({ where: { id: { in: cleanup.billIds } } });
+  await prismaAdmin.recurringSchedule.deleteMany({ where: { id: { in: cleanup.scheduleIds } } });
+  await prismaAdmin.workspaceTransfer.deleteMany({ where: { id: { in: cleanup.transferIds } } });
+  await prismaAdmin.debt.deleteMany({ where: { id: { in: cleanup.debtIds } } });
+  await prismaAdmin.goal.deleteMany({ where: { id: { in: cleanup.goalIds } } });
+  await prismaAdmin.auditLog.deleteMany({ where: { id: { in: cleanup.auditIds } } });
+  await prismaAdmin.$disconnect();
 });
 
 describe("obligations, planning & cross-workspace schema", () => {
@@ -27,7 +27,7 @@ describe("obligations, planning & cross-workspace schema", () => {
     const workspaceId = randomUUID();
     const organizationId = randomUUID();
 
-    const schedule = await prisma.recurringSchedule.create({
+    const schedule = await prismaAdmin.recurringSchedule.create({
       data: {
         workspaceId,
         frequency: "monthly",
@@ -41,7 +41,7 @@ describe("obligations, planning & cross-workspace schema", () => {
     });
     cleanup.scheduleIds.push(schedule.id);
 
-    const bill = await prisma.bill.create({
+    const bill = await prismaAdmin.bill.create({
       data: {
         workspaceId,
         vendor: "Rent",
@@ -54,7 +54,7 @@ describe("obligations, planning & cross-workspace schema", () => {
     });
     cleanup.billIds.push(bill.id);
 
-    const transfer = await prisma.workspaceTransfer.create({
+    const transfer = await prismaAdmin.workspaceTransfer.create({
       data: {
         organizationId,
         fromWorkspaceId: randomUUID(),
@@ -70,7 +70,7 @@ describe("obligations, planning & cross-workspace schema", () => {
     expect(fromDbDate(bill.dueDate)).toBe("2026-07-01");
     expect(transfer.type).toBe("owner_draw");
 
-    const readSchedule = await prisma.recurringSchedule.findUniqueOrThrow({
+    const readSchedule = await prismaAdmin.recurringSchedule.findUniqueOrThrow({
       where: { id: schedule.id },
       include: { bills: true },
     });
@@ -81,7 +81,7 @@ describe("obligations, planning & cross-workspace schema", () => {
     const workspaceId = randomUUID();
     const organizationId = randomUUID();
 
-    const debt = await prisma.debt.create({
+    const debt = await prismaAdmin.debt.create({
       data: {
         workspaceId,
         name: "Card",
@@ -94,12 +94,12 @@ describe("obligations, planning & cross-workspace schema", () => {
     });
     cleanup.debtIds.push(debt.id);
 
-    const goal = await prisma.goal.create({
+    const goal = await prismaAdmin.goal.create({
       data: { workspaceId, name: "Vacation", targetAmount: "5000.00", currentSaved: "1200.00", status: "active" },
     });
     cleanup.goalIds.push(goal.id);
 
-    const audit = await prisma.auditLog.create({
+    const audit = await prismaAdmin.auditLog.create({
       data: {
         organizationId,
         workspaceId,

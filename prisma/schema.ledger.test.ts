@@ -1,20 +1,20 @@
 import { describe, it, expect, afterAll } from "vitest";
 import { randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { prismaAdmin } from "@/lib/prisma-admin";
 import { calendarDate, toUtcDate, fromDbDate } from "@/lib/calendar-date";
 
 const createdAccountIds: string[] = [];
 
 afterAll(async () => {
-  await prisma.account.deleteMany({ where: { id: { in: createdAccountIds } } });
-  await prisma.$disconnect();
+  await prismaAdmin.account.deleteMany({ where: { id: { in: createdAccountIds } } });
+  await prismaAdmin.$disconnect();
 });
 
 describe("ledger schema", () => {
   it("stores money as Decimal and dates as calendar dates", async () => {
     const workspaceId = randomUUID();
-    const account = await prisma.account.create({
+    const account = await prismaAdmin.account.create({
       data: {
         workspaceId,
         name: "Checking",
@@ -27,7 +27,7 @@ describe("ledger schema", () => {
     });
     createdAccountIds.push(account.id);
 
-    const outflow = await prisma.transaction.create({
+    const outflow = await prismaAdmin.transaction.create({
       data: {
         workspaceId,
         accountId: account.id,
@@ -38,7 +38,7 @@ describe("ledger schema", () => {
         dedupeHash: "h1",
       },
     });
-    await prisma.transaction.create({
+    await prismaAdmin.transaction.create({
       data: {
         workspaceId,
         accountId: account.id,
@@ -56,7 +56,7 @@ describe("ledger schema", () => {
     expect(outflow.amount.toFixed(2)).toBe("-25.50");
     expect(fromDbDate(outflow.date)).toBe("2026-06-20");
 
-    const readback = await prisma.account.findUniqueOrThrow({
+    const readback = await prismaAdmin.account.findUniqueOrThrow({
       where: { id: account.id },
       include: { transactions: { orderBy: { date: "asc" } } },
     });
@@ -67,7 +67,7 @@ describe("ledger schema", () => {
 
   it("supports a category hierarchy", async () => {
     const workspaceId = randomUUID();
-    const account = await prisma.account.create({
+    const account = await prismaAdmin.account.create({
       data: {
         workspaceId,
         name: "Cash",
@@ -78,13 +78,13 @@ describe("ledger schema", () => {
       },
     });
     createdAccountIds.push(account.id);
-    const parent = await prisma.category.create({
+    const parent = await prismaAdmin.category.create({
       data: { workspaceId, name: "Food", kind: "expense" },
     });
-    const child = await prisma.category.create({
+    const child = await prismaAdmin.category.create({
       data: { workspaceId, name: "Coffee", kind: "expense", parentId: parent.id },
     });
-    const readChild = await prisma.category.findUniqueOrThrow({
+    const readChild = await prismaAdmin.category.findUniqueOrThrow({
       where: { id: child.id },
       include: { parent: true },
     });

@@ -1,31 +1,31 @@
 import { describe, it, expect, afterAll } from "vitest";
 import { randomUUID } from "node:crypto";
-import { prisma } from "@/lib/prisma";
+import { prismaAdmin } from "@/lib/prisma-admin";
 
 const createdOrgIds: string[] = [];
 
 afterAll(async () => {
-  await prisma.organization.deleteMany({ where: { id: { in: createdOrgIds } } });
-  await prisma.$disconnect();
+  await prismaAdmin.organization.deleteMany({ where: { id: { in: createdOrgIds } } });
+  await prismaAdmin.$disconnect();
 });
 
 describe("identity & access schema", () => {
   it("round-trips an org, workspace, and memberships", async () => {
     const userId = randomUUID();
-    const org = await prisma.organization.create({ data: { name: "Acme" } });
+    const org = await prismaAdmin.organization.create({ data: { name: "Acme" } });
     createdOrgIds.push(org.id);
 
-    await prisma.orgMembership.create({
+    await prismaAdmin.orgMembership.create({
       data: { organizationId: org.id, userId, role: "owner" },
     });
-    const ws = await prisma.workspace.create({
+    const ws = await prismaAdmin.workspace.create({
       data: { organizationId: org.id, name: "Personal", type: "personal", color: "#3b82f6" },
     });
-    await prisma.workspaceMembership.create({
+    await prismaAdmin.workspaceMembership.create({
       data: { workspaceId: ws.id, userId, role: "admin" },
     });
 
-    const readback = await prisma.workspace.findUniqueOrThrow({
+    const readback = await prismaAdmin.workspace.findUniqueOrThrow({
       where: { id: ws.id },
       include: { memberships: true, organization: { include: { memberships: true } } },
     });
@@ -40,14 +40,14 @@ describe("identity & access schema", () => {
 
   it("enforces one membership per user per workspace", async () => {
     const userId = randomUUID();
-    const org = await prisma.organization.create({ data: { name: "Dup" } });
+    const org = await prismaAdmin.organization.create({ data: { name: "Dup" } });
     createdOrgIds.push(org.id);
-    const ws = await prisma.workspace.create({
+    const ws = await prismaAdmin.workspace.create({
       data: { organizationId: org.id, name: "Biz", type: "business", color: "#10b981" },
     });
-    await prisma.workspaceMembership.create({ data: { workspaceId: ws.id, userId, role: "admin" } });
+    await prismaAdmin.workspaceMembership.create({ data: { workspaceId: ws.id, userId, role: "admin" } });
     await expect(
-      prisma.workspaceMembership.create({ data: { workspaceId: ws.id, userId, role: "viewer" } }),
+      prismaAdmin.workspaceMembership.create({ data: { workspaceId: ws.id, userId, role: "viewer" } }),
     ).rejects.toThrow();
   });
 });
