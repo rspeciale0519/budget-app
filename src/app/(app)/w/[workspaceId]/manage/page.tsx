@@ -4,6 +4,7 @@ import { listAccounts } from "@/services/account-service";
 import { listTransactions } from "@/services/transaction-service";
 import { ManageForms } from "@/components/manage/manage-forms";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/empty/empty-state";
 import { fromDbDate } from "@/lib/calendar-date";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +29,23 @@ export default async function ManagePage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-slate-900">Manage</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold text-slate-900">Manage</h1>
+        <div className="flex gap-2 text-sm">
+          <a href={`/w/${workspaceId}/export?type=transactions`} className="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">
+            Export transactions
+          </a>
+          <a href={`/w/${workspaceId}/export?type=bills`} className="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">
+            Export bills
+          </a>
+        </div>
+      </div>
+      {accounts.length === 0 && (
+        <EmptyState
+          title="No accounts yet"
+          description="Add your first bank or credit account below to start tracking transactions, or import a CSV from your bank."
+        />
+      )}
       <ManageForms workspaceId={workspaceId} accounts={accounts} />
       <Card>
         <CardHeader>
