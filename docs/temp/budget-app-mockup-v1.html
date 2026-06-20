@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget App — v1 Mockup</title>
+<style>
+  :root{
+    --bg:#f4f5f7; --card:#ffffff; --ink:#1a1d24; --muted:#6b7280; --line:#e7e9ee;
+    --green:#16a34a; --red:#dc2626; --amber:#d97706; --blue:#2563eb;
+    --shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.06);
+    --accent:#16a34a; /* active workspace accent */
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px 60px}
+  h1,h2,h3{margin:0}
+  .small{font-size:12px;color:var(--muted)}
+  .mono{font-variant-numeric:tabular-nums}
+
+  /* ===== Top app bar ===== */
+  .appbar{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line)}
+  .appbar-in{max-width:1180px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:16px}
+  .logo{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+  .logo .dot{width:18px;height:18px;border-radius:6px;background:linear-gradient(135deg,#2563eb,#16a34a)}
+  .tabs{display:flex;gap:6px;align-items:center;flex:1;overflow:auto}
+  .tab{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:9px;font-size:13px;font-weight:600;
+       color:var(--muted);cursor:pointer;white-space:nowrap;border:1px solid transparent}
+  .tab .swatch{width:9px;height:9px;border-radius:50%}
+  .tab:hover{background:#f6f7f9}
+  .tab.active{color:var(--ink);background:#f3f5f8;border-color:var(--line)}
+  .tab.active.ws-green{box-shadow:inset 0 -2px 0 var(--green)}
+  .tab.roll{margin-left:4px;color:#374151}
+  .tab.add{color:#9aa1ad;font-weight:700;padding:7px 10px}
+  .appbar-right{display:flex;align-items:center;gap:10px;margin-left:auto}
+  .pill{font-size:12px;font-weight:600;color:#374151;border:1px solid var(--line);padding:7px 11px;border-radius:9px;cursor:pointer;background:#fff;display:flex;gap:6px;align-items:center}
+  .pill:hover{background:#f6f7f9}
+  .avatar{width:30px;height:30px;border-radius:50%;background:#dbeafe;color:#1d4ed8;display:grid;place-items:center;font-weight:700;font-size:12px}
+
+  /* ===== Workspace header ===== */
+  .ws-head{display:flex;align-items:center;gap:12px;margin:22px 0 16px}
+  .ws-badge{width:34px;height:34px;border-radius:10px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800}
+  .ws-title{font-size:20px;font-weight:700}
+  .ws-sub{font-size:12.5px;color:var(--muted)}
+  .seg{margin-left:auto;display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff}
+  .seg span{padding:7px 12px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer}
+  .seg span.on{background:var(--accent);color:#fff}
+
+  /* ===== Cards ===== */
+  .grid{display:grid;gap:16px}
+  .kpis{grid-template-columns:repeat(4,1fr)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px 17px}
+  .kpi .label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+  .kpi .val{font-size:24px;font-weight:760;margin-top:8px}
+  .kpi .delta{font-size:12px;margin-top:6px;font-weight:600}
+  .up{color:var(--green)} .down{color:var(--red)}
+  .kpi.safe{background:linear-gradient(180deg,#ecfdf3,#fff);border-color:#bbf7d0}
+  .kpi.safe .val{color:#15803d}
+  .kpi.safe .label{color:#15803d}
+
+  .cols{grid-template-columns:1.4fr 1fr;align-items:start;margin-top:16px}
+  .card h3{font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:space-between}
+  .card h3 .small{font-weight:600}
+  .stack{display:flex;flex-direction:column;gap:16px}
+
+  /* forecast chart */
+  .chart{width:100%;height:150px;margin-top:8px}
+  .legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:12px}
+  .legend i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px}
+  .legend span{font-size:12px;color:#374151}
+
+  /* bills list */
+  .bill{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+  .bill:first-of-type{border-top:0}
+  .bill .ico{width:34px;height:34px;border-radius:9px;background:#f1f3f6;display:grid;place-items:center;font-size:15px}
+  .bill .nm{font-size:13.5px;font-weight:650}
+  .bill .due{font-size:12px;color:var(--muted)}
+  .bill .amt{margin-left:auto;font-weight:700;font-size:13.5px}
+  .tag{font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:.03em}
+  .t-over{background:#fee2e2;color:#b91c1c}
+  .t-soon{background:#fef3c7;color:#b45309}
+  .t-paid{background:#dcfce7;color:#15803d}
+  .t-sched{background:#e0e7ff;color:#4338ca}
+  .btn-pay{font-size:11.5px;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:7px;padding:5px 9px;cursor:pointer;color:#374151}
+  .btn-pay:hover{background:#f6f7f9}
+
+  /* paid vs unpaid bar */
+  .pvu{display:flex;height:14px;border-radius:7px;overflow:hidden;margin:12px 0 8px}
+  .pvu .p{background:var(--green)} .pvu .u{background:#fca5a5}
+
+  /* progress (goals) */
+  .goal{padding:10px 0;border-top:1px solid var(--line)}
+  .goal:first-of-type{border-top:0}
+  .goal .row{display:flex;justify-content:space-between;font-size:13px;font-weight:650;margin-bottom:7px}
+  .bar{height:8px;border-radius:5px;background:#eef0f3;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:5px}
+
+  /* debts */
+  .debt{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:13px}
+  .debt:first-of-type{border-top:0}
+  .debt .apr{font-size:11px;color:var(--muted)}
+  .debt .b{margin-left:auto;font-weight:700}
+
+  /* donut */
+  .donut-wrap{display:flex;gap:18px;align-items:center;margin-top:8px}
+
+  /* section divider */
+  .divider{margin:46px 0 6px;display:flex;align-items:center;gap:12px}
+  .divider h2{font-size:15px;color:#374151}
+  .divider .ln{flex:1;height:1px;background:var(--line)}
+  .note{font-size:12.5px;color:var(--muted);margin:2px 0 16px}
+
+  /* tiled mode */
+  .tiles{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:14px}
+  .pane{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+  .pane .ph{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:12.5px;font-weight:700}
+  .pane .ph .sw{width:9px;height:9px;border-radius:50%}
+  .pane .pb{padding:12px}
+  .mini-kpis{display:flex;gap:10px}
+  .mini{flex:1}
+  .mini .l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-weight:700}
+  .mini .v{font-size:16px;font-weight:760;margin-top:3px}
+  .mini-bill{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-top:1px solid var(--line)}
+  .span2{grid-column:1 / -1}
+
+  /* rollup table */
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  th,td{text-align:right;padding:11px 10px;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  td .sw{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:8px}
+  tr.total td{font-weight:800;border-top:2px solid #d1d5db;border-bottom:0}
+  .neg{color:var(--red)} .pos{color:var(--green)}
+  .footnote{font-size:11.5px;color:var(--muted);margin-top:10px;display:flex;gap:7px}
+</style>
+</head>
+<body>
+
+<!-- ===================== TOP APP BAR ===================== -->
+<div class="appbar">
+  <div class="appbar-in">
+    <div class="logo"><span class="dot"></span> Ledger</div>
+    <div class="tabs">
+      <div class="tab"><span class="swatch" style="background:#2563eb"></span>Personal</div>
+      <div class="tab active ws-green"><span class="swatch" style="background:#16a34a"></span>Yellow Letter Shop</div>
+      <div class="tab"><span class="swatch" style="background:#d97706"></span>REI Holdings</div>
+      <div class="tab add">＋</div>
+      <div class="tab roll">▦ All Workspaces</div>
+    </div>
+    <div class="appbar-right">
+      <div class="pill">⊞ Tile view</div>
+      <div class="pill">⌄ Layouts</div>
+      <div class="avatar">R</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ===================== WORKSPACE HEADER ===================== -->
+  <div class="ws-head">
+    <div class="ws-badge">Y</div>
+    <div>
+      <div class="ws-title">Yellow Letter Shop</div>
+      <div class="ws-sub">Business · 3 accounts · 2 banks · last import 2 days ago</div>
+    </div>
+    <div class="seg">
+      <span>Week</span><span class="on">Month</span><span>Quarter</span><span>Year</span>
+    </div>
+  </div>
+
+  <!-- ===================== KPI CARDS ===================== -->
+  <div class="grid kpis">
+    <div class="card kpi">
+      <div class="label">Total balance</div>
+      <div class="val mono">$48,210</div>
+      <div class="delta small">across 3 accounts</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Money in · MTD</div>
+      <div class="val mono">$32,540</div>
+      <div class="delta up">▲ 12% vs last month</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Money out · MTD</div>
+      <div class="val mono">$27,880</div>
+      <div class="delta down">▲ 4% vs last month</div>
+    </div>
+    <div class="card kpi safe">
+      <div class="label">Safe to spend</div>
+      <div class="val mono">$9,140</div>
+      <div class="delta small">after 6 unpaid bills due before next deposit</div>
+    </div>
+  </div>
+
+  <!-- ===================== MAIN TWO-COLUMN ===================== -->
+  <div class="grid cols">
+
+    <!-- LEFT -->
+    <div class="stack">
+      <!-- Forecast -->
+      <div class="card">
+        <h3>Cash-flow forecast <span class="small">next 30 days</span></h3>
+        <svg class="chart" viewBox="0 0 560 150" preserveAspectRatio="none">
+          <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#16a34a" stop-opacity=".22"/>
+            <stop offset="1" stop-color="#16a34a" stop-opacity="0"/>
+          </linearGradient></defs>
+          <line x1="0" y1="112" x2="560" y2="112" stroke="#eef0f3"/>
+          <line x1="0" y1="74" x2="560" y2="74" stroke="#eef0f3"/>
+          <line x1="0" y1="36" x2="560" y2="36" stroke="#eef0f3"/>
+          <path d="M0,60 L70,52 L140,84 L210,70 L280,104 L350,92 L420,120 L490,108 L560,96 L560,150 L0,150 Z" fill="url(#g)"/>
+          <path d="M0,60 L70,52 L140,84 L210,70 L280,104 L350,92 L420,120 L490,108 L560,96" fill="none" stroke="#16a34a" stroke-width="2.5"/>
+          <circle cx="280" cy="104" r="4" fill="#dc2626"/>
+          <circle cx="420" cy="120" r="4" fill="#dc2626"/>
+        </svg>
+        <div class="legend">
+          <span><i style="background:#16a34a"></i>Projected balance</span>
+          <span><i style="background:#dc2626"></i>Large bill due (rent · payroll)</span>
+          <span class="small">Lowest point: <b>$6,420</b> on Jun 28</span>
+        </div>
+      </div>
+
+      <!-- Category breakdown -->
+      <div class="card">
+        <h3>Spending by category <span class="small">this month</span></h3>
+        <div class="donut-wrap">
+          <svg width="132" height="132" viewBox="0 0 42 42">
+            <circle cx="21" cy="21" r="15.9" fill="none" stroke="#eef0f3" stroke-width="6"/>
+            <circle cx="21" cy="21" r="15.9" fill="none" stroke="#2563eb" stroke-width="6" stroke-dasharray="30 70" stroke-dashoffset="25"/>
+            <circle cx="21" cy="21" r="15.9" fill="none" stroke="#16a34a" stroke-width="6" stroke-dasharray="22 78" stroke-dashoffset="95"/>
+            <circle cx="21" cy="21" r="15.9" fill="none" stroke="#d97706" stroke-width="6" stroke-dasharray="18 82" stroke-dashoffset="73"/>
+            <circle cx="21" cy="21" r="15.9" fill="none" stroke="#7c3aed" stroke-width="6" stroke-dasharray="14 86" stroke-dashoffset="55"/>
+            <circle cx="21" cy="21" r="15.9" fill="none" stroke="#64748b" stroke-width="6" stroke-dasharray="16 84" stroke-dashoffset="41"/>
+            <text x="21" y="20.5" text-anchor="middle" font-size="5.4" font-weight="700" fill="#1a1d24">$27.9k</text>
+            <text x="21" y="25.5" text-anchor="middle" font-size="2.8" fill="#6b7280">out</text>
+          </svg>
+          <div class="legend" style="flex-direction:column;gap:8px;margin:0">
+            <span><i style="background:#2563eb"></i>Payroll &nbsp;<b>$8,400</b></span>
+            <span><i style="background:#16a34a"></i>Print &amp; postage &nbsp;<b>$6,100</b></span>
+            <span><i style="background:#d97706"></i>Software / SaaS &nbsp;<b>$5,000</b></span>
+            <span><i style="background:#7c3aed"></i>Contractors &nbsp;<b>$3,900</b></span>
+            <span><i style="background:#64748b"></i>Other &nbsp;<b>$4,480</b></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="stack">
+      <!-- Upcoming & overdue bills -->
+      <div class="card">
+        <h3>Upcoming &amp; overdue <span class="small">next 30 days</span></h3>
+        <div class="bill">
+          <div class="ico">⚡</div>
+          <div><div class="nm">Electric — Duke Energy</div><div class="due">Due Jun 17 · 3 days ago</div></div>
+          <span class="tag t-over">Overdue</span>
+          <div class="amt mono">$640</div>
+          <button class="btn-pay">Mark paid</button>
+        </div>
+        <div class="bill">
+          <div class="ico">🏢</div>
+          <div><div class="nm">Office Rent</div><div class="due">Due Jun 28</div></div>
+          <span class="tag t-soon">5 days</span>
+          <div class="amt mono">$4,200</div>
+          <button class="btn-pay">Mark paid</button>
+        </div>
+        <div class="bill">
+          <div class="ico">👥</div>
+          <div><div class="nm">Payroll run</div><div class="due">Due Jun 30 · recurring</div></div>
+          <span class="tag t-sched">Scheduled</span>
+          <div class="amt mono">$8,400</div>
+          <button class="btn-pay">Mark paid</button>
+        </div>
+        <div class="bill">
+          <div class="ico">🖨️</div>
+          <div><div class="nm">USPS postage account</div><div class="due">Due Jul 03</div></div>
+          <span class="tag t-soon">9 days</span>
+          <div class="amt mono">$2,150</div>
+          <button class="btn-pay">Mark paid</button>
+        </div>
+      </div>
+
+      <!-- Paid vs unpaid -->
+      <div class="card">
+        <h3>Paid vs. unpaid <span class="small">this month</span></h3>
+        <div class="pvu">
+          <div class="p" style="width:62%"></div>
+          <div class="u" style="width:38%"></div>
+        </div>
+        <div class="legend">
+          <span><i style="background:#16a34a"></i>Paid <b>$18,300</b></span>
+          <span><i style="background:#fca5a5"></i>Unpaid <b>$11,390</b></span>
+        </div>
+      </div>
+
+      <!-- Goals -->
+      <div class="card">
+        <h3>Goals</h3>
+        <div class="goal">
+          <div class="row"><span>🏝️ Team retreat</span><span class="mono">$3,200 / $6,000</span></div>
+          <div class="bar"><i style="width:53%;background:#16a34a"></i></div>
+        </div>
+        <div class="goal">
+          <div class="row"><span>🖥️ New equipment</span><span class="mono">$1,400 / $4,500</span></div>
+          <div class="bar"><i style="width:31%;background:#2563eb"></i></div>
+        </div>
+      </div>
+
+      <!-- Debts -->
+      <div class="card">
+        <h3>Debts <span class="small">total $21,600</span></h3>
+        <div class="debt"><div><div class="nm">Amex Business</div><div class="apr">22.9% APR · min $310</div></div><div class="b mono">$9,200</div></div>
+        <div class="debt"><div><div class="nm">Equipment loan</div><div class="apr">7.4% APR · min $480</div></div><div class="b mono">$12,400</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== TILED MODE ===================== -->
+  <div class="divider"><h2>⊞ Tiled mode — multiple workspaces, side-by-side &amp; stacked</h2><div class="ln"></div></div>
+  <div class="note">Each pane is an independent, live workspace. Drag to resize, save the arrangement as a named layout.</div>
+  <div class="tiles">
+    <div class="pane">
+      <div class="ph"><span class="sw" style="background:#2563eb"></span>Personal</div>
+      <div class="pb">
+        <div class="mini-kpis">
+          <div class="mini"><div class="l">Balance</div><div class="v mono">$14,820</div></div>
+          <div class="mini"><div class="l">Safe to spend</div><div class="v mono" style="color:#15803d">$2,310</div></div>
+        </div>
+        <div class="mini-bill"><span>🏠 Mortgage · Jul 1</span><b class="mono">$2,180</b></div>
+        <div class="mini-bill"><span>🚗 Auto loan · Jul 5</span><b class="mono">$410</b></div>
+      </div>
+    </div>
+    <div class="pane">
+      <div class="ph"><span class="sw" style="background:#16a34a"></span>Yellow Letter Shop</div>
+      <div class="pb">
+        <div class="mini-kpis">
+          <div class="mini"><div class="l">Balance</div><div class="v mono">$48,210</div></div>
+          <div class="mini"><div class="l">Safe to spend</div><div class="v mono" style="color:#15803d">$9,140</div></div>
+        </div>
+        <div class="mini-bill"><span>🏢 Office rent · Jun 28</span><b class="mono">$4,200</b></div>
+        <div class="mini-bill"><span>👥 Payroll · Jun 30</span><b class="mono">$8,400</b></div>
+      </div>
+    </div>
+    <div class="pane span2">
+      <div class="ph"><span class="sw" style="background:#d97706"></span>REI Holdings</div>
+      <div class="pb">
+        <div class="mini-kpis">
+          <div class="mini"><div class="l">Balance</div><div class="v mono">$112,400</div></div>
+          <div class="mini"><div class="l">Money in MTD</div><div class="v mono">$9,800</div></div>
+          <div class="mini"><div class="l">Money out MTD</div><div class="v mono">$6,240</div></div>
+          <div class="mini"><div class="l">Safe to spend</div><div class="v mono" style="color:#15803d">$31,200</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== ALL WORKSPACES ROLLUP ===================== -->
+  <div class="divider"><h2>▦ All Workspaces — owner roll-up</h2><div class="ln"></div></div>
+  <div class="note">Combined net position across everything you own. Owner draws are netted out so they aren't double-counted as income.</div>
+  <div class="card">
+    <table>
+      <thead><tr><th>Workspace</th><th>Balance</th><th>In (MTD)</th><th>Out (MTD)</th><th>Unpaid</th><th>Net</th></tr></thead>
+      <tbody>
+        <tr><td><span class="sw" style="background:#2563eb"></span>Personal</td><td class="mono">$14,820</td><td class="mono">$11,200</td><td class="mono">$8,640</td><td class="mono">$3,010</td><td class="mono pos">+$2,560</td></tr>
+        <tr><td><span class="sw" style="background:#16a34a"></span>Yellow Letter Shop</td><td class="mono">$48,210</td><td class="mono">$32,540</td><td class="mono">$27,880</td><td class="mono">$11,390</td><td class="mono pos">+$4,660</td></tr>
+        <tr><td><span class="sw" style="background:#d97706"></span>REI Holdings</td><td class="mono">$112,400</td><td class="mono">$9,800</td><td class="mono">$6,240</td><td class="mono">$2,400</td><td class="mono pos">+$3,560</td></tr>
+        <tr class="total"><td>Combined</td><td class="mono">$175,430</td><td class="mono">$47,540</td><td class="mono">$42,760</td><td class="mono">$16,800</td><td class="mono pos">+$10,780</td></tr>
+      </tbody>
+    </table>
+    <div class="footnote">↔ <span>$6,000 owner draw (Yellow Letter Shop → Personal) recognized as Personal income, netted out of the combined total.</span></div>
+  </div>
+
+</div>
+</body>
+</html>

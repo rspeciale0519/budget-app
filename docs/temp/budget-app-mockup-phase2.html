@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget App — Phase 2 Mockup</title>
+<style>
+  :root{
+    --bg:#f4f5f7; --card:#ffffff; --ink:#1a1d24; --muted:#6b7280; --line:#e7e9ee;
+    --green:#16a34a; --red:#dc2626; --amber:#d97706; --blue:#2563eb;
+    --shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.06);
+    --accent:#16a34a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px 60px}
+  h1,h2,h3{margin:0}
+  .small{font-size:12px;color:var(--muted)}
+  .mono{font-variant-numeric:tabular-nums}
+
+  .appbar{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line)}
+  .appbar-in{max-width:1180px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:16px}
+  .logo{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+  .logo .dot{width:18px;height:18px;border-radius:6px;background:linear-gradient(135deg,#2563eb,#16a34a)}
+  .tabs{display:flex;gap:6px;align-items:center;flex:1;overflow:auto}
+  .tab{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:9px;font-size:13px;font-weight:600;
+       color:var(--muted);cursor:pointer;white-space:nowrap;border:1px solid transparent}
+  .tab .swatch{width:9px;height:9px;border-radius:50%}
+  .tab:hover{background:#f6f7f9}
+  .tab.active{color:var(--ink);background:#f3f5f8;border-color:var(--line);box-shadow:inset 0 -2px 0 var(--green)}
+  .tab.roll{margin-left:4px;color:#374151}
+  .tab.add{color:#9aa1ad;font-weight:700;padding:7px 10px}
+  .appbar-right{display:flex;align-items:center;gap:10px;margin-left:auto}
+  .pill{font-size:12px;font-weight:600;color:#374151;border:1px solid var(--line);padding:7px 11px;border-radius:9px;cursor:pointer;background:#fff;display:flex;gap:6px;align-items:center}
+  .pill.k{background:#111827;color:#fff;border-color:#111827}
+  .avatar{width:30px;height:30px;border-radius:50%;background:#dbeafe;color:#1d4ed8;display:grid;place-items:center;font-weight:700;font-size:12px}
+
+  .ws-head{display:flex;align-items:center;gap:12px;margin:22px 0 16px}
+  .ws-badge{width:34px;height:34px;border-radius:10px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800}
+  .ws-title{font-size:20px;font-weight:700}
+  .ws-sub{font-size:12.5px;color:var(--muted)}
+  .seg{margin-left:auto;display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff}
+  .seg span{padding:7px 12px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer}
+  .seg span.on{background:var(--accent);color:#fff}
+
+  .grid{display:grid;gap:16px}
+  .kpis{grid-template-columns:repeat(4,1fr)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px 17px}
+  .kpi .label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+  .kpi .val{font-size:24px;font-weight:760;margin-top:8px}
+  .kpi .delta{font-size:12px;margin-top:6px;font-weight:600}
+  .up{color:var(--green)} .down{color:var(--red)}
+  .kpi.safe{background:linear-gradient(180deg,#ecfdf3,#fff);border-color:#bbf7d0}
+  .kpi.safe .val{color:#15803d}.kpi.safe .label{color:#15803d}
+
+  .card h3{font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:space-between}
+  .card h3 .small{font-weight:600}
+  .stack{display:flex;flex-direction:column;gap:16px}
+  .new{font-size:10px;font-weight:800;color:#7c3aed;background:#f3e8ff;padding:2px 7px;border-radius:6px;letter-spacing:.03em;margin-left:8px;vertical-align:middle}
+
+  /* calendar */
+  .cal{margin-top:10px}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .cal-grid .dow{font-size:10.5px;color:var(--muted);text-align:center;font-weight:700;text-transform:uppercase;padding-bottom:2px}
+  .day{min-height:62px;border:1px solid var(--line);border-radius:9px;padding:5px 6px;background:#fff}
+  .day .n{font-size:11px;color:#9aa1ad;font-weight:700}
+  .day.out{background:#fafbfc}
+  .day.today{border-color:#16a34a;box-shadow:inset 0 0 0 1px #16a34a}
+  .ev{font-size:10px;font-weight:700;border-radius:5px;padding:2px 5px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ev.over{background:#fee2e2;color:#b91c1c}
+  .ev.soon{background:#fef3c7;color:#b45309}
+  .ev.sched{background:#e0e7ff;color:#4338ca}
+  .ev.paid{background:#dcfce7;color:#15803d}
+
+  /* budget vs actual */
+  .bvar{padding:11px 0;border-top:1px solid var(--line)}
+  .bvar:first-of-type{border-top:0}
+  .bvar .row{display:flex;justify-content:space-between;font-size:13px;font-weight:650;margin-bottom:7px}
+  .bvar .row .r{color:var(--muted);font-weight:600}
+  .bar{height:9px;border-radius:5px;background:#eef0f3;overflow:hidden;position:relative}
+  .bar i{display:block;height:100%;border-radius:5px}
+  .over-cap{color:var(--red);font-weight:700}
+
+  /* bills with auto-match */
+  .bill{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+  .bill:first-of-type{border-top:0}
+  .bill .ico{width:34px;height:34px;border-radius:9px;background:#f1f3f6;display:grid;place-items:center;font-size:15px}
+  .bill .nm{font-size:13.5px;font-weight:650}
+  .bill .due{font-size:12px;color:var(--muted)}
+  .bill .amt{margin-left:auto;font-weight:700;font-size:13.5px}
+  .tag{font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:.03em}
+  .t-over{background:#fee2e2;color:#b91c1c}.t-soon{background:#fef3c7;color:#b45309}
+  .t-match{background:#cffafe;color:#0e7490}
+  .btn-pay{font-size:11.5px;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:7px;padding:5px 9px;cursor:pointer;color:#374151}
+  .match-row{display:flex;align-items:center;gap:8px;background:#f0fdff;border:1px dashed #67e8f9;border-radius:9px;padding:8px 10px;margin:6px 0 2px;font-size:12px;color:#155e75}
+  .match-row b{color:#0e7490}
+  .btn-c{font-size:11px;font-weight:700;border-radius:7px;padding:4px 9px;cursor:pointer;border:1px solid transparent}
+  .btn-yes{background:#0e7490;color:#fff;margin-left:auto}
+  .btn-no{background:#fff;border-color:var(--line);color:#374151}
+
+  .divider{margin:46px 0 6px;display:flex;align-items:center;gap:12px}
+  .divider h2{font-size:15px;color:#374151}
+  .divider .ln{flex:1;height:1px;background:var(--line)}
+  .note{font-size:12.5px;color:var(--muted);margin:2px 0 16px}
+
+  /* command palette */
+  .cmdk-scrim{margin-top:8px;background:#0b1020;border-radius:16px;padding:36px;display:flex;justify-content:center}
+  .cmdk{width:540px;max-width:100%;background:#fff;border-radius:13px;box-shadow:0 20px 60px rgba(0,0,0,.4);overflow:hidden}
+  .cmdk .in{display:flex;align-items:center;gap:10px;padding:15px 16px;border-bottom:1px solid var(--line);font-size:15px;color:#374151}
+  .cmdk .in .cur{color:#9aa1ad}
+  .cmdk .sec{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:#9aa1ad;font-weight:700;padding:10px 16px 4px}
+  .cmdk .opt{display:flex;align-items:center;gap:11px;padding:10px 16px;font-size:13.5px;font-weight:600;cursor:pointer}
+  .cmdk .opt.sel{background:#f3f5f8}
+  .cmdk .opt .ic{width:24px;height:24px;border-radius:7px;background:#eef0f3;display:grid;place-items:center;font-size:13px}
+  .cmdk .opt .kbd{margin-left:auto;font-size:10.5px;color:#9aa1ad;border:1px solid var(--line);border-radius:5px;padding:2px 6px;font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="appbar">
+  <div class="appbar-in">
+    <div class="logo"><span class="dot"></span> Ledger</div>
+    <div class="tabs">
+      <div class="tab"><span class="swatch" style="background:#2563eb"></span>Personal</div>
+      <div class="tab active"><span class="swatch" style="background:#16a34a"></span>Yellow Letter Shop</div>
+      <div class="tab"><span class="swatch" style="background:#d97706"></span>REI Holdings</div>
+      <div class="tab add">＋</div>
+      <div class="tab roll">▦ All Workspaces</div>
+    </div>
+    <div class="appbar-right">
+      <div class="pill k">⌘K Quick add</div>
+      <div class="pill">⊞ Tile view</div>
+      <div class="avatar">R</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="ws-head">
+    <div class="ws-badge">Y</div>
+    <div>
+      <div class="ws-title">Yellow Letter Shop</div>
+      <div class="ws-sub">Business · 3 accounts · 2 banks · last import 2 days ago</div>
+    </div>
+    <div class="seg"><span>Week</span><span class="on">Month</span><span>Quarter</span><span>Year</span></div>
+  </div>
+
+  <div class="grid kpis">
+    <div class="card kpi"><div class="label">Total balance</div><div class="val mono">$48,210</div><div class="delta small">across 3 accounts</div></div>
+    <div class="card kpi"><div class="label">Money in · MTD</div><div class="val mono">$32,540</div><div class="delta up">▲ 12% vs last month</div></div>
+    <div class="card kpi"><div class="label">Money out · MTD</div><div class="val mono">$27,880</div><div class="delta down">▲ 4% vs last month</div></div>
+    <div class="card kpi safe"><div class="label">Safe to spend</div><div class="val mono">$9,140</div><div class="delta small">after 6 unpaid bills due before next deposit</div></div>
+  </div>
+
+  <!-- ===== Phase 2 row: Calendar + Budget vs actual ===== -->
+  <div class="grid cols" style="grid-template-columns:1.5fr 1fr;align-items:start;margin-top:16px">
+    <div class="card">
+      <h3>Due-date calendar <span class="new">PHASE 2</span> <span class="small" style="margin-left:auto">June 2026</span></h3>
+      <div class="cal">
+        <div class="cal-grid">
+          <div class="dow">Su</div><div class="dow">Mo</div><div class="dow">Tu</div><div class="dow">We</div><div class="dow">Th</div><div class="dow">Fr</div><div class="dow">Sa</div>
+          <div class="day out"><div class="n">1</div></div>
+          <div class="day"><div class="n">2</div></div>
+          <div class="day"><div class="n">3</div><div class="ev paid">SaaS $5k</div></div>
+          <div class="day"><div class="n">4</div></div>
+          <div class="day"><div class="n">5</div></div>
+          <div class="day"><div class="n">6</div></div>
+          <div class="day"><div class="n">7</div></div>
+          <div class="day"><div class="n">8</div></div>
+          <div class="day"><div class="n">9</div></div>
+          <div class="day"><div class="n">10</div></div>
+          <div class="day"><div class="n">11</div></div>
+          <div class="day"><div class="n">12</div></div>
+          <div class="day"><div class="n">13</div></div>
+          <div class="day today"><div class="n">14</div><div class="ev over">Electric $640</div></div>
+          <div class="day"><div class="n">15</div></div>
+          <div class="day"><div class="n">16</div></div>
+          <div class="day"><div class="n">17</div></div>
+          <div class="day"><div class="n">18</div></div>
+          <div class="day"><div class="n">19</div></div>
+          <div class="day"><div class="n">20</div></div>
+          <div class="day"><div class="n">21</div></div>
+          <div class="day"><div class="n">22</div></div>
+          <div class="day"><div class="n">23</div></div>
+          <div class="day"><div class="n">24</div></div>
+          <div class="day"><div class="n">25</div></div>
+          <div class="day"><div class="n">26</div></div>
+          <div class="day"><div class="n">27</div></div>
+          <div class="day"><div class="n">28</div><div class="ev soon">Rent $4.2k</div></div>
+          <div class="day"><div class="n">29</div></div>
+          <div class="day"><div class="n">30</div><div class="ev sched">Payroll $8.4k</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Budget vs. actual <span class="new">PHASE 2</span></h3>
+      <div class="bvar">
+        <div class="row"><span>Print &amp; postage</span><span class="r mono">$6,100 / $6,500</span></div>
+        <div class="bar"><i style="width:94%;background:#16a34a"></i></div>
+      </div>
+      <div class="bvar">
+        <div class="row"><span>Software / SaaS</span><span class="r mono over-cap">$5,000 / $4,000</span></div>
+        <div class="bar"><i style="width:100%;background:#dc2626"></i></div>
+      </div>
+      <div class="bvar">
+        <div class="row"><span>Contractors</span><span class="r mono">$3,900 / $6,000</span></div>
+        <div class="bar"><i style="width:65%;background:#2563eb"></i></div>
+      </div>
+      <div class="bvar">
+        <div class="row"><span>Travel</span><span class="r mono">$820 / $2,500</span></div>
+        <div class="bar"><i style="width:33%;background:#d97706"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Bills with auto-match ===== -->
+  <div class="grid" style="margin-top:16px">
+    <div class="card">
+      <h3>Upcoming &amp; overdue — with auto-match <span class="new">PHASE 2</span></h3>
+      <div class="match-row">
+        💡 An imported transaction <b>“USPS POSTAGE $2,150”</b> on Jul 3 looks like your bill <b>“USPS postage account.”</b> Mark it paid?
+        <button class="btn-c btn-yes">Yes, match</button><button class="btn-c btn-no">No</button>
+      </div>
+      <div class="bill">
+        <div class="ico">⚡</div><div><div class="nm">Electric — Duke Energy</div><div class="due">Due Jun 17 · 3 days ago</div></div>
+        <span class="tag t-over">Overdue</span><div class="amt mono">$640</div><button class="btn-pay">Mark paid</button>
+      </div>
+      <div class="bill">
+        <div class="ico">🖨️</div><div><div class="nm">USPS postage account</div><div class="due">Due Jul 03</div></div>
+        <span class="tag t-match">Match found</span><div class="amt mono">$2,150</div><button class="btn-pay">Mark paid</button>
+      </div>
+      <div class="bill">
+        <div class="ico">🏢</div><div><div class="nm">Office Rent</div><div class="due">Due Jun 28</div></div>
+        <span class="tag t-soon">5 days</span><div class="amt mono">$4,200</div><button class="btn-pay">Mark paid</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Command palette ===== -->
+  <div class="divider"><h2>⌘K Command palette <span class="new" style="margin-left:8px">PHASE 2</span></h2><div class="ln"></div></div>
+  <div class="note">Hit ⌘K from anywhere to add a transaction, log a bill, jump to a workspace, or run an import — without leaving the keyboard.</div>
+  <div class="cmdk-scrim">
+    <div class="cmdk">
+      <div class="in">🔎 add expense <span class="cur">▍</span></div>
+      <div class="sec">Quick actions</div>
+      <div class="opt sel"><span class="ic">＋</span>Add expense / transaction <span class="kbd">↵</span></div>
+      <div class="opt"><span class="ic">🧾</span>Log a new bill</div>
+      <div class="opt"><span class="ic">↔</span>Record owner draw → Personal</div>
+      <div class="opt"><span class="ic">⬆</span>Import CSV…</div>
+      <div class="sec">Go to workspace</div>
+      <div class="opt"><span class="ic" style="background:#dbeafe">●</span>Personal</div>
+      <div class="opt"><span class="ic" style="background:#dcfce7">●</span>REI Holdings</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
