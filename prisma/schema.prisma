@@ -11,3 +11,74 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Identity & access (Task 7). userId values are Supabase auth.users ids
+// (uuid); we store the uuid without a cross-schema FK to auth.users.
+// ─────────────────────────────────────────────────────────────────────────
+
+enum OrgRole {
+  owner
+  admin
+  member
+}
+
+enum WorkspaceRole {
+  admin
+  viewer
+}
+
+enum WorkspaceType {
+  personal
+  business
+}
+
+model Organization {
+  id         String          @id @default(cuid())
+  name       String
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  memberships OrgMembership[]
+  workspaces Workspace[]
+}
+
+model OrgMembership {
+  id             String       @id @default(cuid())
+  organizationId String
+  userId         String       @db.Uuid
+  role           OrgRole
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+model Workspace {
+  id             String                @id @default(cuid())
+  organizationId String
+  name           String
+  type           WorkspaceType
+  color          String
+  icon           String?
+  sortOrder      Int                   @default(0)
+  archivedAt     DateTime?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  organization   Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  memberships    WorkspaceMembership[]
+
+  @@index([organizationId])
+}
+
+model WorkspaceMembership {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userId      String        @db.Uuid
+  role        WorkspaceRole
+  createdAt   DateTime      @default(now())
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+}
