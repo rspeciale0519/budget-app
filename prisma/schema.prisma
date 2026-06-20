@@ -82,3 +82,101 @@ model WorkspaceMembership {
   @@unique([workspaceId, userId])
   @@index([userId])
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Money sources & ledger (Task 8). workspaceId is a scalar tenant key (used
+// by RLS), not a relation. Money is Decimal(14,2); dates are @db.Date.
+// billId / transferPairId are scalar links (service-layer integrity, spec §9).
+// ─────────────────────────────────────────────────────────────────────────
+
+enum AccountType {
+  checking
+  savings
+  credit_card
+  loan
+  cash
+}
+
+enum TxSource {
+  csv
+  manual
+}
+
+enum CategoryKind {
+  income
+  expense
+}
+
+model Account {
+  id             String        @id @default(cuid())
+  workspaceId    String
+  name           String
+  type           AccountType
+  institution    String
+  last4          String?
+  openingBalance Decimal       @db.Decimal(14, 2)
+  openingDate    DateTime      @db.Date
+  currency       String        @default("USD")
+  archivedAt     DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  transactions   Transaction[]
+  importBatches  ImportBatch[]
+
+  @@index([workspaceId])
+}
+
+model Category {
+  id           String        @id @default(cuid())
+  workspaceId  String
+  name         String
+  kind         CategoryKind
+  parentId     String?
+  createdAt    DateTime      @default(now())
+  parent       Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children     Category[]    @relation("CategoryHierarchy")
+  transactions Transaction[]
+
+  @@index([workspaceId])
+}
+
+model ImportBatch {
+  id           String        @id @default(cuid())
+  workspaceId  String
+  accountId    String
+  filename     String
+  rowCount     Int
+  status       String        @default("committed")
+  importedAt   DateTime      @default(now())
+  archivedAt   DateTime?
+  account      Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([workspaceId])
+}
+
+model Transaction {
+  id             String       @id @default(cuid())
+  workspaceId    String
+  accountId      String
+  date           DateTime     @db.Date
+  amount         Decimal      @db.Decimal(14, 2)
+  description    String
+  merchant       String?
+  categoryId     String?
+  notes          String?
+  source         TxSource
+  importBatchId  String?
+  dedupeHash     String
+  isTransfer     Boolean      @default(false)
+  transferPairId String?
+  billId         String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  account        Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  category       Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  importBatch    ImportBatch? @relation(fields: [importBatchId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, date])
+  @@index([workspaceId, accountId, dedupeHash])
+}
