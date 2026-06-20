@@ -3,6 +3,7 @@ import { rlsClientFor } from "@/lib/prisma-rls";
 import { assertWorkspaceAccess, ForbiddenError } from "@/services/authz";
 import { createTransactionSchema, updateTransactionSchema } from "@/lib/zod/entities";
 import { applyRules } from "@/services/category-rule-service";
+import { audit } from "@/services/audit-service";
 import { dedupeHash } from "@/lib/dedupe";
 import { money } from "@/lib/money";
 import { calendarDate, fromDbDate, toUtcDate } from "@/lib/calendar-date";
@@ -27,7 +28,7 @@ export async function createTransaction(
       description: data.description,
       runningBalance: null,
     });
-    return repo.insertTransaction(tx, {
+    const created = await repo.insertTransaction(tx, {
       workspaceId,
       accountId: data.accountId,
       date: toUtcDate(data.date),
@@ -40,6 +41,15 @@ export async function createTransaction(
       dedupeHash: hash,
       isTransfer: data.isTransfer,
     });
+    await audit(tx, {
+      userId: actorUserId,
+      workspaceId,
+      action: "create",
+      entityType: "Transaction",
+      entityId: created.id,
+      after: created,
+    });
+    return created;
   });
 }
 
@@ -84,7 +94,16 @@ export async function deleteTransaction(actorUserId: string, transactionId: stri
   await assertWorkspaceAccess(actorUserId, existing.workspaceId, "admin");
   return rlsClientFor(actorUserId).run(async (tx) => {
     await repo.reopenBillsPaidBy(tx, transactionId);
-    return repo.deleteTransaction(tx, transactionId);
+    const deleted = await repo.deleteTransaction(tx, transactionId);
+    await audit(tx, {
+      userId: actorUserId,
+      workspaceId: existing.workspaceId,
+      action: "delete",
+      entityType: "Transaction",
+      entityId: transactionId,
+      before: existing,
+    });
+    return deleted;
   });
 }
 

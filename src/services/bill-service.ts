@@ -3,6 +3,7 @@ import type { Bill } from "@prisma/client";
 import { rlsClientFor } from "@/lib/prisma-rls";
 import { assertWorkspaceAccess, ForbiddenError } from "@/services/authz";
 import { createBillSchema, markBillPaidSchema } from "@/lib/zod/entities";
+import { audit } from "@/services/audit-service";
 import { dedupeHash } from "@/lib/dedupe";
 import { money } from "@/lib/money";
 import { type CalendarDate, addDays, fromDbDate, toUtcDate } from "@/lib/calendar-date";
@@ -91,7 +92,16 @@ export async function markPaid(
     } else if (transactionId) {
       await tx.transaction.update({ where: { id: transactionId }, data: { billId: bill.id } });
     }
-    return repo.updateBillRow(tx, bill.id, { status: "paid", paidTransactionId: transactionId });
+    const updated = await repo.updateBillRow(tx, bill.id, { status: "paid", paidTransactionId: transactionId });
+    await audit(tx, {
+      userId: actorUserId,
+      workspaceId: bill.workspaceId,
+      action: "mark_paid",
+      entityType: "Bill",
+      entityId: bill.id,
+      after: { status: "paid", paidTransactionId: transactionId },
+    });
+    return updated;
   });
 }
 
