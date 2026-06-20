@@ -1,0 +1,73 @@
+# Dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Testing
+/coverage
+
+# Next.js
+/.next/
+/out/
+next-env.d.ts
+
+# Production build
+/build
+/dist
+
+# Misc
+.DS_Store
+*.pem
+Thumbs.db
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Environment variables (secrets) — never commit
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+!.env.example
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+
+# Prisma
+# (schema and migrations ARE committed; generated client is not)
+/prisma/generated
+/src/generated
+
+# Supabase local stack
+# CLI-managed local state; config.toml, migrations and seed ARE committed
+/supabase/.branches
+/supabase/.temp
+/supabase/.env
+
+# IDE / editor
+.idea
+*.swp
+*.swo
+
+# OS
+desktop.ini
+
+# Claude Code local state (committed: plans; ignored: local settings)
+.claude/settings.local.json
+
+# Logs
+logs
+*.log
