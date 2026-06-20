@@ -3,7 +3,7 @@
 - **Date:** 2026-06-20
 - **Status:** Draft for review
 - **Working name:** "Ledger" (placeholder — final name + domain TBD)
-- **Project home:** `C:\Users\rob\Documents\Software\budget-app`
+- **Project home:** `C:\Users\rob\Documents\Software\data-management\budget-app`
 
 ---
 
