@@ -1,0 +1,77 @@
+import { rlsClientFor } from "@/lib/prisma-rls";
+import { assertWorkspaceAccess, assertOrgRole, listAccessibleWorkspaces } from "@/services/authz";
+import { money, add } from "@/lib/money";
+import { fromDbDate } from "@/lib/calendar-date";
+
+function csvEscape(value: string): string {
+  return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+}
+
+function toRow(cells: string[]): string {
+  return cells.map(csvEscape).join(",");
+}
+
+export async function exportTransactionsCsv(actorUserId: string, workspaceId: string): Promise<string> {
+  await assertWorkspaceAccess(actorUserId, workspaceId, "viewer");
+  const txns = await rlsClientFor(actorUserId).run((tx) =>
+    tx.transaction.findMany({ where: { workspaceId }, orderBy: [{ date: "asc" }, { createdAt: "asc" }] }),
+  );
+  const header = ["date", "description", "merchant", "amount", "categoryId", "isTransfer", "source"];
+  const lines = [
+    toRow(header),
+    ...txns.map((t) =>
+      toRow([
+        fromDbDate(t.date),
+        t.description,
+        t.merchant ?? "",
+        t.amount.toFixed(2),
+        t.categoryId ?? "",
+        String(t.isTransfer),
+        t.source,
+      ]),
+    ),
+  ];
+  return lines.join("\n");
+}
+
+export async function exportBillsCsv(actorUserId: string, workspaceId: string): Promise<string> {
+  await assertWorkspaceAccess(actorUserId, workspaceId, "viewer");
+  const bills = await rlsClientFor(actorUserId).run((tx) =>
+    tx.bill.findMany({ where: { workspaceId }, orderBy: { dueDate: "asc" } }),
+  );
+  const header = ["vendor", "amount", "dueDate", "status", "type"];
+  const lines = [
+    toRow(header),
+    ...bills.map((b) => toRow([b.vendor, b.amount.toFixed(2), fromDbDate(b.dueDate), b.status, b.type])),
+  ];
+  return lines.join("\n");
+}
+
+/** Per-workspace net position across the org (no transfer-netting yet — Phase 2). */
+export async function exportRollupCsv(actorUserId: string, organizationId: string): Promise<string> {
+  await assertOrgRole(actorUserId, organizationId, "member");
+  const workspaces = (await listAccessibleWorkspaces(actorUserId)).filter(
+    (w) => w.organizationId === organizationId,
+  );
+  const header = ["workspace", "type", "balance", "unpaidBills"];
+  const rows: string[] = [];
+  for (const ws of workspaces) {
+    const data = await rlsClientFor(actorUserId).run(async (tx) => {
+      const accAgg = await tx.account.aggregate({ where: { workspaceId: ws.id }, _sum: { openingBalance: true } });
+      const txAgg = await tx.transaction.aggregate({ where: { workspaceId: ws.id }, _sum: { amount: true } });
+      const billAgg = await tx.bill.aggregate({
+        where: { workspaceId: ws.id, status: { in: ["unpaid", "scheduled", "overdue"] } },
+        _sum: { amount: true },
+      });
+      return {
+        balance: add(
+          money(accAgg._sum.openingBalance?.toFixed(2) ?? "0"),
+          money(txAgg._sum.amount?.toFixed(2) ?? "0"),
+        ),
+        unpaid: money(billAgg._sum.amount?.toFixed(2) ?? "0"),
+      };
+    });
+    rows.push(toRow([ws.name, ws.type, data.balance.toFixed(2), data.unpaid.toFixed(2)]));
+  }
+  return [toRow(header), ...rows].join("\n");
+}
