@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { listAccessibleWorkspaces } from "@/services/authz";
 import { createServerClient } from "@/lib/supabase/server";
 import { WorkspaceTabs } from "@/components/workspace/workspace-tabs";
@@ -21,18 +22,20 @@ export async function TabBar({ userId }: { userId: string }) {
           workspaces={workspaces.map((w) => ({ id: w.id, name: w.name, color: w.color, icon: w.icon }))}
         />
         <div className="ml-auto flex items-center gap-2.5">
-          <span
-            className="flex cursor-default items-center gap-1.5 rounded-[9px] border border-line bg-white px-[11px] py-[7px] text-xs font-semibold text-[#374151] opacity-60"
-            title="Tiling — Phase 2"
+          <Link
+            href="/tiles"
+            className="flex items-center gap-1.5 rounded-[9px] border border-line bg-white px-[11px] py-[7px] text-xs font-semibold text-[#374151] transition-colors hover:bg-slate-50"
+            title="Tile multiple workspaces side-by-side"
           >
             ⊞ Tile view
-          </span>
-          <span
-            className="flex cursor-default items-center gap-1.5 rounded-[9px] border border-line bg-white px-[11px] py-[7px] text-xs font-semibold text-[#374151] opacity-60"
-            title="Saved layouts — Phase 2"
+          </Link>
+          <Link
+            href="/tiles"
+            className="flex items-center gap-1.5 rounded-[9px] border border-line bg-white px-[11px] py-[7px] text-xs font-semibold text-[#374151] transition-colors hover:bg-slate-50"
+            title="Saved layouts"
           >
             ⌄ Layouts
-          </span>
+          </Link>
           <div className="grid h-[30px] w-[30px] place-items-center rounded-full bg-[#dbeafe] text-xs font-bold text-[#1d4ed8]">
             {initial}
           </div>
