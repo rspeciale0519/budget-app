@@ -6,6 +6,7 @@ import { ManageForms } from "@/components/manage/manage-forms";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty/empty-state";
 import { fromDbDate } from "@/lib/calendar-date";
+import { money, format } from "@/lib/money";
 
 export const dynamic = "force-dynamic";
 
@@ -60,7 +61,7 @@ export default async function ManagePage({
                 <span className="text-slate-700">
                   {fromDbDate(t.date)} · {t.description}
                 </span>
-                <span className="tabular-nums text-slate-900">${t.amount.toFixed(2)}</span>
+                <span className="tabular-nums text-slate-900">{format(money(t.amount.toFixed(2)))}</span>
               </div>
             ))
           )}

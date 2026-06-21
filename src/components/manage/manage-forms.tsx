@@ -82,7 +82,10 @@ function AccountForm({ workspaceId }: { workspaceId: string }) {
 
 function TransactionForm({ workspaceId, accounts }: { workspaceId: string; accounts: AccountOption[] }) {
   const { error, busy, submit } = useAction();
-  const [accountId, setAccountId] = useState(accounts[0]?.id ?? "");
+  const [accountId, setAccountId] = useState("");
+  // Fall back to the first account so a freshly-added account is selectable
+  // without a manual re-pick after router.refresh().
+  const effectiveAccountId = accountId || accounts[0]?.id || "";
   const [date, setDate] = useState("2026-06-20");
   const [amount, setAmount] = useState("-0.00");
   const [description, setDescription] = useState("");
@@ -92,7 +95,7 @@ function TransactionForm({ workspaceId, accounts }: { workspaceId: string; accou
         <CardTitle>Add transaction</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        <select className={inputCls} value={accountId} onChange={(e) => setAccountId(e.target.value)}>
+        <select className={inputCls} value={effectiveAccountId} onChange={(e) => setAccountId(e.target.value)}>
           {accounts.length === 0 ? <option value="">No accounts yet</option> : null}
           {accounts.map((a) => (
             <option key={a.id} value={a.id}>{a.name}</option>
@@ -102,7 +105,7 @@ function TransactionForm({ workspaceId, accounts }: { workspaceId: string; accou
         <input className={inputCls} placeholder="Amount (e.g. -25.50)" value={amount} onChange={(e) => setAmount(e.target.value)} />
         <input className={inputCls} placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
         {error && <p className="text-sm text-red-600">{error}</p>}
-        <Button disabled={busy || !accountId} onClick={() => submit(() => addTransactionAction(workspaceId, { accountId, date, amount, description }))} className="w-full">
+        <Button disabled={busy || !effectiveAccountId} onClick={() => submit(() => addTransactionAction(workspaceId, { accountId: effectiveAccountId, date, amount, description }))} className="w-full">
           Add transaction
         </Button>
       </CardContent>
