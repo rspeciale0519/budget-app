@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Let the owner tile multiple workspaces side-by-side and stacked on desktop — each pane an independent, live workspace summary — and save/restore named layout arrangements per user.
+**Goal:** Let the owner tile multiple workspaces side-by-side and stacked on desktop — each pane an independent, live workspace summary — and save/restore named layout arrangements (including pane proportions) per user.
 
-**Architecture:** A recursive **pane-tree** config (`{ type: "leaf", workspaceId } | { type: "split", direction, children }`) is the serialized layout, stored in the existing `Layout.config` JSON (per-user, RLS-scoped). A `TiledView` client component renders the tree with `react-resizable-panels`; each leaf shows a compact, server-fetched **pane summary** (balance · safe-to-spend · top bills) reusing the Phase 2a computation services. Tiling is desktop-only — below `lg` it degrades to a stacked single column. The app-bar "Tile view"/"Layouts" pills (Phase-2 stubs) become live.
+**Architecture:** A recursive **pane-tree** config (`leaf{workspaceId}` | `split{direction,children,sizes}`) is the serialized layout, stored in the existing `Layout.config` JSON (per-user, RLS-scoped) — **no migration**. Pure tree-operation helpers do all editing (add/remove/assign/direction/sizes) and are unit-tested directly; a `TiledView` client component renders the tree with `react-resizable-panels`, applying saved sizes and capturing resizes. Each leaf shows a compact, server-fetched **pane summary** reusing the Phase 2a computation services. Tiling is desktop-only — below `lg` it degrades to a stacked single column.
 
-> **Builds on:** Phase 2a (`feature-budget-dashboard-live`, merged to `develop`) — reuses `workspaceMetrics`, `safeToSpend`, `bill-service.upcomingAndOverdue`, `listAccessibleWorkspaces`. The `Layout` model already exists in the schema (no migration).
+> **Builds on:** Phase 2a (`feature-budget-dashboard-live`, merged to `develop`) — reuses `workspaceMetrics`, `safeToSpend`, `bill-service.upcomingAndOverdue`, `listAccessibleWorkspaces`, `getWorkspace`. The `Layout` model + its per-user RLS already exist (Phase 1).
 
 **Tech Stack:** Next.js 16 (App Router) · TypeScript strict · `react-resizable-panels` · Prisma 6 · Zod · Vitest · Tailwind 4 · pnpm.
 
@@ -18,9 +18,9 @@ Carried verbatim from the spec/PRD/CLAUDE.md — every task implicitly includes 
 - **Service-layer authz on every read** (`assertWorkspaceAccess`/`assertOrgRole`) AND forced Postgres RLS via `rlsClientFor`. `Layout` RLS is already per-user (`userId = app.current_user_id()`).
 - **No JavaScript float math on money** — pane summaries format via `@/lib/money`. **Calendar dates** via `@/lib/calendar-date`.
 - **Per-pane workspace context:** each pane owns its own `{ workspaceId }` — there is **no** single global "current workspace" (spec §5.1).
-- **Responsive:** tiling is a **desktop-only enhancement**; on tablet/mobile it degrades to a stacked single column (spec §11).
-- **Never hard-delete** — layouts are removable by their owner (this is user-owned config, not financial data; delete is allowed here).
-- **Package manager: pnpm.** Validate the pane tree with Zod at the persistence boundary.
+- **Responsive:** tiling is a **desktop-only enhancement**; below `lg` it degrades to a stacked single column (spec §11).
+- **Editing logic lives in pure, tested functions**, not in components (our test harness can't simulate clicks; components are renderToString-only).
+- **No migration** — the `Layout` model exists; saves are find-then-update/create (no unique-constraint dependency). **Package manager: pnpm.** Validate the pane tree with Zod at the persistence boundary.
 
 ---
 
@@ -28,69 +28,73 @@ Carried verbatim from the spec/PRD/CLAUDE.md — every task implicitly includes 
 
 ```
 src/
-├── lib/zod/layout.ts                  # pane-tree Zod schema + PaneConfig type (recursive)
+├── lib/
+│   ├── zod/layout.ts                  # PaneConfig type + paneConfigSchema (recursive, with sizes)
+│   └── pane-tree.ts                   # PURE tree ops: collectWorkspaceIds, defaultLayout,
+│                                      #   addLeaf, removeLeafAt, assignAt, setDirection, setSizes
 ├── repositories/layout-repo.ts        # Layout CRUD (Prisma)
 ├── services/
 │   ├── layout-service.ts              # saveLayout/listLayouts/getLayout/deleteLayout (per-user)
 │   └── dashboard/pane-summary.ts      # compact per-workspace summary for a tile
 ├── components/tiling/
-│   ├── tiled-view.tsx                 # recursive pane-tree renderer (client, resizable)
 │   ├── pane-card.tsx                  # one pane's summary card (presentational)
-│   └── layout-controls.tsx            # save / restore / delete named layouts + pane management
-├── app/(app)/tiles/
-│   ├── page.tsx                       # /tiles entry: load workspaces + layout + summaries
-│   └── _actions.ts                    # paneSummary / saveLayout / listLayouts / deleteLayout actions
-└── components/workspace/tab-bar.tsx   # (modified) activate Tile view / Layouts pills → /tiles
+│   ├── tiled-view.tsx                 # recursive pane-tree renderer (client, resizable, sizes)
+│   └── layout-controls.tsx            # save / restore / delete + pane management
+└── app/(app)/tiles/
+    ├── page.tsx                       # /tiles entry: load workspaces + layout + summaries
+    └── _actions.ts                    # paneSummaries / saveLayout / listLayouts / deleteLayout
+src/components/workspace/tab-bar.tsx   # (modified) activate Tile view / Layouts pills → /tiles
 ```
 
 ---
 
 ## Task Sequencing Overview
 
-- **Task 1:** Pane-tree Zod schema + types (pure, the shared contract).
-- **Task 2:** Layout service + repo (per-user CRUD, RLS-isolated).
+- **Task 1:** Pane-tree schema + PURE tree operations (the shared, fully-tested contract — incl. sizes).
+- **Task 2:** Layout service + repo (per-user CRUD, RLS-isolated, migration-free save).
 - **Task 3:** Pane-summary service (compact tile data).
-- **Task 4:** `react-resizable-panels` install + `TiledView` recursive renderer + `PaneCard`.
-- **Task 5:** `/tiles` page + server actions (load workspaces/layout/summaries).
-- **Task 6:** Layout controls — save/restore/delete + pane management (add/remove/assign/direction) + responsive stack.
+- **Task 4:** `react-resizable-panels` install + `TiledView` renderer (applies/captures sizes) + `PaneCard`.
+- **Task 5:** `/tiles` page + server actions (incl. batch pane summaries for restore).
+- **Task 6:** Layout controls — save/restore/delete + pane management, wired via the pure tree ops.
 - **Task 7:** Activate the app-bar Tile view / Layouts pills.
 
 Each task ends with an independently testable deliverable and a commit.
 
 ---
 
-## Task 1: Pane-tree schema + types
+## Task 1: Pane-tree schema + pure tree operations
 
 **Files:**
-- Create: `src/lib/zod/layout.ts`
-- Test: `src/lib/zod/layout.test.ts`
+- Create: `src/lib/zod/layout.ts`, `src/lib/pane-tree.ts`
+- Test: `src/lib/pane-tree.test.ts`
 
 **Interfaces:**
-- Produces: `type PaneConfig = { type: "leaf"; workspaceId: string } | { type: "split"; direction: "row" | "col"; children: PaneConfig[] }`; `paneConfigSchema` (recursive Zod via `z.lazy`); `collectWorkspaceIds(config: PaneConfig): string[]` (all leaf workspaceIds, deduped); `defaultLayout(workspaceIds: string[]): PaneConfig` (a single `row` split of leaves, or one leaf if a single workspace).
+- Produces (`layout.ts`): `type PaneConfig = { type: "leaf"; workspaceId: string } | { type: "split"; direction: "row" | "col"; children: PaneConfig[]; sizes?: number[] }`; `paneConfigSchema` (recursive via `z.lazy`; `sizes` optional array of positive numbers).
+- Produces (`pane-tree.ts`, all **pure**): `collectWorkspaceIds(c): string[]` (deduped leaves); `defaultLayout(ids: string[]): PaneConfig` (single leaf if one id, else a `row` split of leaves); `rootSplit(c): {direction; children; sizes?}` (treat a lone leaf as a 1-child split); `addLeaf(c, workspaceId): PaneConfig`; `removeLeafAt(c, index): PaneConfig` (collapses to a lone leaf when one child remains); `assignAt(c, index, workspaceId): PaneConfig`; `setDirection(c, "row"|"col"): PaneConfig`; `setSizes(c, sizes: number[]): PaneConfig`. All return new configs (no mutation); index ops target root-level children (v1 bounded editor).
 
-- [ ] **Step 1: Write failing tests** — `paneConfigSchema` accepts a nested `{type:"split",direction:"row",children:[{type:"leaf",workspaceId:"a"},{type:"split",direction:"col",children:[{type:"leaf",workspaceId:"b"}]}]}`; rejects `{type:"split",direction:"diagonal",children:[]}` and `{type:"leaf"}` (missing workspaceId). `collectWorkspaceIds` on that tree → `["a","b"]`. `defaultLayout(["a","b"])` → a row split with two leaves; `defaultLayout(["a"])` → `{type:"leaf",workspaceId:"a"}`.
-- [ ] **Step 2: Run → FAIL** (`pnpm vitest run src/lib/zod/layout.test.ts`).
-- [ ] **Step 3: Implement** — `z.lazy` recursive union; `collectWorkspaceIds` via recursion + `Set`; `defaultLayout` builds the row of leaves.
+- [ ] **Step 1: Write failing tests** — schema accepts a nested split with `sizes:[60,40]`; rejects `direction:"diagonal"` and a leaf missing `workspaceId`. `collectWorkspaceIds({split row [leaf a, leaf b]})` → `["a","b"]`. `defaultLayout(["a","b"])` → row split of two leaves; `defaultLayout(["a"])` → `{type:"leaf",workspaceId:"a"}`. `addLeaf(defaultLayout(["a"]), "b")` → row split `[a,b]`. `assignAt(rowAB, 1, "c")` → `[a,c]`. `removeLeafAt(rowAB, 0)` → lone leaf `b`. `setSizes(rowAB, [70,30])` → split with `sizes:[70,30]`. `setDirection(rowAB,"col")` → direction `col`.
+- [ ] **Step 2: Run → FAIL** (`pnpm vitest run src/lib/pane-tree.test.ts`).
+- [ ] **Step 3: Implement** — `z.lazy` union; pure helpers operating on a normalized root split.
 - [ ] **Step 4: Run → PASS.**
-- [ ] **Step 5: Commit** — `git commit -am "feat(tiling): pane-tree schema + helpers"`
+- [ ] **Step 5: Commit** — `git commit -am "feat(tiling): pane-tree schema + pure tree operations"`
 
 ---
 
-## Task 2: Layout service + repository
+## Task 2: Layout service + repository (migration-free)
 
 **Files:**
 - Create: `src/repositories/layout-repo.ts`, `src/services/layout-service.ts`
 - Test: `src/services/layout-service.test.ts`
 
 **Interfaces:**
-- Consumes: `rlsClientFor`, `assertOrgRole` (member), `paneConfigSchema` (Task 1), `prismaAdmin` (test fixtures only).
-- Produces: `saveLayout(userId, organizationId, name, config): Promise<Layout>` (Zod-validates `config`; upserts by `(userId, organizationId, name)`); `listLayouts(userId, organizationId): Promise<{ id; name; config: PaneConfig }[]>`; `getLayout(userId, layoutId): Promise<Layout | null>`; `deleteLayout(userId, layoutId): Promise<void>`. All scoped to the caller via `rlsClientFor` — the `Layout` RLS policy already restricts rows to `userId = app.current_user_id()`.
+- Consumes: `rlsClientFor`, `assertOrgRole` (member), `paneConfigSchema` (Task 1), `prismaAdmin` (test fixtures).
+- Produces: `saveLayout(userId, organizationId, name, config): Promise<{ id; name; config: PaneConfig }>` — Zod-validates `config`; **find-then-update/create** by `(userId, organizationId, name)` within one `rlsClientFor` transaction (no unique constraint / no migration); `listLayouts(userId, organizationId): Promise<{ id; name; config: PaneConfig }[]>`; `getLayout(userId, layoutId): Promise<{ id; name; config: PaneConfig } | null>`; `deleteLayout(userId, layoutId): Promise<void>`. `config` parsed via `paneConfigSchema` on read. RLS already restricts `Layout` rows to the owner.
 
-- [ ] **Step 1: Write failing tests** — `saveLayout` then `listLayouts` returns it with a parsed `config`; a **second user cannot see it** (`rlsClientFor(other).run(tx => tx.layout.findMany())` → none); saving the same name twice updates (no duplicate); `deleteLayout` removes it; an invalid config throws on save.
+- [ ] **Step 1: Write failing tests** — `saveLayout(...,"Morning review", rowAB)` then `listLayouts` returns it with a parsed `config` (a `PaneConfig`, not raw JSON); saving the **same name again** updates in place (still one row); a **second user sees none** (`rlsClientFor(other).run(tx => tx.layout.findMany())` empty); `deleteLayout` removes it; an invalid config (`direction:"x"`) throws on save.
 - [ ] **Step 2: Run → FAIL.**
-- [ ] **Step 3: Implement** — repo does Prisma `upsert`/`findMany`/`delete`; service validates `config` with `paneConfigSchema`, parses `config` JSON on read.
+- [ ] **Step 3: Implement** — repo `findFirst`/`create`/`update`/`delete`/`findMany`; service validates + parses; save: `findFirst({userId,organizationId,name})` → update its `config` else create.
 - [ ] **Step 4: Run → PASS.**
-- [ ] **Step 5: Commit** — `git commit -am "feat(tiling): per-user saved layout service"`
+- [ ] **Step 5: Commit** — `git commit -am "feat(tiling): per-user saved layout service (migration-free)"`
 
 ---
 
@@ -101,32 +105,32 @@ Each task ends with an independently testable deliverable and a commit.
 - Test: `src/services/dashboard/pane-summary.test.ts`
 
 **Interfaces:**
-- Consumes: `assertWorkspaceAccess`, `workspaceMetrics` (balance), `safeToSpend` (result), `bill-service.upcomingAndOverdue`, `rlsClientFor`, `getWorkspace` (name/color), `format`.
-- Produces: `paneSummary(userId, workspaceId, today): Promise<{ workspaceId; name; color; balance: string; safeToSpend: string; topBills: { vendor: string; amount: string; status: "overdue" | "soon" | "scheduled" }[] }>` — a compact, formatted tile payload (top 3 overdue/upcoming bills).
+- Consumes: `assertWorkspaceAccess`, `workspaceMetrics` (balance), `safeToSpend` (result), `bill-service.upcomingAndOverdue`, `getWorkspace` (name/color), `format`, `today`.
+- Produces: `type PaneSummary = { workspaceId; name; color; balance: string; safeToSpend: string; topBills: { vendor: string; amount: string; status: "overdue" | "soon" | "scheduled" }[] }`; `paneSummary(userId, workspaceId, today): Promise<PaneSummary>` (top 3 bills, overdue first).
 
-- [ ] **Step 1: Write failing test** — seeded workspace (balance, one overdue + one upcoming bill); `paneSummary` returns the formatted `balance` and `safeToSpend` (matching `format(...)` of the underlying services) and `topBills` with the overdue one flagged `overdue`; a non-member is denied.
+- [ ] **Step 1: Write failing test** — seeded workspace (balance + one overdue + one upcoming bill); `paneSummary` returns `balance`/`safeToSpend` equal to `format(...)` of the underlying services and `topBills` with the overdue flagged `overdue`; a non-member is denied.
 - [ ] **Step 2: Run → FAIL.**
-- [ ] **Step 3: Implement** — call the services, format, take the first 3 bills (overdue first), map status by due date.
+- [ ] **Step 3: Implement** — call the services for the period "month", format, take the first 3 (overdue then upcoming), map status by due date.
 - [ ] **Step 4: Run → PASS.**
 - [ ] **Step 5: Commit** — `git commit -am "feat(tiling): compact pane summary service"`
 
 ---
 
-## Task 4: TiledView renderer + PaneCard
+## Task 4: TiledView renderer + PaneCard (sizes applied + captured)
 
 **Files:**
 - Create: `src/components/tiling/pane-card.tsx`, `src/components/tiling/tiled-view.tsx`
 - Test: `src/components/tiling/tiled-view.test.tsx`
 
 **Interfaces:**
-- Consumes: `react-resizable-panels` (`PanelGroup`, `Panel`, `PanelResizeHandle`), `PaneConfig` (Task 1), the pane-summary shape (Task 3).
-- Produces: `PaneCard({ summary })` (presentational tile: color header, balance, safe-to-spend, top bills); `TiledView({ config, summaries, onConfigChange? })` — recursively renders the pane tree into nested resizable `PanelGroup`s (split → group with handles, leaf → `PaneCard` for `summaries[workspaceId]`). Below `lg` it renders a **stacked single column** of `PaneCard`s (one per leaf, ignoring the tree) — desktop-only enhancement.
+- Consumes: `react-resizable-panels` (`PanelGroup`, `Panel`, `PanelResizeHandle`), `PaneConfig` (Task 1), `PaneSummary` (Task 3).
+- Produces: `PaneCard({ summary }: { summary: PaneSummary })` (color header, balance, safe-to-spend, top bills); `TiledView({ config, summaries, onSizesChange? }: { config: PaneConfig; summaries: Record<string, PaneSummary>; onSizesChange?: (sizes: number[]) => void })` — renders the tree into nested `PanelGroup`s (`row`→horizontal, `col`→vertical), applies each split's `sizes` as panel `defaultSize`, and calls `onSizesChange` from the root group's `onLayout`. A missing summary renders a "Loading…" placeholder (no crash). Below `lg`: a `lg:hidden` **stacked column** of `PaneCard`s (one per leaf) and a `hidden lg:block` resizable tree.
 
 - [ ] **Step 1: Install** — `pnpm add react-resizable-panels`.
-- [ ] **Step 2: Write failing test** — `renderToString(<TiledView config={twoLeafRow} summaries={{a:..., b:...}} />)` includes both workspace names and both balances; a missing summary renders a graceful "Loading…" placeholder, not a crash.
+- [ ] **Step 2: Write failing test** — `renderToString(<TiledView config={rowAB} summaries={{a,b}} />)` includes both workspace names + both balances (assert via the always-rendered stacked-column fallback, which doesn't depend on the panel runtime); an unknown leaf id renders "Loading…".
 - [ ] **Step 3: Run → FAIL.**
-- [ ] **Step 4: Implement** — recursive renderer; `direction="horizontal"` for `row`, `"vertical"` for `col`; `PanelResizeHandle` between children; responsive: a `hidden lg:block` resizable tree + a `lg:hidden` stacked list.
-- [ ] **Step 5: Run → PASS** + production-server browser check at desktop width.
+- [ ] **Step 4: Implement** — recursive renderer + `PaneCard`; mock `next/navigation` in the test if needed (per Phase 2a pattern).
+- [ ] **Step 5: Run → PASS** + production-server browser check at desktop width (resize works).
 - [ ] **Step 6: Commit** — `git commit -am "feat(tiling): resizable pane-tree renderer + pane card"`
 
 ---
@@ -138,33 +142,33 @@ Each task ends with an independently testable deliverable and a commit.
 - Test: `src/app/(app)/tiles/page.smoke.test.ts`
 
 **Interfaces:**
-- Consumes: `listAccessibleWorkspaces`, `layout-service`, `paneSummary` (Task 3), `defaultLayout`/`collectWorkspaceIds` (Task 1), `getCurrentUser`, `today()`.
-- Produces: `/tiles` server page — resolves the user's org + accessible workspaces, picks an initial layout (`?layout=<id>` if given and owned, else `defaultLayout(firstTwoWorkspaceIds)`), fetches `paneSummary` for each leaf workspace (`Promise.all`), renders `<TiledView config summaries />`. Server actions: `paneSummaryAction(workspaceId)` (live data for a newly-assigned pane), `saveLayoutAction(name, config)`, `listLayoutsAction()`, `deleteLayoutAction(layoutId)`.
+- Consumes: `listAccessibleWorkspaces`, `layout-service`, `paneSummary` (Task 3), `defaultLayout`/`collectWorkspaceIds` (Task 1), `getCurrentUser`, `today`.
+- Produces: `/tiles` server page — resolves the user's org + accessible workspaces, picks an initial layout (`?layout=<id>` if owned, else `defaultLayout(firstTwoWorkspaceIds)`), fetches `paneSummary` for each leaf (`Promise.all`), renders `<TilesClient workspaces layouts initialConfig initialSummaries />`. Server actions: `paneSummariesAction(workspaceIds: string[]): Promise<Record<string, PaneSummary>>` (**batch** — used on assign AND on restore), `saveLayoutAction(name, config)`, `listLayoutsAction()`, `deleteLayoutAction(layoutId)`. (A thin `TilesClient` holds `config`, `summaries`, and the controls — Task 6.)
 
-- [ ] **Step 1: Write failing smoke test** — for a seeded org with two workspaces, the page data path builds `defaultLayout` over their ids and `collectWorkspaceIds` returns both; `paneSummary` resolves for each.
+- [ ] **Step 1: Write failing smoke test** — seeded org with two workspaces: the page data path builds `defaultLayout` over their ids, `collectWorkspaceIds` returns both, and `paneSummariesAction`'s underlying loop resolves a summary for each.
 - [ ] **Step 2: Run → FAIL.**
-- [ ] **Step 3: Implement** — server page composition; actions delegate to the services with `getCurrentUser` + the org from the first `OrgMembership`; `paneSummaryAction` returns the serializable summary.
+- [ ] **Step 3: Implement** — server page composition; actions delegate to services with `getCurrentUser` + org from the first `OrgMembership`; `paneSummariesAction` maps ids → `paneSummary` (Promise.all) returning a serializable record.
 - [ ] **Step 4: Run → PASS** + browser check (`/tiles` shows two live panes).
 - [ ] **Step 5: Commit** — `git commit -am "feat(tiling): /tiles page + pane/layout server actions"`
 
 ---
 
-## Task 6: Layout controls + pane management + responsive
+## Task 6: Layout controls + pane management (sizes + restore-loads-data)
 
 **Files:**
-- Create: `src/components/tiling/layout-controls.tsx`
-- Modify: `src/components/tiling/tiled-view.tsx` (accept edit callbacks)
-- Test: `src/components/tiling/layout-controls.test.tsx`
+- Create: `src/components/tiling/layout-controls.tsx`, `src/components/tiling/tiles-client.tsx`
+- Test: `src/components/tiling/tiles-client.test.tsx`
+- (Pure tree-edit logic is already tested in Task 1; this task wires it + data loading.)
 
 **Interfaces:**
-- Consumes: `saveLayoutAction`/`listLayoutsAction`/`deleteLayoutAction`/`paneSummaryAction` (Task 5), `PaneConfig` helpers (Task 1), the accessible-workspace list.
-- Produces: `LayoutControls({ workspaces, layouts, config, onConfigChange })` — a control bar to **save** the current arrangement under a name, **restore** a saved layout from a dropdown, and **delete** one; plus pane management: **add pane** (append a leaf with the first unused workspace), **remove pane**, **assign workspace** per pane (fetches that pane's summary via `paneSummaryAction`), and a **row/column** direction toggle for the root split. Editing mutates a client-held `PaneConfig`; saving persists it.
+- Consumes: the Task 1 pure ops (`addLeaf`/`removeLeafAt`/`assignAt`/`setDirection`/`setSizes`/`collectWorkspaceIds`), the Task 5 actions, `PaneSummary`.
+- Produces: `TilesClient({ workspaces, layouts, initialConfig, initialSummaries })` — holds `config` + `summaries` state, renders `LayoutControls` + `TiledView`. `LayoutControls({ workspaces, layouts, config, onAddPane, onRemovePane, onAssign, onToggleDirection, onSave, onRestore, onDelete })`: **Save** (name → `saveLayoutAction(name, config)`), **Restore** (dropdown → load a layout's `config`, then `paneSummariesAction(collectWorkspaceIds(config))` to populate summaries for its panes), **Delete**, plus **add pane / remove pane / assign workspace / row⇄column**. On `TiledView` resize → `setSizes(config, sizes)` so saves capture proportions.
 
-- [ ] **Step 1: Write failing test** — the controls render the saved-layout names and call `saveLayoutAction`/`deleteLayoutAction` on click; assigning a workspace to a pane updates the config's leaf `workspaceId`.
+- [ ] **Step 1: Write failing test** — `renderToString(<LayoutControls ...>)` lists the saved-layout names and the workspace options; a unit test on the wiring: calling the `onAssign(index, wsId)` handler applies `assignAt` (assert resulting config). (Interaction-free: assert the pure handlers + rendered options, since clicks aren't simulable.)
 - [ ] **Step 2: Run → FAIL.**
-- [ ] **Step 3: Implement** — client state holds `config`; `onConfigChange` re-renders `TiledView`; pane edits use pure tree updates (add/remove/assignAt path); a newly-shown workspace fetches its summary via `paneSummaryAction` and merges into the summaries map.
-- [ ] **Step 4: Run → PASS** + browser check (save "Morning review", restore it; add/remove a pane; toggle row/column; confirm stacking below `lg`).
-- [ ] **Step 5: Commit** — `git commit -am "feat(tiling): save/restore layouts + pane management"`
+- [ ] **Step 3: Implement** — `TilesClient` state + handlers built on the pure ops; restore fetches summaries via the batch action and merges; resize updates `config` sizes; mock `next/navigation` in the test.
+- [ ] **Step 4: Run → PASS** + browser check (save "Morning review", resize a pane, restore it → proportions preserved; add/remove pane; toggle row/column; confirm stacking below `lg`).
+- [ ] **Step 5: Commit** — `git commit -am "feat(tiling): save/restore layouts (with sizes) + pane management"`
 
 ---
 
@@ -172,13 +176,13 @@ Each task ends with an independently testable deliverable and a commit.
 
 **Files:**
 - Modify: `src/components/workspace/tab-bar.tsx`
-- Test: existing build + a render assertion in `tab-bar` is impractical (server async); rely on the production build + browser check.
+- Test: production build + browser check (the app bar is an async server component; render assertions are impractical).
 
 **Interfaces:**
 - Consumes: the `/tiles` route (Task 5).
-- Produces: the app-bar "⊞ Tile view" pill becomes a `<Link href="/tiles">` (no longer a disabled Phase-2 stub); "⌄ Layouts" links to `/tiles` as well (layout management lives there). Active state when on `/tiles`.
+- Produces: the "⊞ Tile view" and "⌄ Layouts" pills become real `<Link href="/tiles">` (no longer disabled Phase-2 stubs); drop the `opacity-60` / "Phase 2" titles.
 
-- [ ] **Step 1: Implement** — replace the two muted `<span>` stubs with real `<Link href="/tiles">` styled like the other pills; drop the `opacity-60`/`Phase 2` titles.
+- [ ] **Step 1: Implement** — replace the two muted `<span>` stubs with `<Link href="/tiles">` styled like the other pills.
 - [ ] **Step 2: Verify** — `pnpm type-check`, `pnpm lint`, `pnpm build` green; browser: the Tile view pill navigates to `/tiles`.
 - [ ] **Step 3: Commit** — `git commit -am "feat(tiling): activate Tile view + Layouts app-bar pills"`
 
@@ -187,26 +191,27 @@ Each task ends with an independently testable deliverable and a commit.
 ## Phase 2b Done — Definition of Done
 
 - `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm build` all green.
-- `/tiles` renders **multiple independent, live workspace panes** side-by-side/stacked on desktop, each with its own `{workspaceId}` context (no global current workspace).
+- `/tiles` renders **multiple independent, live workspace panes** side-by-side/stacked on desktop, each with its own `{workspaceId}` context.
 - Panes are **resizable**; the user can **add/remove panes, assign a workspace per pane, and toggle row/column**.
-- Layouts **save under a name and restore in one click**, **per user** (another user can't see them — proven by the layout-service RLS test).
+- Layouts **save under a name and restore in one click — including pane proportions** — **per user** (another user can't see them; proven by the layout-service RLS test).
 - Below `lg`, tiling **degrades to a stacked single column**.
-- The app-bar **Tile view / Layouts pills are live** (no longer Phase-2 stubs).
+- The app-bar **Tile view / Layouts pills are live**.
 - The cross-workspace security test still passes; a pane only renders a summary for a workspace the caller can access.
 - Phase 2b roadmap items marked `[x]` (Rule 7) before the final checkpoint.
 
 ## Mapping to spec/PRD requirements (coverage check)
 
-- **FR-4 (tiled mode: multiple resizable, independent workspace panes, desktop):** Tasks 3, 4, 5, 6
-- **FR-5 (save & restore named tiling layouts, per user):** Tasks 1, 2, 6
-- Per-pane `{workspaceId, view}` context (spec §5.1): Tasks 1, 4, 6 · Responsive degrade-to-tabs (spec §11): Task 4
+- **FR-4 (tiled mode: multiple resizable, independent panes, desktop):** Tasks 3, 4, 5, 6
+- **FR-5 (save & restore named layouts, per user, incl. proportions):** Tasks 1, 2, 6
+- Per-pane `{workspaceId}` context (spec §5.1): Tasks 1, 4, 6 · Responsive degrade (spec §11): Task 4
 - NFR-2/3 authz + RLS: Task 2 (Layout per-user RLS), Task 3 (pane summary access-checked)
-- **Out of scope (later):** drag-to-split arbitrary tree editing (v1 ships add/remove/assign + row/col toggle), cross-device layout sync.
+- **Out of scope (later):** drag-to-split arbitrary nesting (v1 = add/remove/assign + row/col toggle), cross-device layout sync, persisting which layout is "active" across sessions.
 
 ## Notes / decisions
 
-- **No migration:** the `Layout` model and its per-user RLS already exist from Phase 1, so Phase 2b is pure service + UI.
-- **Pane editing scope:** v1 supports a tree-capable *renderer* but a bounded *editor* (add/remove leaf, assign workspace, root row/col toggle). Full drag-to-split nested editing is deferred — it's a large interaction surface and not required for the core "multiple workspaces side-by-side, saved" value.
-- **Per-pane data:** the page fetches initial summaries server-side; pane edits fetch a single pane's summary via `paneSummaryAction` (avoids refetching the whole grid). With a handful of panes this is cheap; the existing `(workspaceId, …)` indexes back it.
-- **`react-resizable-panels`** is small, RSC-compatible (the tree is client, data is server-fetched and passed as props), and widely used. Panel sizes can be persisted into the layout `config` in a later iteration; v1 persists the tree structure + direction.
-- **Reuse, not rebuild:** pane summaries reuse the Phase 2a computation services — no new money math, so the figures match the full dashboard exactly.
+- **Migration-free, confirmed:** `Layout` exists with per-user RLS; `saveLayout` is find-then-update/create (no unique-constraint dependency), so Phase 2b touches no schema.
+- **Panel sizes ARE persisted** (in the config `sizes`), so a restored named layout reproduces its proportions — the point of "Morning review" / "Tax prep".
+- **All editing logic is pure + unit-tested** (`pane-tree.ts`), because the test harness can't click; the components are thin and render-tested via the always-on stacked fallback (which doesn't depend on the resizable-panels runtime).
+- **Bounded editor for v1:** add/remove leaf, assign workspace, root row/col toggle. The renderer is tree-capable; drag-to-split arbitrary nesting is deferred.
+- **Per-pane data:** initial summaries fetched server-side; assign AND restore use the batch `paneSummariesAction`. Cheap for a handful of panes; backed by existing `(workspaceId, …)` indexes.
+- **Reuse, not rebuild:** pane summaries reuse the Phase 2a computation services — figures match the full dashboard exactly.
