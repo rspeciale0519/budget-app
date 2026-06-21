@@ -75,3 +75,6 @@ logs
 *.bak
 supabase/.temp
 supabase/.branches
+
+# Scratch artifacts (Rule 5): task screenshots, working notes
+docs/temp/
