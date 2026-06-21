@@ -50,3 +50,16 @@ export async function paneSummary(
     topBills,
   };
 }
+
+/** Batch: resolve a summary for each workspace id (access-checked per id).
+ * Used by both the initial /tiles render and the assign/restore actions. */
+export async function paneSummaries(
+  userId: string,
+  workspaceIds: string[],
+  today: CalendarDate,
+): Promise<Record<string, PaneSummary>> {
+  const entries = await Promise.all(
+    workspaceIds.map(async (id) => [id, await paneSummary(userId, id, today)] as const),
+  );
+  return Object.fromEntries(entries);
+}
