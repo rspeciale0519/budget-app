@@ -1,0 +1,52 @@
+import type { Bill } from "@prisma/client";
+import { assertWorkspaceAccess, ForbiddenError } from "@/services/authz";
+import { getWorkspace } from "@/services/workspace-service";
+import { workspaceMetrics } from "@/services/dashboard/metrics";
+import { safeToSpend } from "@/services/dashboard/safe-to-spend";
+import { upcomingAndOverdue } from "@/services/bill-service";
+import { money, format } from "@/lib/money";
+import { compare, fromDbDate, type CalendarDate } from "@/lib/calendar-date";
+
+export interface PaneSummary {
+  workspaceId: string;
+  name: string;
+  color: string;
+  balance: string;
+  safeToSpend: string;
+  topBills: { vendor: string; amount: string; status: "overdue" | "soon" | "scheduled" }[];
+}
+
+function statusOf(b: Bill, today: CalendarDate): "overdue" | "soon" | "scheduled" {
+  if (compare(fromDbDate(b.dueDate), today) < 0) return "overdue";
+  if (b.status === "scheduled") return "scheduled";
+  return "soon";
+}
+
+export async function paneSummary(
+  userId: string,
+  workspaceId: string,
+  today: CalendarDate,
+): Promise<PaneSummary> {
+  await assertWorkspaceAccess(userId, workspaceId, "viewer");
+  const ws = await getWorkspace(userId, workspaceId);
+  if (!ws) throw new ForbiddenError("Workspace not found or access denied");
+
+  const metrics = await workspaceMetrics(userId, workspaceId, "month", today);
+  const sts = await safeToSpend(userId, workspaceId, today);
+  const buckets = await upcomingAndOverdue(userId, workspaceId, today);
+
+  const topBills = [...buckets.overdue, ...buckets.next7].slice(0, 3).map((b) => ({
+    vendor: b.vendor,
+    amount: format(money(b.amount.toFixed(2))),
+    status: statusOf(b, today),
+  }));
+
+  return {
+    workspaceId,
+    name: ws.name,
+    color: ws.color,
+    balance: format(metrics.totalBalance),
+    safeToSpend: format(sts.result),
+    topBills,
+  };
+}
