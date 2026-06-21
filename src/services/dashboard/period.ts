@@ -2,6 +2,13 @@ import { addDays, fromDbDate, type CalendarDate } from "@/lib/calendar-date";
 
 export type Period = "week" | "month" | "quarter" | "year";
 
+export const PERIODS: Period[] = ["week", "month", "quarter", "year"];
+
+/** Parse an untrusted ?period= value, defaulting to "month". */
+export function parsePeriod(value: string | undefined): Period {
+  return PERIODS.includes(value as Period) ? (value as Period) : "month";
+}
+
 function monthOf(d: CalendarDate): { year: number; month: number } {
   const parts = d.split("-");
   return { year: Number(parts[0]), month: Number(parts[1]) };

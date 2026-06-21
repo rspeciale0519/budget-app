@@ -1,49 +1,49 @@
 import Link from "next/link";
 import { Dashboard } from "@/components/dashboard/dashboard";
-import { mockDashboard } from "@/lib/mock/dashboard";
+import { Card, CardContent } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { getWorkspace } from "@/services/workspace-service";
-import { listAccounts } from "@/services/account-service";
+import { getDashboardData } from "@/services/dashboard/index";
+import { PERIODS, parsePeriod } from "@/services/dashboard/period";
+import { today as todayFn } from "@/lib/calendar-date";
 
 export const dynamic = "force-dynamic";
 
-const PERIODS = ["Week", "Month", "Quarter", "Year"];
-
 export default async function WorkspaceDashboard({
   params,
+  searchParams,
 }: {
   params: Promise<{ workspaceId: string }>;
+  searchParams: Promise<{ period?: string }>;
 }) {
   const { workspaceId } = await params;
+  const period = parsePeriod((await searchParams).period);
   const user = await getCurrentUser();
+
+  if (!user) {
+    return <NoAccess />;
+  }
 
   let name = "Workspace";
   let type = "";
   let color = "#16a34a";
-  let accountCount = 0;
-  if (user) {
-    try {
-      const ws = await getWorkspace(user.id, workspaceId);
-      if (ws) {
-        name = ws.name;
-        type = ws.type;
-        color = ws.color;
-        accountCount = (await listAccounts(user.id, workspaceId)).length;
-      }
-    } catch {
-      // Not a member — still render the mock dashboard in Phase 1.
+  let data;
+  try {
+    const ws = await getWorkspace(user.id, workspaceId);
+    if (ws) {
+      name = ws.name;
+      type = ws.type;
+      color = ws.color;
     }
+    data = await getDashboardData(user.id, workspaceId, period, todayFn());
+  } catch {
+    return <NoAccess />;
   }
-  const subtitle = [
-    type ? type[0]?.toUpperCase() + type.slice(1) : null,
-    `${accountCount} ${accountCount === 1 ? "account" : "accounts"}`,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+
+  const subtitle = type ? type[0]?.toUpperCase() + type.slice(1) : "";
 
   return (
     <div>
-      {/* Workspace header */}
       <div className="my-[22px] flex items-center gap-3">
         <div
           className="grid h-[34px] w-[34px] place-items-center rounded-[10px] font-extrabold text-white"
@@ -54,28 +54,29 @@ export default async function WorkspaceDashboard({
         <div>
           <div className="text-xl font-bold text-ink">{name}</div>
           <div className="text-[12.5px] text-muted">
-            {subtitle} · <span className="text-muted">mock data · live in Phase 2</span>
+            {subtitle} · {data.kpis.totalBalanceNote}
           </div>
         </div>
         <div className="ml-auto flex overflow-hidden rounded-[9px] border border-line bg-white">
           {PERIODS.map((p) => (
-            <span
+            <Link
               key={p}
-              className={`cursor-default px-3 py-[7px] text-[12.5px] font-semibold ${
-                p === "Month" ? "bg-pos text-white" : "text-muted"
+              href={`/w/${workspaceId}?period=${p}`}
+              className={`px-3 py-[7px] text-[12.5px] font-semibold capitalize ${
+                p === period ? "bg-pos text-white" : "text-muted hover:bg-[#f3f5f8]"
               }`}
             >
               {p}
-            </span>
+            </Link>
           ))}
         </div>
       </div>
 
-      {/* Secondary nav */}
       <nav className="mb-4 flex gap-1 text-[13px]">
         {[
           ["Dashboard", ""],
           ["Manage", "/manage"],
+          ["Income", "/income"],
           ["Import", "/import"],
           ["Audit", "/audit"],
         ].map(([label, sub]) => (
@@ -89,7 +90,19 @@ export default async function WorkspaceDashboard({
         ))}
       </nav>
 
-      <Dashboard data={mockDashboard} />
+      <Dashboard data={data} />
+    </div>
+  );
+}
+
+function NoAccess() {
+  return (
+    <div className="py-16">
+      <Card>
+        <CardContent className="py-10 text-center text-sm text-muted">
+          You don&apos;t have access to this workspace.
+        </CardContent>
+      </Card>
     </div>
   );
 }
