@@ -20,8 +20,8 @@ runs on **live data**: owner-configurable expected income feeding a single proje
 sharpens both the drillable safe-to-spend and the cash-flow forecast; category breakdown, paid-vs-
 unpaid, debts/goals; one-click standalone mark-paid; race-safe idempotent recurring-bill
 materialization; and the consolidated roll-up with owner-draw netting. 125 tests pass;
-`type-check`, `lint`, `test`, and `build` are all green. Next: **Phase 2b** (desktop tiling +
-saved layouts).
+`type-check`, `lint`, `test`, and `build` are all green. Phases 1, 2a, and 2b are complete;
+desktop tiling with saved per-user layouts is live. Next: **Phase 2.x** convenience features.
 
 - **Design spec:** [`docs/superpowers/specs/2026-06-20-budget-app-design.md`](docs/superpowers/specs/2026-06-20-budget-app-design.md)
 - **UI mockups:** [`docs/temp/budget-app-mockup-v1.html`](docs/temp/budget-app-mockup-v1.html) ·
@@ -245,9 +245,11 @@ both numbers) · drillable safe-to-spend reconciling to the penny · cash-flow f
 unpaid · category breakdown · upcoming/overdue with one-click standalone mark-paid · race-safe
 idempotent recurring-bill materialization · consolidated roll-up with transfer-netting · debts & goals.
 
-**Phase 2b — Tiling (next)**
-Desktop tiling (independent live panes) + saved named layouts. Split out so the live dashboard
-shipped first.
+**Phase 2b — Tiling** ✅ **Complete**
+Desktop tiling: multiple **independent, live workspace panes** side-by-side, each with its own
+`{workspaceId}` context · drag-resizable splits · add / remove / assign / row⇄column · **saved
+named layouts that restore proportions** ("Morning review", "Tax prep"), per-user (RLS-isolated) ·
+degrades to a stacked single column below `lg`. Split out so the live dashboard shipped first.
 
 **Phase 2.x — Convenience**
 Due-date calendar · budget-vs-actual · command palette (⌘K) · bill↔transaction auto-match.
