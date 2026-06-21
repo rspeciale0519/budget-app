@@ -1,0 +1,378 @@
+// Ledger — Prisma schema.
+// Money columns use @db.Decimal(14,2); dates use @db.Date (calendar dates).
+// Models are added across Tasks 7–9.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Identity & access (Task 7). userId values are Supabase auth.users ids
+// (uuid); we store the uuid without a cross-schema FK to auth.users.
+// ─────────────────────────────────────────────────────────────────────────
+
+enum OrgRole {
+  owner
+  admin
+  member
+}
+
+enum WorkspaceRole {
+  admin
+  viewer
+}
+
+enum WorkspaceType {
+  personal
+  business
+}
+
+model Organization {
+  id         String          @id @default(cuid())
+  name       String
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  memberships OrgMembership[]
+  workspaces Workspace[]
+}
+
+model OrgMembership {
+  id             String       @id @default(cuid())
+  organizationId String
+  userId         String       @db.Uuid
+  role           OrgRole
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+model Workspace {
+  id             String                @id @default(cuid())
+  organizationId String
+  name           String
+  type           WorkspaceType
+  color          String
+  icon           String?
+  sortOrder      Int                   @default(0)
+  archivedAt     DateTime?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  organization   Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  memberships    WorkspaceMembership[]
+
+  @@index([organizationId])
+}
+
+model WorkspaceMembership {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userId      String        @db.Uuid
+  role        WorkspaceRole
+  createdAt   DateTime      @default(now())
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Money sources & ledger (Task 8). workspaceId is a scalar tenant key (used
+// by RLS), not a relation. Money is Decimal(14,2); dates are @db.Date.
+// billId / transferPairId are scalar links (service-layer integrity, spec §9).
+// ─────────────────────────────────────────────────────────────────────────
+
+enum AccountType {
+  checking
+  savings
+  credit_card
+  loan
+  cash
+}
+
+enum TxSource {
+  csv
+  manual
+}
+
+enum CategoryKind {
+  income
+  expense
+}
+
+model Account {
+  id             String        @id @default(cuid())
+  workspaceId    String
+  name           String
+  type           AccountType
+  institution    String
+  last4          String?
+  openingBalance Decimal       @db.Decimal(14, 2)
+  openingDate    DateTime      @db.Date
+  currency       String        @default("USD")
+  archivedAt     DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  transactions   Transaction[]
+  importBatches  ImportBatch[]
+  importMapping  ImportMapping?
+
+  @@index([workspaceId])
+}
+
+model Category {
+  id           String        @id @default(cuid())
+  workspaceId  String
+  name         String
+  kind         CategoryKind
+  parentId     String?
+  createdAt    DateTime      @default(now())
+  parent       Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children     Category[]    @relation("CategoryHierarchy")
+  transactions Transaction[]
+
+  @@index([workspaceId])
+}
+
+model ImportBatch {
+  id           String        @id @default(cuid())
+  workspaceId  String
+  accountId    String
+  filename     String
+  rowCount     Int
+  status       String        @default("committed")
+  importedAt   DateTime      @default(now())
+  archivedAt   DateTime?
+  account      Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([workspaceId])
+}
+
+model Transaction {
+  id             String       @id @default(cuid())
+  workspaceId    String
+  accountId      String
+  date           DateTime     @db.Date
+  amount         Decimal      @db.Decimal(14, 2)
+  description    String
+  merchant       String?
+  categoryId     String?
+  notes          String?
+  source         TxSource
+  importBatchId  String?
+  dedupeHash     String
+  isTransfer     Boolean      @default(false)
+  transferPairId String?
+  billId         String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  account        Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  category       Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  importBatch    ImportBatch? @relation(fields: [importBatchId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, date])
+  @@index([workspaceId, accountId, dedupeHash])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Obligations, planning, config & cross-workspace (Task 9).
+// ─────────────────────────────────────────────────────────────────────────
+
+enum BillStatus {
+  unpaid
+  scheduled
+  paid
+  overdue
+}
+
+enum BillType {
+  bill
+  invoice
+  payroll
+  tax
+  one_off
+}
+
+enum Frequency {
+  weekly
+  monthly
+  quarterly
+  annual
+  custom
+}
+
+enum TransferType {
+  owner_draw
+  distribution
+  salary
+  transfer
+}
+
+enum SignRule {
+  single_signed
+  separate_debit_credit
+  invert
+}
+
+enum MatchKind {
+  contains
+  equals
+}
+
+model Bill {
+  id                  String             @id @default(cuid())
+  workspaceId         String
+  vendor              String
+  amount              Decimal            @db.Decimal(14, 2)
+  dueDate             DateTime           @db.Date
+  status              BillStatus         @default(unpaid)
+  type                BillType           @default(bill)
+  categoryId          String?
+  payFromAccountId    String?
+  recurringScheduleId String?
+  paidTransactionId   String?
+  notes               String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  recurringSchedule   RecurringSchedule? @relation(fields: [recurringScheduleId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, dueDate])
+  @@index([workspaceId, status])
+}
+
+model RecurringSchedule {
+  id               String    @id @default(cuid())
+  workspaceId      String
+  frequency        Frequency
+  interval         Int       @default(1)
+  dayOfMonth       Int?
+  dayOfWeek        Int?
+  startDate        DateTime  @db.Date
+  endDate          DateTime? @db.Date
+  nextRunDate      DateTime  @db.Date
+  templateVendor   String
+  templateAmount   Decimal   @db.Decimal(14, 2)
+  templateCategoryId String?
+  createdAt        DateTime  @default(now())
+  bills            Bill[]
+
+  @@index([workspaceId, nextRunDate])
+}
+
+model Debt {
+  id             String   @id @default(cuid())
+  workspaceId    String
+  name           String
+  type           String
+  currentBalance Decimal  @db.Decimal(14, 2)
+  apr            Decimal  @db.Decimal(6, 2)
+  minimumPayment Decimal  @db.Decimal(14, 2)
+  dueDay         Int
+  accountId      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([workspaceId])
+}
+
+model Goal {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  name         String
+  targetAmount Decimal   @db.Decimal(14, 2)
+  targetDate   DateTime? @db.Date
+  currentSaved Decimal   @db.Decimal(14, 2) @default(0)
+  status       String    @default("active")
+  notes        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([workspaceId])
+}
+
+model WorkspaceTransfer {
+  id                String       @id @default(cuid())
+  organizationId    String
+  fromWorkspaceId   String
+  toWorkspaceId     String
+  type              TransferType
+  amount            Decimal      @db.Decimal(14, 2)
+  date              DateTime     @db.Date
+  fromTransactionId String?
+  toTransactionId   String?
+  notes             String?
+  createdAt         DateTime     @default(now())
+
+  @@index([organizationId])
+  @@index([fromWorkspaceId])
+  @@index([toWorkspaceId])
+}
+
+model ImportMapping {
+  id         String   @id @default(cuid())
+  accountId  String   @unique
+  columnMap  Json
+  signRule   SignRule
+  dateFormat String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  account    Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+}
+
+model CategoryRule {
+  id          String    @id @default(cuid())
+  workspaceId String
+  match       MatchKind
+  pattern     String
+  categoryId  String
+  priority    Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  @@index([workspaceId, priority])
+}
+
+model Budget {
+  id          String  @id @default(cuid())
+  workspaceId String
+  categoryId  String
+  period      String  @default("monthly")
+  amount      Decimal @db.Decimal(14, 2)
+
+  @@unique([workspaceId, categoryId, period])
+}
+
+model Layout {
+  id             String   @id @default(cuid())
+  userId         String   @db.Uuid
+  organizationId String
+  name           String
+  config         Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  workspaceId    String?
+  userId         String   @db.Uuid
+  action         String
+  entityType     String
+  entityId       String
+  before         Json?
+  after          Json?
+  at             DateTime @default(now())
+
+  @@index([organizationId, at])
+  @@index([workspaceId])
+}

@@ -71,3 +71,7 @@ desktop.ini
 # Logs
 logs
 *.log
+# local-supabase-setup
+*.bak
+supabase/.temp
+supabase/.branches

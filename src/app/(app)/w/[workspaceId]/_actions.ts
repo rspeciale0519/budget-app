@@ -1,0 +1,92 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { getCurrentUser } from "@/lib/supabase/server";
+import { createTransaction } from "@/services/transaction-service";
+import { createBill, markPaid } from "@/services/bill-service";
+import { createAccount } from "@/services/account-service";
+import { tagOwnerDraw } from "@/services/transfer-service";
+
+async function requireUserId(): Promise<string> {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Not authenticated");
+  return user.id;
+}
+
+export interface ActionResult {
+  ok: boolean;
+  error?: string;
+}
+
+async function run(workspaceId: string, fn: (userId: string) => Promise<unknown>): Promise<ActionResult> {
+  try {
+    const userId = await requireUserId();
+    await fn(userId);
+    revalidatePath(`/w/${workspaceId}`);
+    revalidatePath(`/w/${workspaceId}/manage`);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Action failed" };
+  }
+}
+
+export async function addAccountAction(
+  workspaceId: string,
+  input: { name: string; type: string; institution: string; openingBalance: string; openingDate: string },
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) =>
+    createAccount(userId, workspaceId, {
+      name: input.name,
+      type: input.type as never,
+      institution: input.institution,
+      openingBalance: input.openingBalance,
+      openingDate: input.openingDate,
+    }),
+  );
+}
+
+export async function addTransactionAction(
+  workspaceId: string,
+  input: { accountId: string; date: string; amount: string; description: string },
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => createTransaction(userId, workspaceId, input));
+}
+
+export async function addBillAction(
+  workspaceId: string,
+  input: { vendor: string; amount: string; dueDate: string },
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) =>
+    createBill(userId, workspaceId, { vendor: input.vendor, amount: input.amount, dueDate: input.dueDate }),
+  );
+}
+
+export async function markBillPaidAction(
+  workspaceId: string,
+  billId: string,
+  payFromAccountId: string,
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => markPaid(userId, billId, { payFromAccountId }));
+}
+
+export async function tagOwnerDrawAction(
+  workspaceId: string,
+  input: {
+    toWorkspaceId: string;
+    toAccountId: string;
+    fromAccountId: string;
+    amount: string;
+    date: string;
+  },
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) =>
+    tagOwnerDraw(userId, {
+      fromWorkspaceId: workspaceId,
+      toWorkspaceId: input.toWorkspaceId,
+      toAccountId: input.toAccountId,
+      fromAccountId: input.fromAccountId,
+      amount: input.amount,
+      date: input.date,
+    }),
+  );
+}

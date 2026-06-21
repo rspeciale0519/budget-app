@@ -1,0 +1,2 @@
+-- Initial local migration scaffold created by local-supabase-setup.
+-- Replace with your schema, or run `supabase db pull` to import a hosted schema.
