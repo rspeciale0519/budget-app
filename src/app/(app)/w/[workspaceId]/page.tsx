@@ -90,7 +90,7 @@ export default async function WorkspaceDashboard({
         ))}
       </nav>
 
-      <Dashboard data={data} />
+      <Dashboard data={data} workspaceId={workspaceId} />
     </div>
   );
 }

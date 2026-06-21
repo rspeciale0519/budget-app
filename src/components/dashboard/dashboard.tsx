@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { DashboardData, BillItem } from "@/lib/mock/dashboard";
@@ -121,7 +122,63 @@ function Kpi({
   );
 }
 
-export function Dashboard({ data }: { data: DashboardData }) {
+export function SafeToSpendPanel({
+  math,
+  workspaceId,
+}: {
+  math: DashboardData["safeToSpendMath"];
+  workspaceId?: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="pt-4 text-sm text-[#374151]">
+        <p className="mb-2 font-semibold text-ink">How safe-to-spend is calculated</p>
+        <div className="flex justify-between border-b border-line py-1">
+          <span>Available balance</span>
+          <span className="tabular">{math.availableBalance}</span>
+        </div>
+        {math.items.length === 0 ? (
+          <div className="flex justify-between border-b border-line py-1 text-muted">
+            <span>No unpaid bills before the next income</span>
+            <span className="tabular">$0.00</span>
+          </div>
+        ) : (
+          math.items.map((item, i) => (
+            <div key={i} className="flex justify-between border-b border-line py-1 pl-3 text-muted">
+              <span>
+                − {item.vendor} <span className="text-[11px]">· due {item.dueDate}</span>
+              </span>
+              <span className="tabular">{item.amount}</span>
+            </div>
+          ))
+        )}
+        <div className="flex justify-between border-b border-line py-1">
+          <span>= Unpaid before next income</span>
+          <span className="tabular">{math.unpaidBeforeIncome}</span>
+        </div>
+        <div className="flex justify-between py-1 font-semibold text-ink">
+          <span>= Safe to spend</span>
+          <span className="tabular">{math.result}</span>
+        </div>
+        {!math.incomeConfigured && (
+          <p className="mt-2 text-xs text-muted">
+            Using a 30-day window.{" "}
+            {workspaceId ? (
+              <Link href={`/w/${workspaceId}/income`} className="font-semibold text-blue underline">
+                Set expected income
+              </Link>
+            ) : (
+              <span className="font-semibold">Set expected income</span>
+            )}{" "}
+            for a sharper number.
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function Dashboard({ data, workspaceId }: { data: DashboardData; workspaceId?: string }) {
   const [showMath, setShowMath] = useState(false);
 
   return (
@@ -146,25 +203,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
         </button>
       </div>
 
-      {showMath && (
-        <Card>
-          <CardContent className="pt-4 text-sm text-[#374151]">
-            <p className="mb-2 font-semibold text-ink">How safe-to-spend is calculated</p>
-            <div className="flex justify-between border-b border-line py-1">
-              <span>Available balance</span>
-              <span className="tabular">{data.safeToSpendMath.availableBalance}</span>
-            </div>
-            <div className="flex justify-between border-b border-line py-1">
-              <span>− Unpaid bills due before next income</span>
-              <span className="tabular">{data.safeToSpendMath.unpaidBeforeIncome}</span>
-            </div>
-            <div className="flex justify-between py-1 font-semibold text-ink">
-              <span>= Safe to spend</span>
-              <span className="tabular">{data.safeToSpendMath.result}</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {showMath && <SafeToSpendPanel math={data.safeToSpendMath} workspaceId={workspaceId} />}
 
       {/* Two-column main */}
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1.4fr_1fr]">
