@@ -15,13 +15,13 @@ be added later — but no AI is built today.
 
 ## Status
 
-🟢 **Phase 1 (Data core) complete.** The stack is scaffolded and the data core is built and
-tested: schema + migrations, decimal money/calendar-date primitives, **forced Postgres RLS** with
-a proven cross-workspace isolation test, the full service layer (accounts, transactions, bills,
-CSV import, income bridge, audit, export), the `/api/v1` read seam, auth, workspace tabs, the
-dense dashboard (mock data), manual CRUD, the import wizard, and org bootstrap + membership.
-93 tests pass; `type-check`, `lint`, `test`, and `build` are all green. Phase 2 wires the
-dashboard to live data.
+🟢 **Phase 2a (Live dashboard) complete.** On top of the Phase 1 data core, the dashboard now
+runs on **live data**: owner-configurable expected income feeding a single projection helper that
+sharpens both the drillable safe-to-spend and the cash-flow forecast; category breakdown, paid-vs-
+unpaid, debts/goals; one-click standalone mark-paid; race-safe idempotent recurring-bill
+materialization; and the consolidated roll-up with owner-draw netting. 125 tests pass;
+`type-check`, `lint`, `test`, and `build` are all green. Next: **Phase 2b** (desktop tiling +
+saved layouts).
 
 - **Design spec:** [`docs/superpowers/specs/2026-06-20-budget-app-design.md`](docs/superpowers/specs/2026-06-20-budget-app-design.md)
 - **UI mockups:** [`docs/temp/budget-app-mockup-v1.html`](docs/temp/budget-app-mockup-v1.html) ·
@@ -239,10 +239,15 @@ presentational dashboard components (mock data) · workspace tabs · **forced RL
 service-layer authorization · audit log · data export · empty states · org bootstrap + invites ·
 `/api/v1` read seam.
 
-**Phase 2 — Budget dashboard (live)**
-Wire components to live data · safe-to-spend (drillable) · cash-flow forecast · paid vs. unpaid ·
-category breakdown · upcoming/overdue widgets · **tiling + saved layouts** · consolidated roll-up
-with transfer-netting · recurring-bill materialization · debts & goals.
+**Phase 2a — Budget dashboard (live)** ✅ **Complete**
+Live data wired throughout · **owner-configurable expected income** (the shared projection feeding
+both numbers) · drillable safe-to-spend reconciling to the penny · cash-flow forecast · paid vs.
+unpaid · category breakdown · upcoming/overdue with one-click standalone mark-paid · race-safe
+idempotent recurring-bill materialization · consolidated roll-up with transfer-netting · debts & goals.
+
+**Phase 2b — Tiling (next)**
+Desktop tiling (independent live panes) + saved named layouts. Split out so the live dashboard
+shipped first.
 
 **Phase 2.x — Convenience**
 Due-date calendar · budget-vs-actual · command palette (⌘K) · bill↔transaction auto-match.

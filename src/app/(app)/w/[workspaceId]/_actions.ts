@@ -2,10 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/supabase/server";
+import type { Frequency } from "@prisma/client";
 import { createTransaction } from "@/services/transaction-service";
-import { createBill, markPaid } from "@/services/bill-service";
+import { createBill, markPaid, markPaidStandalone } from "@/services/bill-service";
 import { createAccount } from "@/services/account-service";
 import { tagOwnerDraw } from "@/services/transfer-service";
+import { createIncomeSource, deleteIncomeSource } from "@/services/income-source-service";
 
 async function requireUserId(): Promise<string> {
   const user = await getCurrentUser();
@@ -61,12 +63,40 @@ export async function addBillAction(
   );
 }
 
+export async function markBillPaidStandaloneAction(
+  workspaceId: string,
+  billId: string,
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => markPaidStandalone(userId, billId));
+}
+
 export async function markBillPaidAction(
   workspaceId: string,
   billId: string,
   payFromAccountId: string,
 ): Promise<ActionResult> {
   return run(workspaceId, (userId) => markPaid(userId, billId, { payFromAccountId }));
+}
+
+export async function addIncomeSourceAction(
+  workspaceId: string,
+  input: { name: string; amount: string; frequency: string; nextDate: string },
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) =>
+    createIncomeSource(userId, workspaceId, {
+      name: input.name,
+      amount: input.amount,
+      frequency: input.frequency as Frequency,
+      nextDate: input.nextDate,
+    }),
+  );
+}
+
+export async function deleteIncomeSourceAction(
+  workspaceId: string,
+  sourceId: string,
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => deleteIncomeSource(userId, sourceId));
 }
 
 export async function tagOwnerDrawAction(

@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { randomUUID } from "node:crypto";
 import { prismaAdmin } from "@/lib/prisma-admin";
-import { createBill, markPaid, markUnpaid, upcomingAndOverdue } from "@/services/bill-service";
+import { createBill, markPaid, markPaidStandalone, markUnpaid, upcomingAndOverdue } from "@/services/bill-service";
+import { ForbiddenError } from "@/services/authz";
 import { calendarDate, toUtcDate } from "@/lib/calendar-date";
 
 const admin = randomUUID();
@@ -54,6 +55,20 @@ describe("bill-service", () => {
     expect(unpaid.paidTransactionId).toBeNull();
     const tx = await prismaAdmin.transaction.findUniqueOrThrow({ where: { id: txId } });
     expect(tx.billId).toBeNull();
+  });
+
+  it("marks a bill paid standalone (no transaction) and denies viewers", async () => {
+    const bill = await createBill(admin, workspaceId, { vendor: "Net", amount: "80.00", dueDate: "2026-07-01", type: "bill" });
+    const paid = await markPaidStandalone(admin, bill.id);
+    expect(paid.status).toBe("paid");
+    expect(paid.paidTransactionId).toBeNull();
+    const txns = await prismaAdmin.transaction.findMany({ where: { billId: bill.id } });
+    expect(txns).toHaveLength(0);
+
+    const viewer = randomUUID();
+    await prismaAdmin.workspaceMembership.create({ data: { workspaceId, userId: viewer, role: "viewer" } });
+    const bill2 = await createBill(admin, workspaceId, { vendor: "Net2", amount: "80.00", dueDate: "2026-07-01", type: "bill" });
+    await expect(markPaidStandalone(viewer, bill2.id)).rejects.toBeInstanceOf(ForbiddenError);
   });
 
   it("splits bills into overdue vs upcoming by calendar date", async () => {

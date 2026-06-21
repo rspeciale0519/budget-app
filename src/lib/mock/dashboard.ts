@@ -14,10 +14,18 @@ export interface DashboardKpis {
   safeToSpendNote: string;
 }
 
+export interface SafeToSpendItem {
+  vendor: string;
+  amount: string;
+  dueDate: string;
+}
+
 export interface SafeToSpendMath {
   availableBalance: string;
   unpaidBeforeIncome: string;
   result: string;
+  items: SafeToSpendItem[];
+  incomeConfigured: boolean;
 }
 
 export interface ForecastPoint {
@@ -34,6 +42,7 @@ export interface CategorySlice {
 }
 
 export interface BillItem {
+  id: string;
   vendor: string;
   amount: string;
   dueLabel: string;
@@ -94,6 +103,11 @@ export const mockDashboard: DashboardData = {
     availableBalance: "$48,210",
     unpaidBeforeIncome: "$39,070",
     result: "$9,140",
+    incomeConfigured: true,
+    items: [
+      { vendor: "Office Rent", amount: "$4,200", dueDate: "Jun 28" },
+      { vendor: "Payroll run", amount: "$8,400", dueDate: "Jun 30" },
+    ],
   },
   forecast: [
     { date: "Jun 14", balance: "$13,200" },
@@ -116,10 +130,10 @@ export const mockDashboard: DashboardData = {
   ],
   categoriesTotal: "$27.9k",
   bills: [
-    { vendor: "Electric — Duke Energy", amount: "$640", dueLabel: "Due Jun 17 · 3 days ago", status: "overdue", statusLabel: "Overdue", icon: "⚡" },
-    { vendor: "Office Rent", amount: "$4,200", dueLabel: "Due Jun 28", status: "soon", statusLabel: "5 days", icon: "🏢" },
-    { vendor: "Payroll run", amount: "$8,400", dueLabel: "Due Jun 30 · recurring", status: "scheduled", statusLabel: "Scheduled", icon: "👥" },
-    { vendor: "USPS postage account", amount: "$2,150", dueLabel: "Due Jul 03", status: "soon", statusLabel: "9 days", icon: "🖨️" },
+    { id: "mock-1", vendor: "Electric — Duke Energy", amount: "$640", dueLabel: "Due Jun 17 · 3 days ago", status: "overdue", statusLabel: "Overdue", icon: "⚡" },
+    { id: "mock-2", vendor: "Office Rent", amount: "$4,200", dueLabel: "Due Jun 28", status: "soon", statusLabel: "5 days", icon: "🏢" },
+    { id: "mock-3", vendor: "Payroll run", amount: "$8,400", dueLabel: "Due Jun 30 · recurring", status: "scheduled", statusLabel: "Scheduled", icon: "👥" },
+    { id: "mock-4", vendor: "USPS postage account", amount: "$2,150", dueLabel: "Due Jul 03", status: "soon", statusLabel: "9 days", icon: "🖨️" },
   ],
   paidVsUnpaid: { paid: "$18,300", unpaid: "$11,390", paidPct: 62 },
   goals: [
