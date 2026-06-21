@@ -31,11 +31,15 @@ export function TilesClient({ workspaces, layouts, initialConfig, initialSummari
   const [summaries, setSummaries] = useState<Record<string, PaneSummary>>(initialSummaries);
   const [saved, setSaved] = useState<SavedLayout[]>(layouts);
   const [error, setError] = useState<string | null>(null);
+  const [revision, setRevision] = useState(0);
   const [pending, startTransition] = useTransition();
 
-  /** Fetch summaries for any workspace ids not already loaded, then apply the config. */
+  /** Apply a config from a control action (add/remove/assign/toggle/restore):
+   * remount the tree so its `sizes` re-apply, then fetch any missing summaries.
+   * (Drag resizes go through `setConfig` directly — no remount.) */
   function applyConfig(next: PaneConfig) {
     setConfig(next);
+    setRevision((v) => v + 1);
     const missing = collectWorkspaceIds(next).filter((id) => !summaries[id]);
     if (missing.length === 0) return;
     startTransition(async () => {
@@ -86,10 +90,10 @@ export function TilesClient({ workspaces, layouts, initialConfig, initialSummari
         config={config}
         busy={pending}
         onAddPane={(wsId) => applyConfig(addLeaf(config, wsId))}
-        onRemovePane={(i) => setConfig(removeLeafAt(config, i))}
+        onRemovePane={(i) => applyConfig(removeLeafAt(config, i))}
         onAssign={(i, wsId) => applyConfig(assignAt(config, i, wsId))}
         onToggleDirection={() =>
-          setConfig(setDirection(config, config.type === "split" && config.direction === "row" ? "col" : "row"))
+          applyConfig(setDirection(config, config.type === "split" && config.direction === "row" ? "col" : "row"))
         }
         onSave={handleSave}
         onRestore={handleRestore}
@@ -99,6 +103,7 @@ export function TilesClient({ workspaces, layouts, initialConfig, initialSummari
       <TiledView
         config={config}
         summaries={summaries}
+        revision={revision}
         onSizesChange={(s) => setConfig((c) => setSizes(c, s))}
       />
     </div>

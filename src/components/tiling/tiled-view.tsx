@@ -62,15 +62,19 @@ export function TiledView({
   config,
   summaries,
   onSizesChange,
+  revision = 0,
 }: {
   config: PaneConfig;
   summaries: Summaries;
   onSizesChange?: (sizes: number[]) => void;
+  /** Bump to remount the tree so saved `sizes` re-apply (the panel library
+   * only reads `defaultLayout` at mount). Never bump on drag. */
+  revision?: number;
 }) {
   const leaves = collectWorkspaceIds(config);
   return (
     <>
-      <div className="hidden h-[70vh] lg:block">
+      <div key={revision} className="hidden h-[70vh] lg:block">
         {config.type === "leaf" ? (
           <Leaf workspaceId={config.workspaceId} summaries={summaries} />
         ) : (
