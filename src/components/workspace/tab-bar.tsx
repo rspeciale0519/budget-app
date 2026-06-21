@@ -1,33 +1,43 @@
-import Link from "next/link";
 import { listAccessibleWorkspaces } from "@/services/authz";
+import { createServerClient } from "@/lib/supabase/server";
+import { WorkspaceTabs } from "@/components/workspace/workspace-tabs";
 
 export async function TabBar({ userId }: { userId: string }) {
   const workspaces = await listAccessibleWorkspaces(userId);
+  const supabase = await createServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const initial = (user?.email?.[0] ?? "U").toUpperCase();
+
   return (
-    <nav className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex max-w-6xl items-center gap-1 overflow-x-auto px-4 py-2">
-        {workspaces.map((w) => (
-          <Link
-            key={w.id}
-            href={`/w/${w.id}`}
-            className="flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+    <div className="sticky top-0 z-20 border-b border-line bg-white">
+      <div className="mx-auto flex max-w-[1180px] items-center gap-4 px-5 py-2.5">
+        <div className="flex items-center gap-2 whitespace-nowrap text-[15px] font-bold">
+          <span className="h-[18px] w-[18px] rounded-md bg-gradient-to-br from-[#2563eb] to-[#16a34a]" />
+          Ledger
+        </div>
+        <WorkspaceTabs
+          workspaces={workspaces.map((w) => ({ id: w.id, name: w.name, color: w.color, icon: w.icon }))}
+        />
+        <div className="ml-auto flex items-center gap-2.5">
+          <span
+            className="flex cursor-default items-center gap-1.5 rounded-[9px] border border-line bg-white px-[11px] py-[7px] text-xs font-semibold text-[#374151] opacity-60"
+            title="Tiling — Phase 2"
           >
-            <span
-              className="h-2.5 w-2.5 rounded-full"
-              style={{ backgroundColor: w.color }}
-              aria-hidden
-            />
-            {w.icon ? <span aria-hidden>{w.icon}</span> : null}
-            {w.name}
-          </Link>
-        ))}
-        <Link
-          href="/all"
-          className="ml-2 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium text-slate-500 hover:bg-slate-100"
-        >
-          All Workspaces
-        </Link>
+            ⊞ Tile view
+          </span>
+          <span
+            className="flex cursor-default items-center gap-1.5 rounded-[9px] border border-line bg-white px-[11px] py-[7px] text-xs font-semibold text-[#374151] opacity-60"
+            title="Saved layouts — Phase 2"
+          >
+            ⌄ Layouts
+          </span>
+          <div className="grid h-[30px] w-[30px] place-items-center rounded-full bg-[#dbeafe] text-xs font-bold text-[#1d4ed8]">
+            {initial}
+          </div>
+        </div>
       </div>
-    </nav>
+    </div>
   );
 }

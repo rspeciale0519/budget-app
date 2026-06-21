@@ -10,7 +10,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen">
       <TabBar userId={user.id} />
-      <main className="mx-auto max-w-6xl p-4">{children}</main>
+      <main className="mx-auto max-w-[1180px] px-5 pb-16 pt-1">{children}</main>
     </div>
   );
 }
