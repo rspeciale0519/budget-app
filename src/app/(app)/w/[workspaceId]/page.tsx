@@ -34,7 +34,10 @@ export default async function WorkspaceDashboard({
       // Not a member — still render the mock dashboard in Phase 1.
     }
   }
-  const subtitle = [type ? type[0]?.toUpperCase() + type.slice(1) : null, `${accountCount} accounts`]
+  const subtitle = [
+    type ? type[0]?.toUpperCase() + type.slice(1) : null,
+    `${accountCount} ${accountCount === 1 ? "account" : "accounts"}`,
+  ]
     .filter(Boolean)
     .join(" · ");
 
