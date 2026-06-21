@@ -1,45 +1,13 @@
-import type { Frequency } from "@prisma/client";
 import type { Db } from "@/repositories/db";
 import { money, type Money } from "@/lib/money";
-import { addDays, compare, fromDbDate, type CalendarDate } from "@/lib/calendar-date";
+import { compare, fromDbDate, type CalendarDate } from "@/lib/calendar-date";
+import { stepByFrequency } from "@/lib/recurrence";
 import * as repo from "@/repositories/income-source-repo";
 
 export interface IncomeEvent {
   date: CalendarDate;
   amount: Money;
   sourceName: string;
-}
-
-function dayOf(d: CalendarDate): number {
-  return Number(d.split("-")[2]);
-}
-
-/** Add months with end-of-month clamping; optionally override the day. */
-function addMonths(d: CalendarDate, n: number, dayOverride?: number | null): CalendarDate {
-  const parts = d.split("-");
-  const y = Number(parts[0]);
-  const m = Number(parts[1]);
-  const day = dayOverride ?? dayOf(d);
-  const monthIndex = (m - 1) + n;
-  const year = y + Math.floor(monthIndex / 12);
-  const month = ((monthIndex % 12) + 12) % 12; // 0-based
-  const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
-  return fromDbDate(new Date(Date.UTC(year, month, Math.min(day, lastDay))));
-}
-
-function advance(d: CalendarDate, freq: Frequency, interval: number, dayOfMonth: number | null): CalendarDate {
-  switch (freq) {
-    case "weekly":
-      return addDays(d, 7 * interval);
-    case "monthly":
-      return addMonths(d, interval, dayOfMonth);
-    case "quarterly":
-      return addMonths(d, 3 * interval, dayOfMonth);
-    case "annual":
-      return addMonths(d, 12 * interval, dayOfMonth);
-    case "custom":
-      return addMonths(d, interval, dayOfMonth);
-  }
 }
 
 /**
@@ -63,7 +31,7 @@ export async function projectIncome(
       if (compare(cur, from) >= 0) {
         events.push({ date: cur, amount: money(s.amount.toFixed(2)), sourceName: s.name });
       }
-      cur = advance(cur, s.frequency, s.interval, s.dayOfMonth);
+      cur = stepByFrequency(cur, s.frequency, s.interval, s.dayOfMonth);
     }
   }
   return events.sort((a, b) => compare(a.date, b.date));
