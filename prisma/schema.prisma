@@ -244,6 +244,9 @@ model Bill {
   updatedAt           DateTime           @updatedAt
   recurringSchedule   RecurringSchedule? @relation(fields: [recurringScheduleId], references: [id], onDelete: SetNull)
 
+  // Race-safe recurring materialization: a schedule can't produce two bills for
+  // the same due date. Nulls are distinct, so manual bills are unaffected.
+  @@unique([recurringScheduleId, dueDate])
   @@index([workspaceId, dueDate])
   @@index([workspaceId, status])
 }
@@ -265,6 +268,24 @@ model RecurringSchedule {
   bills            Bill[]
 
   @@index([workspaceId, nextRunDate])
+}
+
+// Owner-configured expected income (Phase 2a). Projection input only — does NOT
+// create transactions; the real income is recorded when it arrives.
+model IncomeSource {
+  id          String    @id @default(cuid())
+  workspaceId String
+  name        String
+  amount      Decimal   @db.Decimal(14, 2)
+  frequency   Frequency
+  interval    Int       @default(1)
+  dayOfMonth  Int?
+  nextDate    DateTime  @db.Date
+  endDate     DateTime? @db.Date
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([workspaceId])
 }
 
 model Debt {
