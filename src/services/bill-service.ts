@@ -105,6 +105,25 @@ export async function markPaid(
   });
 }
 
+/** Mark a bill paid with NO linked transaction (dashboard one-click). Avoids
+ * silently booking against an arbitrary account; account-linked payment stays
+ * in the explicit markPaid path. */
+export async function markPaidStandalone(actorUserId: string, billId: string) {
+  const bill = await loadBillForAdmin(actorUserId, billId);
+  return rlsClientFor(actorUserId).run(async (tx) => {
+    const updated = await repo.updateBillRow(tx, bill.id, { status: "paid", paidTransactionId: null });
+    await audit(tx, {
+      userId: actorUserId,
+      workspaceId: bill.workspaceId,
+      action: "mark_paid_standalone",
+      entityType: "Bill",
+      entityId: bill.id,
+      after: { status: "paid" },
+    });
+    return updated;
+  });
+}
+
 export async function markUnpaid(actorUserId: string, billId: string) {
   const bill = await loadBillForAdmin(actorUserId, billId);
   return rlsClientFor(actorUserId).run(async (tx) => {

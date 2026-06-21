@@ -1,7 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { renderToString } from "react-dom/server";
 import { Dashboard, SafeToSpendPanel } from "@/components/dashboard/dashboard";
 import { mockDashboard } from "@/lib/mock/dashboard";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: () => {}, push: () => {} }),
+}));
 
 describe("Dashboard", () => {
   it("renders KPI values and widget sections from mock data", () => {

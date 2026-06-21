@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { markBillPaidStandaloneAction } from "@/app/(app)/w/[workspaceId]/_actions";
 import type { DashboardData, BillItem } from "@/lib/mock/dashboard";
 
 const TAG: Record<BillItem["status"], string> = {
@@ -180,6 +182,16 @@ export function SafeToSpendPanel({
 
 export function Dashboard({ data, workspaceId }: { data: DashboardData; workspaceId?: string }) {
   const [showMath, setShowMath] = useState(false);
+  const [paying, setPaying] = useState<string | null>(null);
+  const router = useRouter();
+
+  async function payBill(billId: string) {
+    if (!workspaceId) return;
+    setPaying(billId);
+    const result = await markBillPaidStandaloneAction(workspaceId, billId);
+    setPaying(null);
+    if (result.ok) router.refresh();
+  }
 
   return (
     <div className="space-y-4">
@@ -267,8 +279,13 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
                     {b.statusLabel}
                   </span>
                   <div className="tabular text-[13.5px] font-bold text-ink">{b.amount}</div>
-                  <Button variant="outline" className="px-2 py-1 text-[11.5px]">
-                    Mark paid
+                  <Button
+                    variant="outline"
+                    className="px-2 py-1 text-[11.5px]"
+                    disabled={!workspaceId || paying === b.id}
+                    onClick={() => payBill(b.id)}
+                  >
+                    {paying === b.id ? "…" : "Mark paid"}
                   </Button>
                 </div>
               ))}

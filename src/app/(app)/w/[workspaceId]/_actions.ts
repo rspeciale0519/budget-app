@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { createTransaction } from "@/services/transaction-service";
-import { createBill, markPaid } from "@/services/bill-service";
+import { createBill, markPaid, markPaidStandalone } from "@/services/bill-service";
 import { createAccount } from "@/services/account-service";
 import { tagOwnerDraw } from "@/services/transfer-service";
 
@@ -59,6 +59,13 @@ export async function addBillAction(
   return run(workspaceId, (userId) =>
     createBill(userId, workspaceId, { vendor: input.vendor, amount: input.amount, dueDate: input.dueDate }),
   );
+}
+
+export async function markBillPaidStandaloneAction(
+  workspaceId: string,
+  billId: string,
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => markPaidStandalone(userId, billId));
 }
 
 export async function markBillPaidAction(
