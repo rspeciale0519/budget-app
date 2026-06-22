@@ -78,6 +78,20 @@ export async function markBillPaidAction(
   return run(workspaceId, (userId) => markPaid(userId, billId, { payFromAccountId }));
 }
 
+export async function confirmMatchAction(
+  workspaceId: string,
+  billId: string,
+  transactionId: string,
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => markPaid(userId, billId, { transactionId }));
+}
+
+/** Dismissals are client-only for v1 (no rejected-match table); this exists so
+ * the banner has a stable server contract if persistence is added later. */
+export async function dismissMatchAction(): Promise<ActionResult> {
+  return { ok: true };
+}
+
 export async function addIncomeSourceAction(
   workspaceId: string,
   input: { name: string; amount: string; frequency: string; nextDate: string },
