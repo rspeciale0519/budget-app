@@ -251,8 +251,11 @@ Desktop tiling: multiple **independent, live workspace panes** side-by-side, eac
 named layouts that restore proportions** ("Morning review", "Tax prep"), per-user (RLS-isolated) ·
 degrades to a stacked single column below `lg`. Split out so the live dashboard shipped first.
 
-**Phase 2.x — Convenience**
-Due-date calendar · budget-vs-actual · command palette (⌘K) · bill↔transaction auto-match.
+**Phase 2.x — Convenience** ✅ **Complete**
+**Bill↔transaction auto-match** (suggestion banner; user confirms → marks paid + reconciles) ·
+**due-date calendar** (month grid, status-colored bill chips, prev/next) · **budget-vs-actual**
+(per-category monthly budgets, progress bars, over/under coloring) · **command palette (⌘K)**
+(fuzzy quick actions + jump-to-workspace) · shared workspace sub-nav. All migration-free.
 
 **v2 — QuickBooks-style reports**
 Read-only computed reports over the existing ledger: Profit & Loss, cash-flow statement, expense
