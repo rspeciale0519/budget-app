@@ -15,7 +15,8 @@ function dayNumber(date: string): string {
 
 export function BillCalendarView({ month }: { month: CalendarMonth }) {
   return (
-    <div className="overflow-hidden rounded-[14px] border border-line bg-card shadow-card">
+    <div className="overflow-x-auto rounded-[14px] border border-line bg-card shadow-card">
+      <div className="min-w-[640px]">
       <div className="grid grid-cols-7 border-b border-line bg-[#f8fafc]">
         {WEEKDAYS.map((d) => (
           <div key={d} className="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-[0.04em] text-muted">
@@ -51,6 +52,7 @@ export function BillCalendarView({ month }: { month: CalendarMonth }) {
             </div>
           </div>
         ))}
+      </div>
       </div>
     </div>
   );
