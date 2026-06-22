@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Dashboard } from "@/components/dashboard/dashboard";
+import { WorkspaceSubNav } from "@/components/workspace/workspace-sub-nav";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { getWorkspace } from "@/services/workspace-service";
@@ -72,23 +73,7 @@ export default async function WorkspaceDashboard({
         </div>
       </div>
 
-      <nav className="mb-4 flex gap-1 text-[13px]">
-        {[
-          ["Dashboard", ""],
-          ["Manage", "/manage"],
-          ["Income", "/income"],
-          ["Import", "/import"],
-          ["Audit", "/audit"],
-        ].map(([label, sub]) => (
-          <Link
-            key={label}
-            href={`/w/${workspaceId}${sub}`}
-            className="rounded-md px-2.5 py-1 font-semibold text-muted hover:bg-[#f3f5f8] hover:text-ink"
-          >
-            {label}
-          </Link>
-        ))}
-      </nav>
+      <WorkspaceSubNav workspaceId={workspaceId} />
 
       <Dashboard data={data} workspaceId={workspaceId} />
     </div>

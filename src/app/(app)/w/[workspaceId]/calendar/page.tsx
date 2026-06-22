@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/supabase/server";
 import { billCalendar } from "@/services/dashboard/bill-calendar";
 import { today as todayFn } from "@/lib/calendar-date";
 import { BillCalendarView } from "@/components/calendar/bill-calendar-view";
+import { WorkspaceSubNav } from "@/components/workspace/workspace-sub-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +48,7 @@ export default async function CalendarPage({
 
   return (
     <div className="space-y-4">
+      <WorkspaceSubNav workspaceId={workspaceId} />
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-ink">
           {MONTHS[month - 1] ?? ""} {year}

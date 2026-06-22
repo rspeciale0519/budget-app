@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/supabase/server";
+import { WorkspaceSubNav } from "@/components/workspace/workspace-sub-nav";
 import { listAccounts } from "@/services/account-service";
 import { ImportWizard } from "@/components/import/import-wizard";
 
@@ -23,6 +24,7 @@ export default async function ImportPage({
 
   return (
     <div className="space-y-4">
+      <WorkspaceSubNav workspaceId={workspaceId} />
       <h1 className="text-xl font-semibold text-slate-900">CSV Import</h1>
       <ImportWizard workspaceId={workspaceId} accounts={accounts} />
     </div>

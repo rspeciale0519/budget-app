@@ -4,6 +4,7 @@ import { budgetVsActual } from "@/services/dashboard/budget-vs-actual";
 import { listCategories } from "@/services/category-service";
 import { today as todayFn } from "@/lib/calendar-date";
 import { BudgetView } from "@/components/budget/budget-view";
+import { WorkspaceSubNav } from "@/components/workspace/workspace-sub-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,7 @@ export default async function BudgetPage({
 
   return (
     <div className="space-y-4">
+      <WorkspaceSubNav workspaceId={workspaceId} />
       <h1 className="text-xl font-bold text-ink">Budget vs. actual</h1>
       <BudgetView workspaceId={workspaceId} rows={rows} categories={expense} />
     </div>
