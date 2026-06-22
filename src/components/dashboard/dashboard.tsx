@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { markBillPaidStandaloneAction } from "@/app/(app)/w/[workspaceId]/_actions";
+import { MatchSuggestions } from "@/components/match/match-suggestions";
 import type { DashboardData, BillItem } from "@/lib/mock/dashboard";
 
 const TAG: Record<BillItem["status"], string> = {
@@ -216,6 +217,8 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
       </div>
 
       {showMath && <SafeToSpendPanel math={data.safeToSpendMath} workspaceId={workspaceId} />}
+
+      {workspaceId && <MatchSuggestions workspaceId={workspaceId} suggestions={data.matchSuggestions} />}
 
       {/* Two-column main */}
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1.4fr_1fr]">

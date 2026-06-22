@@ -1,6 +1,8 @@
 // Mock dashboard data, typed to the shapes Phase 2 will compute from services.
 // Values mirror the approved v1 mockup (Yellow Letter Shop) for visual fidelity.
 
+import type { MatchSuggestion } from "@/services/match-service";
+
 export interface DashboardKpis {
   totalBalance: string;
   totalBalanceNote: string;
@@ -74,6 +76,7 @@ export interface DebtItem {
 
 export interface DashboardData {
   kpis: DashboardKpis;
+  matchSuggestions: MatchSuggestion[];
   safeToSpendMath: SafeToSpendMath;
   forecast: ForecastPoint[];
   lowestPoint: ForecastPoint;
@@ -87,6 +90,7 @@ export interface DashboardData {
 }
 
 export const mockDashboard: DashboardData = {
+  matchSuggestions: [],
   kpis: {
     totalBalance: "$48,210",
     totalBalanceNote: "across 3 accounts",
