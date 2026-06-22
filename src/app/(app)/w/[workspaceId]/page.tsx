@@ -45,7 +45,7 @@ export default async function WorkspaceDashboard({
 
   return (
     <div>
-      <div className="my-[22px] flex items-center gap-3">
+      <div className="my-[22px] flex flex-wrap items-center gap-3">
         <div
           className="grid h-[34px] w-[34px] place-items-center rounded-[10px] font-extrabold text-white"
           style={{ background: color }}

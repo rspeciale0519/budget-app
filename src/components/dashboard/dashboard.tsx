@@ -284,7 +284,7 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
                   <div className="tabular text-[13.5px] font-bold text-ink">{b.amount}</div>
                   <Button
                     variant="outline"
-                    className="px-2 py-1 text-[11.5px]"
+                    className="whitespace-nowrap px-2 py-1 text-[11.5px]"
                     disabled={!workspaceId || paying === b.id}
                     onClick={() => payBill(b.id)}
                   >
