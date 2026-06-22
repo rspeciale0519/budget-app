@@ -78,3 +78,6 @@ supabase/.branches
 
 # Scratch artifacts (Rule 5): task screenshots, working notes
 docs/temp/
+
+# Env backups (may contain secrets) — never commit
+.env*.bak*
