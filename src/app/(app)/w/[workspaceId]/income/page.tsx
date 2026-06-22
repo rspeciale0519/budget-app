@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/supabase/server";
+import { WorkspaceSubNav } from "@/components/workspace/workspace-sub-nav";
 import { listIncomeSources } from "@/services/income-source-service";
 import { IncomeSourceForm, type IncomeSourceView } from "@/components/income/income-source-form";
 import { fromDbDate } from "@/lib/calendar-date";
@@ -30,6 +31,7 @@ export default async function IncomePage({
 
   return (
     <div className="space-y-4">
+      <WorkspaceSubNav workspaceId={workspaceId} />
       <h1 className="text-xl font-semibold text-slate-900">Expected Income</h1>
       <IncomeSourceForm workspaceId={workspaceId} sources={sources} />
     </div>

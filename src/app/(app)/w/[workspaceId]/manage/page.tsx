@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/supabase/server";
+import { WorkspaceSubNav } from "@/components/workspace/workspace-sub-nav";
 import { listAccounts } from "@/services/account-service";
 import { listTransactions } from "@/services/transaction-service";
 import { ManageForms } from "@/components/manage/manage-forms";
@@ -30,6 +31,7 @@ export default async function ManagePage({
 
   return (
     <div className="space-y-4">
+      <WorkspaceSubNav workspaceId={workspaceId} />
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-slate-900">Manage</h1>
         <div className="flex gap-2 text-sm">

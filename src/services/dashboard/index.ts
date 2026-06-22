@@ -20,6 +20,7 @@ import { paidVsUnpaid } from "@/services/dashboard/paid-unpaid";
 import { listDebts, listGoals } from "@/services/dashboard/planning";
 import { upcomingAndOverdue } from "@/services/bill-service";
 import { materializeDueWorkspaces } from "@/services/recurring-service";
+import { matchSuggestions } from "@/services/match-service";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function shortLabel(d: CalendarDate): string {
@@ -103,7 +104,7 @@ export async function getDashboardData(
   const { start } = periodRange(period, today);
   const prevAnchor = addDays(start, -1);
 
-  const [cur, prev, sts, forecast, categories, pvu, debts, goals, buckets, accountCount] =
+  const [cur, prev, sts, forecast, categories, pvu, debts, goals, buckets, accountCount, matches] =
     await Promise.all([
       workspaceMetrics(userId, workspaceId, period, today),
       workspaceMetrics(userId, workspaceId, period, prevAnchor),
@@ -115,6 +116,7 @@ export async function getDashboardData(
       listGoals(userId, workspaceId),
       upcomingAndOverdue(userId, workspaceId, today),
       rlsClientFor(userId).run((tx) => tx.account.count({ where: { workspaceId } })),
+      matchSuggestions(userId, workspaceId, today),
     ]);
 
   const inDelta = deltaInfo(cur.moneyIn, prev.moneyIn, true);
@@ -166,6 +168,7 @@ export async function getDashboardData(
     : `after ${items.length} unpaid bills (next 30 days) · set expected income`;
 
   return {
+    matchSuggestions: matches,
     kpis: {
       totalBalance: format(cur.totalBalance),
       totalBalanceNote: `across ${accountCount} ${accountCount === 1 ? "account" : "accounts"}`,

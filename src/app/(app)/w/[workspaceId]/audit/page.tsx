@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/supabase/server";
+import { WorkspaceSubNav } from "@/components/workspace/workspace-sub-nav";
 import { getWorkspace } from "@/services/workspace-service";
 import { listAudit } from "@/services/audit-service";
 
@@ -27,6 +28,7 @@ export default async function AuditPage({
 
   return (
     <div className="space-y-4">
+      <WorkspaceSubNav workspaceId={workspaceId} />
       <h1 className="text-xl font-semibold text-slate-900">Audit Log</h1>
       <Card>
         <CardHeader>
