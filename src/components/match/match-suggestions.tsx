@@ -14,15 +14,18 @@ export function MatchSuggestions({
 }) {
   const router = useRouter();
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   const visible = suggestions.filter((s) => !dismissed.has(s.billId));
   if (visible.length === 0) return null;
 
   function confirm(s: MatchSuggestion) {
+    setError(null);
     startTransition(async () => {
       const res = await confirmMatchAction(workspaceId, s.billId, s.transactionId);
       if (res.ok) router.refresh();
+      else setError(res.error ?? "Could not mark this bill paid.");
     });
   }
 
@@ -59,6 +62,7 @@ export function MatchSuggestions({
           </button>
         </div>
       ))}
+      {error && <p className="text-xs font-semibold text-neg">{error}</p>}
     </div>
   );
 }
