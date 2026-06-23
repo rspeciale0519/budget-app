@@ -24,6 +24,14 @@ export async function TabBar({ userId }: { userId: string }) {
         <div className="ml-auto flex items-center gap-2.5">
           <Link
             href="/tiles"
+            className="flex items-center justify-center rounded-[9px] border border-line bg-white px-2.5 py-[7px] text-sm font-semibold text-[#374151] transition-colors hover:bg-slate-50 lg:hidden"
+            title="Tile view"
+            aria-label="Tile view"
+          >
+            ⊞
+          </Link>
+          <Link
+            href="/tiles"
             className="hidden items-center gap-1.5 rounded-[9px] border border-line bg-white px-[11px] py-[7px] text-xs font-semibold text-[#374151] transition-colors hover:bg-slate-50 lg:flex"
             title="Tile multiple workspaces side-by-side"
           >

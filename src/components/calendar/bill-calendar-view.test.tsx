@@ -27,11 +27,36 @@ const fixture: CalendarMonth = {
   ],
 };
 
+// An in-month bill on "today" — exercises the mobile agenda path.
+const agendaFixture: CalendarMonth = {
+  year: 2026,
+  month: 7,
+  weeks: Array.from({ length: 6 }, (_, r) =>
+    Array.from({ length: 7 }, (_, c) => {
+      const today = r === 0 && c === 0;
+      return {
+        date: `2026-07-${String(1 + r * 7 + c).padStart(2, "0")}`,
+        inMonth: true,
+        isToday: today,
+        events: today
+          ? [{ billId: "x", vendor: "Rent Co", amount: "$1,200.00", status: "soon" as const }]
+          : [],
+      };
+    }),
+  ),
+};
+
 describe("BillCalendarView", () => {
-  it("renders weekday headers and event chips", () => {
+  it("renders weekday headers and event chips (grid)", () => {
     const html = renderToString(<BillCalendarView month={fixture} />);
     expect(html).toContain("Su");
     expect(html).toContain("Sa");
     expect(html).toContain("Late Co");
+  });
+
+  it("renders an agenda row for an in-month bill, marking today", () => {
+    const html = renderToString(<BillCalendarView month={agendaFixture} />);
+    expect(html).toContain("Rent Co");
+    expect(html).toContain("· Today"); // agenda-only label (the grid uses a styled circle)
   });
 });
