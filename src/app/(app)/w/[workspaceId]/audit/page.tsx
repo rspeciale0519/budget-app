@@ -3,6 +3,20 @@ import { getCurrentUser } from "@/lib/supabase/server";
 import { getWorkspace } from "@/services/workspace-service";
 import { listAudit } from "@/services/audit-service";
 
+const ACTION_LABEL: Record<string, string> = {
+  mark_paid: "Marked paid",
+  mark_paid_standalone: "Marked paid",
+  create: "Created",
+  update: "Updated",
+  delete: "Deleted",
+  import: "Imported",
+  income_bridge: "Owner draw recorded",
+};
+
+function actionLabel(action: string): string {
+  return ACTION_LABEL[action] ?? action.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function AuditPage({
@@ -39,7 +53,7 @@ export default async function AuditPage({
             entries.map((e) => (
               <div key={e.id} className="flex justify-between border-b border-slate-100 py-1">
                 <span className="text-slate-700">
-                  {e.action} · {e.entityType}
+                  {actionLabel(e.action)} · {e.entityType}
                 </span>
                 <span className="text-xs text-slate-400">{e.at.toISOString().slice(0, 10)}</span>
               </div>
