@@ -204,10 +204,14 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
         <button
           type="button"
           onClick={() => setShowMath((v) => !v)}
-          className="rounded-[14px] border border-[#bbf7d0] bg-gradient-to-b from-[#ecfdf3] to-white px-[17px] py-4 text-left shadow-card"
+          aria-expanded={showMath}
+          className="rounded-[14px] border border-[#bbf7d0] bg-gradient-to-b from-[#ecfdf3] to-white px-[17px] py-4 text-left shadow-card transition-all hover:-translate-y-px hover:from-[#dcfce7] hover:shadow-[0_6px_20px_rgba(16,24,40,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:ring-offset-1"
         >
-          <div className="text-xs font-semibold uppercase tracking-[0.03em] text-[#15803d]">
-            Safe to spend ⓘ
+          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.03em] text-[#15803d]">
+            <span>Safe to spend</span>
+            <span className={`text-[10px] transition-transform duration-200 ${showMath ? "rotate-180" : ""}`} aria-hidden>
+              ▾
+            </span>
           </div>
           <div className="tabular mt-2 text-2xl font-extrabold text-[#15803d]">
             {data.kpis.safeToSpend}
