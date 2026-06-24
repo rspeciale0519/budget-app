@@ -322,6 +322,11 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
               <CardTitle>Goals</CardTitle>
             </CardHeader>
             <CardContent className="pt-1">
+              {data.goals.length === 0 && (
+                <p className="py-3 text-[12.5px] text-muted">
+                  No goals yet — add a savings goal to track progress.
+                </p>
+              )}
               {data.goals.map((g, i) => (
                 <div key={g.name} className={`py-2.5 ${i > 0 ? "border-t border-line" : ""}`}>
                   <div className="mb-1.5 flex justify-between text-[13px] font-semibold text-ink">
@@ -345,6 +350,9 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
               <CardTitle note={`total ${data.debtsTotal}`}>Debts</CardTitle>
             </CardHeader>
             <CardContent className="pt-1">
+              {data.debts.length === 0 && (
+                <p className="py-3 text-[12.5px] text-muted">No debts tracked.</p>
+              )}
               {data.debts.map((d, i) => (
                 <div
                   key={d.name}
