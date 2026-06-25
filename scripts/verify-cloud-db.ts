@@ -10,12 +10,12 @@ async function main() {
   const idn = await prisma.$queryRawUnsafe<{ u: string; bypass: boolean }[]>(
     "SELECT current_user AS u, (SELECT rolbypassrls FROM pg_roles WHERE rolname = current_user) AS bypass",
   );
-  console.log("current_user:", idn[0].u, "| bypassrls:", idn[0].bypass);
+  console.log("current_user:", idn[0]?.u, "| bypassrls:", idn[0]?.bypass);
 
   const noClaim = await prisma.$queryRawUnsafe<{ id: string | null }[]>(
     "SELECT app.current_user_id() AS id",
   );
-  console.log("current_user_id (no claim):", noClaim[0].id);
+  console.log("current_user_id (no claim):", noClaim[0]?.id);
 
   await prisma.$transaction(async (tx) => {
     await tx.$executeRawUnsafe(
@@ -25,7 +25,7 @@ async function main() {
     const withClaim = await tx.$queryRawUnsafe<{ id: string | null }[]>(
       "SELECT app.current_user_id() AS id",
     );
-    console.log("current_user_id (with claim):", withClaim[0].id);
+    console.log("current_user_id (with claim):", withClaim[0]?.id);
   });
 
   console.log("VERIFY_OK");
