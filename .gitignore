@@ -81,3 +81,7 @@ docs/temp/
 
 # Env backups (may contain secrets) — never commit
 .env*.bak*
+.vercel-db-pw.tmp
+
+# Cloud backend credentials reference (never commit)
+.cloud-credentials.tmp
