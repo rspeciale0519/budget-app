@@ -1,7 +1,8 @@
 import type { ImportBatch } from "@prisma/client";
 import { rlsClientFor } from "@/lib/prisma-rls";
 import { assertWorkspaceAccess, ForbiddenError } from "@/services/authz";
-import { applyRules } from "@/services/category-rule-service";
+import { matchRules } from "@/services/category-rule-service";
+import { listRulesByWorkspace } from "@/repositories/category-repo";
 import { dedupeHash } from "@/lib/dedupe";
 import { money, add, sum, compare, type Money } from "@/lib/money";
 import { toUtcDate, type CalendarDate } from "@/lib/calendar-date";
@@ -59,9 +60,11 @@ export async function previewImport(actorUserId: string, input: PreviewInput): P
   const { columnMap, signRule, dateFormat } = input.mapping;
   const { rows } = parseCsv(input.csvText);
 
-  return rlsClientFor(actorUserId).run(async (tx) => {
+  return rlsClientFor(actorUserId, { timeout: 30000 }).run(async (tx) => {
     const existing = await repo.listAccountHashes(tx, input.accountId);
     const seen = new Set(existing.map((e) => e.dedupeHash));
+    // Fetch category rules ONCE; matching each row is then pure in-memory work.
+    const rules = await listRulesByWorkspace(tx, account.workspaceId);
 
     const previewRows: PreviewRow[] = [];
     for (const raw of rows) {
@@ -87,7 +90,7 @@ export async function previewImport(actorUserId: string, input: PreviewInput): P
         hash = dedupeHash({ accountId: input.accountId, date, amount, description, runningBalance });
         isDuplicate = seen.has(hash);
         if (!isDuplicate) seen.add(hash);
-        proposedCategoryId = await applyRules(tx, account.workspaceId, { description, merchant });
+        proposedCategoryId = matchRules(rules, { description, merchant });
       } catch (e) {
         errors.push(e instanceof Error ? e.message : "Unparseable row");
       }

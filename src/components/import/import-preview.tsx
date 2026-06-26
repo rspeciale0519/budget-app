@@ -33,6 +33,9 @@ export function ImportPreview({
   busy: boolean;
 }) {
   const committable = rows.filter((r, i) => !skip.has(i) && r.errors.length === 0).length;
+  const RENDER_CAP = 200;
+  const shown = rows.slice(0, RENDER_CAP);
+  const hiddenCount = rows.length - shown.length;
 
   if (batchId) {
     return (
@@ -73,7 +76,7 @@ export function ImportPreview({
       </p>
 
       <div className="max-h-[26rem] divide-y divide-slate-100 overflow-y-auto rounded-md border border-slate-200">
-        {rows.map((r, i) => {
+        {shown.map((r, i) => {
           const negative = r.amount.startsWith("-");
           return (
             <label
@@ -120,6 +123,12 @@ export function ImportPreview({
             </label>
           );
         })}
+        {hiddenCount > 0 && (
+          <p className="px-3 py-2 text-xs text-slate-500">
+            + {hiddenCount} more row{hiddenCount === 1 ? "" : "s"} not shown — all are included
+            unless flagged as duplicate or error above.
+          </p>
+        )}
       </div>
 
       <Button disabled={busy || committable === 0} onClick={onCommit}>

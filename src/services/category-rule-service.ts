@@ -28,16 +28,21 @@ export async function listRules(actorUserId: string, workspaceId: string) {
   return rlsClientFor(actorUserId).run((tx) => repo.listRulesByWorkspace(tx, workspaceId));
 }
 
+export interface MatchableRule {
+  match: string;
+  pattern: string;
+  categoryId: string;
+}
+
 /**
- * First matching rule (highest priority) for a transaction's text. Runs on a
- * provided db handle so it can participate in an import/create transaction.
+ * First matching rule (highest priority) for a transaction's text. Pure: takes
+ * already-fetched rules so callers in a hot loop (e.g. CSV import of thousands
+ * of rows) fetch the rule set once instead of once per row.
  */
-export async function applyRules(
-  db: Db,
-  workspaceId: string,
+export function matchRules(
+  rules: MatchableRule[],
   input: { description: string; merchant?: string | null },
-): Promise<string | null> {
-  const rules = await repo.listRulesByWorkspace(db, workspaceId);
+): string | null {
   const description = input.description.toLowerCase();
   const merchant = (input.merchant ?? "").toLowerCase();
   const haystack = `${description} ${merchant}`;
@@ -50,4 +55,17 @@ export async function applyRules(
     }
   }
   return null;
+}
+
+/**
+ * Fetch-and-match convenience for single-row callers. Runs on a provided db
+ * handle so it can participate in a create transaction.
+ */
+export async function applyRules(
+  db: Db,
+  workspaceId: string,
+  input: { description: string; merchant?: string | null },
+): Promise<string | null> {
+  const rules = await repo.listRulesByWorkspace(db, workspaceId);
+  return matchRules(rules, input);
 }

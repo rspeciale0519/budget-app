@@ -10,14 +10,17 @@ export type RlsTx = Prisma.TransactionClient;
  * runtime connects as the unprivileged `app_runtime` role, so Postgres RLS
  * (Task 11) physically constrains every read/write to the user's workspaces.
  */
-export function rlsClientFor(userId: string) {
+export function rlsClientFor(userId: string, options?: { timeout?: number }) {
   const claims = JSON.stringify({ sub: userId, role: "authenticated" });
   return {
     run<T>(fn: (tx: RlsTx) => Promise<T>): Promise<T> {
-      return prisma.$transaction(async (tx) => {
-        await tx.$executeRawUnsafe("SELECT set_config('request.jwt.claims', $1, true)", claims);
-        return fn(tx);
-      });
+      return prisma.$transaction(
+        async (tx) => {
+          await tx.$executeRawUnsafe("SELECT set_config('request.jwt.claims', $1, true)", claims);
+          return fn(tx);
+        },
+        options?.timeout ? { timeout: options.timeout } : undefined,
+      );
     },
   };
 }
