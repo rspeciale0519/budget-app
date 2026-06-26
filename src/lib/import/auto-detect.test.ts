@@ -30,6 +30,22 @@ describe("guessColumns", () => {
     expect(m.amount).toBe("AMT");
   });
 
+  it("prefers the real Description over Chase's Details (DEBIT/CREDIT) column", () => {
+    const m = guessColumns([
+      "Details",
+      "Posting Date",
+      "Description",
+      "Amount",
+      "Type",
+      "Balance",
+      "Check or Slip #",
+    ]);
+    expect(m.date).toBe("Posting Date");
+    expect(m.description).toBe("Description");
+    expect(m.amount).toBe("Amount");
+    expect(m.runningBalance).toBe("Balance");
+  });
+
   it("returns empty mapping when nothing matches", () => {
     expect(guessColumns(["foo", "bar"])).toEqual({});
   });

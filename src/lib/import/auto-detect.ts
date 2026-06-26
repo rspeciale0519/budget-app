@@ -12,7 +12,9 @@ export interface DetectedMapping {
   runningBalance?: string;
 }
 
-/** Ordered synonym lists; first header that matches a field's patterns wins. */
+// Patterns are tried in order (strongest synonym first) ACROSS all headers, so a
+// later column with a better name beats an earlier weak match — e.g. Chase lists
+// "Details" (DEBIT/CREDIT) before the real "Description" column.
 const SYNONYMS: { field: keyof DetectedMapping; patterns: RegExp[] }[] = [
   { field: "date", patterns: [/^(transaction|posting|posted|trans|value)?\s*date$/, /\bdate\b/] },
   { field: "debit", patterns: [/\b(debit|withdrawal|withdrawals|money out|paid out|outflow)\b/] },
@@ -22,7 +24,12 @@ const SYNONYMS: { field: keyof DetectedMapping; patterns: RegExp[] }[] = [
   { field: "merchant", patterns: [/\b(merchant|payee|counterparty)\b/] },
   {
     field: "description",
-    patterns: [/\b(description|desc|memo|details|narrative|name|reference|notes?)\b/],
+    patterns: [
+      /\bdescription\b/,
+      /\bdesc\b/,
+      /\b(memo|narrative|reference)\b/,
+      /\b(details|name|notes?)\b/,
+    ],
   },
 ];
 
@@ -31,9 +38,11 @@ export function guessColumns(headers: string[]): DetectedMapping {
   const detected: DetectedMapping = {};
   const used = new Set<string>();
   for (const { field, patterns } of SYNONYMS) {
-    const hit = headers.find(
-      (h) => !used.has(h) && patterns.some((p) => p.test(h.toLowerCase().trim())),
-    );
+    let hit: string | undefined;
+    for (const p of patterns) {
+      hit = headers.find((h) => !used.has(h) && p.test(h.toLowerCase().trim()));
+      if (hit) break;
+    }
     if (hit) {
       detected[field] = hit;
       used.add(hit);
