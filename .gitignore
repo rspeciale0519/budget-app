@@ -85,3 +85,6 @@ docs/temp/
 
 # Cloud backend credentials reference (never commit)
 .cloud-credentials.tmp
+
+# Local git worktrees
+.worktrees/
