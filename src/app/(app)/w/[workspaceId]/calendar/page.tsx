@@ -27,7 +27,7 @@ function shiftMonth(year: number, month: number, delta: number): string {
 }
 
 const navCls =
-  "rounded-md border border-line bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50";
+  "rounded-md border border-line bg-card px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-bg-elev";
 
 export default async function CalendarPage({
   params,

@@ -3,7 +3,7 @@
 // navigation from feeling frozen. Mirrors the dashboard's shape.
 
 function Bar({ className = "" }: { className?: string }) {
-  return <div className={`rounded bg-[#eef0f3] ${className}`} />;
+  return <div className={`rounded bg-bg-elev ${className}`} />;
 }
 
 function CardSkeleton({ className = "", children }: { className?: string; children?: React.ReactNode }) {

@@ -16,7 +16,8 @@ interface AccountOption {
   name: string;
 }
 
-const inputCls = "w-full rounded-md border border-slate-300 px-3 py-2 text-sm";
+const inputCls =
+  "w-full rounded-md border border-line bg-bg-elev px-3 py-2 text-sm text-ink placeholder:text-muted focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30";
 
 function useAction() {
   const router = useRouter();
@@ -71,7 +72,7 @@ function AccountForm({ workspaceId }: { workspaceId: string }) {
         </select>
         <input className={inputCls} placeholder="Opening balance" value={openingBalance} onChange={(e) => setOpeningBalance(e.target.value)} />
         <input className={inputCls} type="date" value={openingDate} onChange={(e) => setOpeningDate(e.target.value)} />
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-neg">{error}</p>}
         <Button disabled={busy} onClick={() => submit(() => addAccountAction(workspaceId, { name, type, institution, openingBalance, openingDate }))} className="w-full">
           Add account
         </Button>
@@ -104,7 +105,7 @@ function TransactionForm({ workspaceId, accounts }: { workspaceId: string; accou
         <input className={inputCls} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         <input className={inputCls} placeholder="Amount (e.g. -25.50)" value={amount} onChange={(e) => setAmount(e.target.value)} />
         <input className={inputCls} placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-neg">{error}</p>}
         <Button disabled={busy || !effectiveAccountId} onClick={() => submit(() => addTransactionAction(workspaceId, { accountId: effectiveAccountId, date, amount, description }))} className="w-full">
           Add transaction
         </Button>
@@ -127,7 +128,7 @@ function BillForm({ workspaceId }: { workspaceId: string }) {
         <input className={inputCls} placeholder="Vendor" value={vendor} onChange={(e) => setVendor(e.target.value)} />
         <input className={inputCls} placeholder="Amount" value={amount} onChange={(e) => setAmount(e.target.value)} />
         <input className={inputCls} type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-neg">{error}</p>}
         <Button disabled={busy} onClick={() => submit(() => addBillAction(workspaceId, { vendor, amount, dueDate }))} className="w-full">
           Add bill
         </Button>

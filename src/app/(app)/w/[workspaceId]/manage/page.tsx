@@ -31,12 +31,12 @@ export default async function ManagePage({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-slate-900">Manage</h1>
+        <h1 className="text-xl font-semibold text-ink">Manage</h1>
         <div className="flex gap-2 text-sm">
-          <a href={`/w/${workspaceId}/export?type=transactions`} className="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">
+          <a href={`/w/${workspaceId}/export?type=transactions`} className="rounded-md border border-line px-3 py-1.5 text-ink transition-colors hover:bg-bg-elev">
             Export transactions
           </a>
-          <a href={`/w/${workspaceId}/export?type=bills`} className="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">
+          <a href={`/w/${workspaceId}/export?type=bills`} className="rounded-md border border-line px-3 py-1.5 text-ink transition-colors hover:bg-bg-elev">
             Export bills
           </a>
         </div>
@@ -54,14 +54,14 @@ export default async function ManagePage({
         </CardHeader>
         <CardContent className="space-y-1 text-sm">
           {txns.length === 0 ? (
-            <p className="text-slate-500">No transactions yet.</p>
+            <p className="text-muted">No transactions yet.</p>
           ) : (
             txns.map((t) => (
-              <div key={t.id} className="flex justify-between border-b border-slate-100 py-1">
-                <span className="text-slate-700">
+              <div key={t.id} className="flex justify-between border-b border-line py-1">
+                <span className="text-muted">
                   {fromDbDate(t.date)} · {t.description}
                 </span>
-                <span className="tabular-nums text-slate-900">{format(money(t.amount.toFixed(2)))}</span>
+                <span className="tabular-nums text-ink">{format(money(t.amount.toFixed(2)))}</span>
               </div>
             ))
           )}

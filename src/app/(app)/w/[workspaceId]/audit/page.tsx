@@ -41,21 +41,21 @@ export default async function AuditPage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-slate-900">Audit Log</h1>
+      <h1 className="text-xl font-semibold text-ink">Audit Log</h1>
       <Card>
         <CardHeader>
           <CardTitle>Recent activity (owner/admin only)</CardTitle>
         </CardHeader>
         <CardContent className="space-y-1 text-sm">
           {entries.length === 0 ? (
-            <p className="text-slate-500">No entries visible.</p>
+            <p className="text-muted">No entries visible.</p>
           ) : (
             entries.map((e) => (
-              <div key={e.id} className="flex justify-between border-b border-slate-100 py-1">
-                <span className="text-slate-700">
+              <div key={e.id} className="flex justify-between border-b border-line py-1">
+                <span className="text-ink">
                   {actionLabel(e.action)} · {e.entityType}
                 </span>
-                <span className="text-xs text-slate-400">{e.at.toISOString().slice(0, 10)}</span>
+                <span className="text-xs text-muted">{e.at.toISOString().slice(0, 10)}</span>
               </div>
             ))
           )}

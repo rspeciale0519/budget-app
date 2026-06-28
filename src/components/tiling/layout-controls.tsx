@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { X, Rows, Columns } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { PaneConfig } from "@/lib/zod/layout";
 import type { SavedLayout } from "@/services/layout-service";
 import type { WorkspaceOption } from "@/components/tiling/tiles-client";
 
-const selectCls = "rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm";
-const inputCls = "rounded-md border border-slate-300 px-3 py-1.5 text-sm";
+const selectCls =
+  "rounded-md border border-line bg-bg-elev px-2 py-1.5 text-sm text-ink focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30";
+const inputCls =
+  "rounded-md border border-line bg-bg-elev px-3 py-1.5 text-sm text-ink placeholder:text-muted focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30";
 
 function rootChildren(config: PaneConfig): PaneConfig[] {
   return config.type === "split" ? config.children : [config];
@@ -72,8 +75,9 @@ export function LayoutControls({
               disabled={busy || children.length <= 1}
               onClick={() => onRemovePane(i)}
               title="Remove pane"
+              aria-label={`Remove pane ${i + 1}`}
             >
-              ✕
+              <X className="size-3.5" aria-hidden />
             </Button>
           </div>
         ))}
@@ -85,8 +89,16 @@ export function LayoutControls({
         >
           + Add pane
         </Button>
-        <Button variant="outline" className="px-2 py-1 text-xs" disabled={busy} onClick={onToggleDirection}>
-          {direction === "row" ? "⬍ Stack as column" : "⬌ Arrange as row"}
+        <Button variant="outline" className="flex items-center gap-1 px-2 py-1 text-xs" disabled={busy} onClick={onToggleDirection}>
+          {direction === "row" ? (
+            <>
+              <Rows className="size-3.5" aria-hidden /> Stack as column
+            </>
+          ) : (
+            <>
+              <Columns className="size-3.5" aria-hidden /> Arrange as row
+            </>
+          )}
         </Button>
       </div>
 

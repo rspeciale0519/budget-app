@@ -33,13 +33,13 @@ export function InviteForm({ organizationId }: { organizationId: string }) {
         placeholder="teammate@example.com"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="grow rounded-md border border-slate-300 px-3 py-2 text-sm"
+        className="grow rounded-md border border-line bg-bg-elev px-3 py-2 text-sm text-ink placeholder:text-muted focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
       />
       <Button disabled={busy || !email} onClick={invite}>
         {busy ? "Inviting…" : "Invite"}
       </Button>
-      {done && <span className="text-sm text-emerald-700">Invitation sent.</span>}
-      {error && <span className="text-sm text-red-600">{error}</span>}
+      {done && <span className="text-sm text-pos">Invitation sent.</span>}
+      {error && <span className="text-sm text-neg">{error}</span>}
     </div>
   );
 }

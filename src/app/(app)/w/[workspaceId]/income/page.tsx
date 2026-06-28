@@ -30,7 +30,7 @@ export default async function IncomePage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-slate-900">Expected Income</h1>
+      <h1 className="text-xl font-semibold text-ink">Expected Income</h1>
       <IncomeSourceForm workspaceId={workspaceId} sources={sources} />
     </div>
   );

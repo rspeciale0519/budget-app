@@ -17,7 +17,8 @@ export interface IncomeSourceView {
   nextDate: string;
 }
 
-const inputCls = "w-full rounded-md border border-slate-300 px-3 py-2 text-sm";
+const inputCls =
+  "w-full rounded-md border border-line bg-bg-elev px-3 py-2 text-sm text-ink placeholder:text-muted focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30";
 const FREQUENCIES = ["weekly", "monthly", "quarterly", "annual"];
 
 export function IncomeSourceForm({
@@ -67,7 +68,7 @@ export function IncomeSourceForm({
             ))}
           </select>
           <input className={inputCls} type="date" value={nextDate} onChange={(e) => setNextDate(e.target.value)} />
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-neg">{error}</p>}
           <Button disabled={busy || !name} onClick={add} className="w-full">
             {busy ? "Adding…" : "Add income source"}
           </Button>
@@ -87,12 +88,12 @@ export function IncomeSourceForm({
           ) : (
             sources.map((s) => (
               <div key={s.id} className="flex items-center justify-between border-b border-line py-1.5">
-                <span className="text-slate-700">
+                <span className="text-muted">
                   {s.name} · {s.frequency} · next {s.nextDate}
                 </span>
                 <span className="flex items-center gap-3">
-                  <span className="tabular text-slate-900">${s.amount}</span>
-                  <button onClick={() => remove(s.id)} className="text-xs text-red-600 hover:underline">
+                  <span className="tabular text-ink">${s.amount}</span>
+                  <button onClick={() => remove(s.id)} className="text-xs text-neg hover:underline">
                     remove
                   </button>
                 </span>

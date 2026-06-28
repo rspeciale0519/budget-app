@@ -5,10 +5,10 @@ const WEEKDAYS_FULL = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const CHIP: Record<DayStatus, string> = {
-  overdue: "bg-[#fee2e2] text-[#b91c1c]",
-  soon: "bg-[#fef3c7] text-[#b45309]",
-  scheduled: "bg-[#e0e7ff] text-[#4338ca]",
-  paid: "bg-[#dcfce7] text-[#15803d]",
+  overdue: "bg-neg/15 text-neg",
+  soon: "bg-amber/15 text-amber",
+  scheduled: "bg-primary/15 text-primary",
+  paid: "bg-pos/15 text-pos",
 };
 
 function dayNumber(date: string): string {
@@ -34,7 +34,7 @@ function Agenda({ month }: { month: CalendarMonth }) {
       ) : (
         days.map((d) => (
           <div key={d.date} className="border-b border-line px-3.5 py-3 last:border-b-0">
-            <div className={`text-[12.5px] font-bold ${d.isToday ? "text-[#15803d]" : "text-ink"}`}>
+            <div className={`text-[12.5px] font-bold ${d.isToday ? "text-pos" : "text-ink"}`}>
               {agendaLabel(d.date)}
               {d.isToday ? " · Today" : ""}
             </div>
@@ -60,7 +60,7 @@ function MonthGrid({ month }: { month: CalendarMonth }) {
   return (
     <div className="hidden overflow-x-auto rounded-[14px] border border-line bg-card shadow-card sm:block">
       <div className="min-w-[640px]">
-        <div className="grid grid-cols-7 border-b border-line bg-[#f8fafc]">
+        <div className="grid grid-cols-7 border-b border-line bg-bg-elev">
           {WEEKDAYS.map((d) => (
             <div
               key={d}
@@ -75,12 +75,12 @@ function MonthGrid({ month }: { month: CalendarMonth }) {
             <div
               key={day.date}
               className={`min-h-[84px] border-b border-r border-line p-1.5 last:border-r-0 ${
-                day.inMonth ? "bg-white" : "bg-[#fafbfc]"
+                day.inMonth ? "bg-card" : "bg-bg-elev/50"
               }`}
             >
               <div
                 className={`mb-1 inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold ${
-                  day.isToday ? "bg-slate-900 text-white" : day.inMonth ? "text-ink" : "text-muted"
+                  day.isToday ? "bg-primary text-white" : day.inMonth ? "text-ink" : "text-muted"
                 }`}
               >
                 {dayNumber(day.date)}

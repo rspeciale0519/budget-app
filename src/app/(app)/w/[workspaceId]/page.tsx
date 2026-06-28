@@ -24,13 +24,13 @@ export default async function WorkspaceDashboard({
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <div className="flex overflow-hidden rounded-[9px] border border-line bg-white">
+        <div className="flex overflow-hidden rounded-[9px] border border-line bg-card">
           {PERIODS.map((p) => (
             <Link
               key={p}
               href={`/w/${workspaceId}?period=${p}`}
-              className={`px-3 py-[7px] text-[12.5px] font-semibold capitalize ${
-                p === period ? "bg-pos text-white" : "text-muted hover:bg-[#f3f5f8]"
+              className={`px-3 py-[7px] text-[12.5px] font-semibold capitalize transition-colors ${
+                p === period ? "bg-pos text-white" : "text-muted hover:bg-bg-elev"
               }`}
             >
               {p}

@@ -3,6 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Check } from "lucide-react";
+import { toast } from "sonner";
+import { useCelebration } from "@/lib/motion/use-celebration";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { guessColumns, guessDateFormat, guessSignRule } from "@/lib/import/auto-detect";
@@ -42,18 +45,18 @@ function Stepper({ step }: { step: Step }) {
           <span
             className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
               i < active
-                ? "bg-emerald-500 text-white"
+                ? "bg-pos text-white"
                 : i === active
-                  ? "bg-[#2563eb] text-white"
-                  : "bg-slate-200 text-slate-500"
+                  ? "bg-primary text-white"
+                  : "bg-bg-elev text-muted"
             }`}
           >
-            {i < active ? "✓" : i + 1}
+            {i < active ? <Check className="size-3.5" aria-hidden /> : i + 1}
           </span>
-          <span className={i === active ? "font-semibold text-slate-900" : "text-slate-500"}>
+          <span className={i === active ? "font-semibold text-ink" : "text-muted"}>
             {s.label}
           </span>
-          {i < STEPS.length - 1 && <span className="px-1 text-slate-300">→</span>}
+          {i < STEPS.length - 1 && <span className="px-1 text-muted">→</span>}
         </li>
       ))}
     </ol>
@@ -68,6 +71,7 @@ export function ImportWizard({
   accounts: { id: string; name: string }[];
 }) {
   const router = useRouter();
+  const celebrate = useCelebration();
   const [step, setStep] = useState<Step>("upload");
   const [accountId, setAccountId] = useState(accounts[0]?.id ?? "");
   const [parsed, setParsed] = useState<ParsedCsvState | null>(null);
@@ -138,6 +142,10 @@ export function ImportWizard({
     if (!result.ok) setError(result.error ?? "Import failed");
     else {
       setBatchId(result.batchId ?? null);
+      celebrate();
+      toast.success("Import complete", {
+        description: `${summary.newCount} transaction${summary.newCount === 1 ? "" : "s"} added.`,
+      });
       router.refresh();
     }
   }
@@ -174,12 +182,12 @@ export function ImportWizard({
   if (accounts.length === 0) {
     return (
       <Card>
-        <CardContent className="space-y-2 py-6 text-sm text-slate-600">
-          <p className="font-medium text-slate-800">Add an account first.</p>
+        <CardContent className="space-y-2 py-6 text-sm text-muted">
+          <p className="font-medium text-ink">Add an account first.</p>
           <p>CSV transactions are imported into an account, and this workspace has none yet.</p>
           <Link
             href={`/w/${workspaceId}/manage`}
-            className="inline-block rounded-md bg-slate-900 px-3 py-2 font-medium text-white hover:bg-slate-700"
+            className="inline-block rounded-md bg-ink px-3 py-2 font-medium text-card transition-opacity hover:opacity-90"
           >
             Go to Manage → add an account
           </Link>
@@ -199,7 +207,7 @@ export function ImportWizard({
             <button
               type="button"
               onClick={() => setStep(step === "review" ? "map" : "upload")}
-              className="text-xs font-medium text-slate-500 hover:text-slate-800"
+              className="text-xs font-medium text-muted transition-colors hover:text-ink"
             >
               ← Back
             </button>
@@ -209,9 +217,9 @@ export function ImportWizard({
           {step === "upload" && (
             <>
               <label className="block space-y-1">
-                <span className="text-xs font-semibold text-slate-600">Import into account</span>
+                <span className="text-xs font-semibold text-muted">Import into account</span>
                 <select
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-line bg-bg-elev px-3 py-2 text-sm text-ink focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                   value={accountId}
                   onChange={(e) => setAccountId(e.target.value)}
                 >
@@ -228,17 +236,17 @@ export function ImportWizard({
 
           {step === "map" && parsed && (
             <>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-muted">
                 We pre-filled these from <span className="font-medium">{fileName}</span> ·{" "}
                 {parsed.rows.length} rows. Adjust anything that looks wrong.
               </p>
               <ColumnMapper parsed={parsed} value={mapping} onChange={setMapping} />
-              {error && <p className="text-sm text-red-600">{error}</p>}
+              {error && <p className="text-sm text-neg">{error}</p>}
               <Button disabled={busy || !isMappingComplete(mapping)} onClick={preview}>
                 {busy ? "Checking…" : "Preview import"}
               </Button>
               {!isMappingComplete(mapping) && (
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-muted">
                   Pick a Date, Description, and amount column(s) to continue.
                 </p>
               )}
@@ -247,7 +255,7 @@ export function ImportWizard({
 
           {step === "review" && (
             <>
-              {error && <p className="text-sm text-red-600">{error}</p>}
+              {error && <p className="text-sm text-neg">{error}</p>}
               <ImportPreview
                 rows={rows}
                 summary={summary}

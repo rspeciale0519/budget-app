@@ -23,7 +23,7 @@ export default async function ImportPage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-slate-900">CSV Import</h1>
+      <h1 className="text-xl font-semibold text-ink">CSV Import</h1>
       <ImportWizard workspaceId={workspaceId} accounts={accounts} />
     </div>
   );
