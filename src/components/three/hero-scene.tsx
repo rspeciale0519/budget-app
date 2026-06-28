@@ -1,86 +1,150 @@
 "use client";
 
+/**
+ * Login hero — an ambient "cash-flow" data scene.
+ *
+ * Several smooth lines flow left-to-right across a receding, fading grid,
+ * each undulating with a layered sine wave and trending gently upward. A
+ * glowing marker rides the leading edge of every line. The motif mirrors the
+ * app's cash-flow forecast chart, reading instantly as a finance product.
+ *
+ * Purely decorative and lazy-loaded; the reduced-motion fallback lives in the
+ * `login-hero` wrapper.
+ */
+
 import { useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Color, type Group, type Mesh, type MeshStandardMaterial } from "three";
+import { Line, Grid } from "@react-three/drei";
+import { Vector3, type Mesh, type Group, type BufferGeometry } from "three";
 
-const COLS = 26;
-const ROWS = 3;
-const SPACING = 0.46;
+/** Minimal shape of the Line2 instance drei forwards (avoids a three-stdlib type import). */
+type FatLine = { geometry: BufferGeometry & { setPositions: (a: number[]) => void } };
 
-/**
- * An animated field of vertical bars that ripples with a traveling wave and
- * gently trends upward left-to-right — evoking a live cash-flow forecast.
- */
-function BarField() {
-  const group = useRef<Group>(null);
-  const meshes = useRef<(Mesh | null)[]>([]);
+const SEGMENTS = 140;
+const X_MIN = -7;
+const X_MAX = 7;
+const SPAN = X_MAX - X_MIN;
 
-  const bars = useMemo(() => {
-    const arr: { x: number; z: number; phase: number; rowDim: number }[] = [];
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS; c++) {
-        arr.push({
-          x: (c - (COLS - 1) / 2) * SPACING,
-          z: (r - (ROWS - 1) / 2) * 0.95,
-          phase: c * 0.42 + r * 0.7,
-          // Back rows render dimmer for depth.
-          rowDim: 1 - r * 0.26,
-        });
-      }
+type LineSpec = {
+  color: string;
+  /** vertical band the line trends through, left -> right */
+  startY: number;
+  endY: number;
+  amplitude: number;
+  frequency: number;
+  speed: number;
+  phase: number;
+  z: number;
+};
+
+const LINES: LineSpec[] = [
+  // The "growth" line — brightest, climbs the most.
+  { color: "#22b07d", startY: -1.4, endY: 1.9, amplitude: 0.42, frequency: 0.9, speed: 0.55, phase: 0, z: 0.4 },
+  { color: "#6366f1", startY: -0.6, endY: 1.1, amplitude: 0.55, frequency: 0.7, speed: 0.42, phase: 1.7, z: -0.6 },
+  { color: "#14b8a6", startY: -1.9, endY: 0.4, amplitude: 0.34, frequency: 1.2, speed: 0.66, phase: 3.1, z: -1.6 },
+];
+
+/** Height of a line at normalized x (0..1) and time t. */
+function sampleY(spec: LineSpec, xNorm: number, t: number): number {
+  const trend = spec.startY + (spec.endY - spec.startY) * xNorm;
+  const x = X_MIN + SPAN * xNorm;
+  const wave =
+    Math.sin(x * spec.frequency + t * spec.speed + spec.phase) * spec.amplitude +
+    Math.sin(x * spec.frequency * 0.5 - t * spec.speed * 0.6) * spec.amplitude * 0.35;
+  return trend + wave;
+}
+
+function FlowLine({ spec }: { spec: LineSpec }) {
+  const lineRef = useRef<FatLine>(null);
+  const dotRef = useRef<Mesh>(null);
+  const glowRef = useRef<Mesh>(null);
+
+  const initial = useMemo(() => {
+    const pts: Vector3[] = [];
+    for (let i = 0; i <= SEGMENTS; i++) {
+      const xNorm = i / SEGMENTS;
+      pts.push(new Vector3(X_MIN + SPAN * xNorm, sampleY(spec, xNorm, 0), spec.z));
     }
-    return arr;
-  }, []);
-
-  const lowColor = useMemo(() => new Color("#6366f1"), []); // indigo (low)
-  const highColor = useMemo(() => new Color("#22b07d"), []); // green (growth)
-  const scratch = useMemo(() => new Color(), []);
+    return pts;
+  }, [spec]);
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
-    for (let i = 0; i < meshes.current.length; i++) {
-      const mesh = meshes.current[i];
-      const b = bars[i];
-      if (!mesh || !b) continue;
-
-      const wave = Math.sin(t * 1.05 + b.phase) * 0.5 + 0.5;
-      const trend = b.x / (COLS * SPACING) + 0.5; // 0 (left) -> 1 (right)
-      const height = 0.45 + wave * 2.1 + trend * 1.5;
-
-      mesh.scale.y = height;
-      mesh.position.y = height / 2 - 1.3;
-
-      const mix = Math.min(1, height / 4.2);
-      scratch.copy(lowColor).lerp(highColor, mix);
-      const mat = mesh.material as MeshStandardMaterial;
-      mat.color.copy(scratch);
-      mat.emissive.copy(scratch);
-      mat.emissiveIntensity = 0.18 * b.rowDim;
-      mat.opacity = 0.55 + 0.4 * b.rowDim;
+    const flat: number[] = [];
+    let tipY = 0;
+    for (let i = 0; i <= SEGMENTS; i++) {
+      const xNorm = i / SEGMENTS;
+      const y = sampleY(spec, xNorm, t);
+      if (i === SEGMENTS) tipY = y;
+      flat.push(X_MIN + SPAN * xNorm, y, spec.z);
     }
-    if (group.current) {
-      group.current.rotation.y = Math.sin(t * 0.1) * 0.14;
+    lineRef.current?.geometry.setPositions(flat);
+    if (dotRef.current) dotRef.current.position.set(X_MAX, tipY, spec.z);
+    if (glowRef.current) {
+      glowRef.current.position.set(X_MAX, tipY, spec.z);
+      glowRef.current.scale.setScalar(1 + Math.sin(t * 2.4 + spec.phase) * 0.18);
     }
   });
 
   return (
-    <group ref={group} rotation={[0.22, -0.32, 0]}>
-      {bars.map((b, i) => (
-        <mesh
-          key={i}
-          ref={(m) => {
-            meshes.current[i] = m;
-          }}
-          position={[b.x, 0, b.z]}
-        >
-          <boxGeometry args={[0.2, 1, 0.2]} />
-          <meshStandardMaterial
-            metalness={0.25}
-            roughness={0.45}
-            transparent
-            opacity={0.9}
-          />
-        </mesh>
+    <group>
+      <Line
+        ref={lineRef as never}
+        points={initial}
+        color={spec.color}
+        lineWidth={2.4}
+        transparent
+        opacity={0.92}
+        frustumCulled={false}
+      />
+      {/* leading marker */}
+      <mesh ref={dotRef} position={[X_MAX, spec.endY, spec.z]}>
+        <sphereGeometry args={[0.11, 24, 24]} />
+        <meshStandardMaterial color={spec.color} emissive={spec.color} emissiveIntensity={1.4} toneMapped={false} />
+      </mesh>
+      {/* soft halo around the marker */}
+      <mesh ref={glowRef} position={[X_MAX, spec.endY, spec.z]}>
+        <sphereGeometry args={[0.26, 24, 24]} />
+        <meshBasicMaterial color={spec.color} transparent opacity={0.16} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function Scene() {
+  const groupRef = useRef<Group>(null);
+
+  useFrame((state) => {
+    // very slow parallax sway so the whole field feels alive
+    if (groupRef.current) {
+      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.12) * 0.06;
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      <ambientLight intensity={0.7} />
+      <pointLight position={[4, 4, 6]} intensity={0.8} />
+      <pointLight position={[-5, -2, 2]} intensity={0.5} color="#6366f1" />
+
+      {/* receding data floor */}
+      <group position={[0, -2.6, -1]}>
+        <Grid
+          args={[28, 22]}
+          cellSize={0.7}
+          cellThickness={0.6}
+          cellColor="#6366f1"
+          sectionSize={3.5}
+          sectionThickness={1}
+          sectionColor="#22b07d"
+          fadeDistance={26}
+          fadeStrength={2.4}
+          infiniteGrid
+        />
+      </group>
+
+      {LINES.map((spec, i) => (
+        <FlowLine key={i} spec={spec} />
       ))}
     </group>
   );
@@ -94,11 +158,7 @@ export default function HeroScene() {
       gl={{ antialias: true, alpha: true }}
       style={{ background: "transparent" }}
     >
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[4, 6, 4]} intensity={1.3} />
-      <pointLight position={[-5, 2, 3]} intensity={0.6} color="#6366f1" />
-      <pointLight position={[5, -1, 4]} intensity={0.5} color="#22b07d" />
-      <BarField />
+      <Scene />
     </Canvas>
   );
 }
