@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
+import { Plus, LayoutList } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface TabWorkspace {
   id: string;
@@ -16,38 +19,61 @@ export function WorkspaceTabs({ workspaces }: { workspaces: TabWorkspace[] }) {
   const allActive = pathname.startsWith("/all");
 
   return (
-    <div className="flex flex-1 items-center gap-1.5 overflow-auto">
+    <div className="flex flex-1 items-center gap-1 overflow-auto">
       {workspaces.map((w) => {
         const active = w.id === activeId;
         return (
           <Link
             key={w.id}
             href={`/w/${w.id}`}
-            className={`flex items-center gap-[7px] whitespace-nowrap rounded-[9px] border px-3 py-[7px] text-[13px] font-semibold ${
-              active
-                ? "border-line bg-[#f3f5f8] text-ink shadow-[inset_0_-2px_0_var(--color-pos)]"
-                : "border-transparent text-muted hover:bg-[#f6f7f9]"
-            }`}
+            className={cn(
+              "relative flex items-center gap-[7px] whitespace-nowrap rounded-lg px-3 py-[7px] text-[13px] font-semibold transition-colors",
+              active ? "text-ink" : "text-muted hover:bg-bg-elev hover:text-ink",
+            )}
           >
-            <span className="h-[9px] w-[9px] rounded-full" style={{ backgroundColor: w.color }} />
-            {w.icon ? <span aria-hidden>{w.icon}</span> : null}
-            {w.name}
+            {active && (
+              <motion.span
+                layoutId="workspace-tab-active"
+                className="absolute inset-0 rounded-lg bg-bg-elev"
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              />
+            )}
+            <span
+              className="relative h-[9px] w-[9px] rounded-full"
+              style={{ backgroundColor: w.color }}
+            />
+            {w.icon ? (
+              <span className="relative" aria-hidden>
+                {w.icon}
+              </span>
+            ) : null}
+            <span className="relative">{w.name}</span>
+            {active && (
+              <motion.span
+                layoutId="workspace-tab-underline"
+                className="absolute inset-x-2 -bottom-[9px] h-[2px] rounded-full bg-pos"
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              />
+            )}
           </Link>
         );
       })}
-      <span
-        className="cursor-default whitespace-nowrap rounded-[9px] px-2.5 py-[7px] text-[13px] font-bold text-[#9aa1ad]"
+      <button
+        type="button"
+        className="grid h-[30px] w-[30px] flex-shrink-0 place-items-center rounded-lg text-muted/70 transition-colors hover:bg-bg-elev hover:text-ink"
         title="Add workspace (coming soon)"
+        aria-label="Add workspace"
       >
-        ＋
-      </span>
+        <Plus className="h-4 w-4" />
+      </button>
       <Link
         href="/all"
-        className={`ml-1 whitespace-nowrap rounded-[9px] border px-3 py-[7px] text-[13px] font-semibold ${
-          allActive ? "border-line bg-[#f3f5f8] text-ink" : "border-transparent text-[#374151] hover:bg-[#f6f7f9]"
-        }`}
+        className={cn(
+          "ml-1 flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-[7px] text-[13px] font-semibold transition-colors",
+          allActive ? "bg-bg-elev text-ink" : "text-muted hover:bg-bg-elev hover:text-ink",
+        )}
       >
-        ▦ All Workspaces
+        <LayoutList className="h-3.5 w-3.5" /> All Workspaces
       </Link>
     </div>
   );

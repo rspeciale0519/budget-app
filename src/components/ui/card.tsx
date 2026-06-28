@@ -1,9 +1,21 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export function Card({ className, children }: { className?: string; children: ReactNode }) {
+export function Card({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
   return (
-    <div className={cn("rounded-[14px] border border-line bg-card shadow-card", className)}>
+    <div
+      className={cn(
+        "rounded-card border border-line bg-card shadow-card",
+        "transition-shadow duration-200 hover:shadow-pop",
+        className,
+      )}
+    >
       {children}
     </div>
   );

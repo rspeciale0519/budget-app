@@ -2,7 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import { Search } from "lucide-react";
 import { buildCommands, filterCommands, type Command } from "@/lib/command-palette/commands";
+import { cn } from "@/lib/utils";
 
 type Workspace = { id: string; name: string; color: string };
 
@@ -44,8 +47,6 @@ export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
     if (open) inputRef.current?.focus();
   }, [open]);
 
-  if (!open) return null;
-
   function go(cmd: Command | undefined) {
     if (!cmd) return;
     setOpen(false);
@@ -68,66 +69,86 @@ export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
   const groups: Command["group"][] = ["Quick actions", "Go to workspace"];
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-[#0b1020]/60 p-4 pt-[12vh]"
-      onClick={() => setOpen(false)}
-    >
-      <div
-        className="w-full max-w-[540px] overflow-hidden rounded-[13px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.4)]"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center gap-2.5 border-b border-line px-4 py-3.5 text-[15px] text-[#374151]">
-          <span aria-hidden>⌘</span>
-          <input
-            ref={inputRef}
-            aria-label="Command palette"
-            className="w-full bg-transparent outline-none placeholder:text-[#9aa1ad]"
-            placeholder="Type a command or search…"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setSelected(0);
-            }}
-            onKeyDown={onInputKey}
-          />
-        </div>
-        <div className="max-h-[50vh] overflow-auto py-1">
-          {filtered.length === 0 ? (
-            <p className="px-4 py-3 text-sm text-muted">No matching commands</p>
-          ) : (
-            groups.map((group) => {
-              const items = filtered.filter((c) => c.group === group);
-              if (items.length === 0) return null;
-              return (
-                <div key={group}>
-                  <div className="px-4 pb-1 pt-2.5 text-[10.5px] font-bold uppercase tracking-[0.05em] text-[#9aa1ad]">
-                    {group}
-                  </div>
-                  {items.map((cmd) => {
-                    const idx = filtered.indexOf(cmd);
-                    return (
-                      <button
-                        key={cmd.id}
-                        type="button"
-                        onMouseEnter={() => setSelected(idx)}
-                        onClick={() => go(cmd)}
-                        className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-[13.5px] font-semibold ${
-                          idx === selected ? "bg-[#f3f5f8]" : ""
-                        }`}
-                      >
-                        <span className="grid h-6 w-6 place-items-center rounded-[7px] bg-[#eef0f3] text-[13px]" aria-hidden>
-                          {cmd.icon}
-                        </span>
-                        {cmd.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
-    </div>
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          key="cmdk-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 pt-[12vh] backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: -16, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 360, damping: 28 }}
+            className="w-full max-w-[540px] overflow-hidden rounded-xl border border-line bg-card shadow-pop"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2.5 border-b border-line px-4 py-3.5 text-[15px] text-ink">
+              <Search className="h-[18px] w-[18px] text-muted" />
+              <input
+                ref={inputRef}
+                aria-label="Command palette"
+                className="w-full bg-transparent text-ink outline-none placeholder:text-muted"
+                placeholder="Type a command or search…"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setSelected(0);
+                }}
+                onKeyDown={onInputKey}
+              />
+              <kbd className="rounded border border-line px-1.5 py-0.5 text-[10px] font-semibold text-muted">
+                ESC
+              </kbd>
+            </div>
+            <div className="max-h-[50vh] overflow-auto py-1">
+              {filtered.length === 0 ? (
+                <p className="px-4 py-3 text-sm text-muted">No matching commands</p>
+              ) : (
+                groups.map((group) => {
+                  const items = filtered.filter((c) => c.group === group);
+                  if (items.length === 0) return null;
+                  return (
+                    <div key={group}>
+                      <div className="px-4 pb-1 pt-2.5 text-[10.5px] font-bold uppercase tracking-[0.05em] text-muted">
+                        {group}
+                      </div>
+                      {items.map((cmd) => {
+                        const idx = filtered.indexOf(cmd);
+                        return (
+                          <button
+                            key={cmd.id}
+                            type="button"
+                            onMouseEnter={() => setSelected(idx)}
+                            onClick={() => go(cmd)}
+                            className={cn(
+                              "flex w-full items-center gap-3 px-4 py-2.5 text-left text-[13.5px] font-semibold text-ink transition-colors",
+                              idx === selected ? "bg-bg-elev" : "",
+                            )}
+                          >
+                            <span
+                              className="grid h-6 w-6 place-items-center rounded-[7px] bg-bg-elev text-[13px]"
+                              aria-hidden
+                            >
+                              {cmd.icon}
+                            </span>
+                            {cmd.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

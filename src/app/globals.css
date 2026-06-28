@@ -1,30 +1,181 @@
 @import "tailwindcss";
 
-/* Design tokens from the approved mockup (docs/temp/budget-app-mockup-v1.html). */
-@theme {
-  --color-bg: #f4f5f7;
-  --color-card: #ffffff;
-  --color-ink: #1a1d24;
-  --color-muted: #6b7280;
-  --color-line: #e7e9ee;
-  --color-pos: #16a34a;
-  --color-neg: #dc2626;
-  --color-amber: #d97706;
-  --color-blue: #2563eb;
-  --color-violet: #7c3aed;
-  --color-slate: #64748b;
+/* Dark mode is driven by a `.dark` class on <html> (next-themes). */
+@custom-variant dark (&:where(.dark, .dark *));
 
-  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 16px rgba(16, 24, 40, 0.06);
+/*
+ * Theme tokens.
+ * Raw values live on :root / .dark so they can swap between light & dark.
+ * They are mapped into Tailwind's color system via @theme inline below,
+ * which keeps existing utility names (bg-card, text-ink, border-line, ...) working.
+ */
+:root {
+  --bg: #eef1f6;
+  --bg-elev: #f7f8fb;
+  --card: #ffffff;
+  --ink: #11151c;
+  --muted: #66707f;
+  --line: #e3e7ef;
+  --line-strong: #d2d8e3;
+
+  --primary: #4f46e5;
+  --primary-ink: #ffffff;
+  --primary-soft: #eef0fe;
+
+  --pos: #16a34a;
+  --neg: #dc2626;
+  --amber: #d97706;
+  --blue: #2563eb;
+  --violet: #7c3aed;
+  --slate: #64748b;
+  --teal: #0d9488;
+
+  --ring: rgba(79, 70, 229, 0.45);
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 6px 20px rgba(16, 24, 40, 0.07);
+  --shadow-pop: 0 10px 40px rgba(16, 24, 40, 0.14);
+  --radius: 14px;
+}
+
+.dark {
+  --bg: #0a0d14;
+  --bg-elev: #11151f;
+  --card: #141925;
+  --ink: #eef2f9;
+  --muted: #93a0b4;
+  --line: #232b3a;
+  --line-strong: #313b4f;
+
+  --primary: #6366f1;
+  --primary-ink: #ffffff;
+  --primary-soft: #1d2236;
+
+  --pos: #34d399;
+  --neg: #f87171;
+  --amber: #fbbf24;
+  --blue: #60a5fa;
+  --violet: #a78bfa;
+  --slate: #94a3b8;
+  --teal: #2dd4bf;
+
+  --ring: rgba(99, 102, 241, 0.55);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 28px rgba(0, 0, 0, 0.45);
+  --shadow-pop: 0 12px 48px rgba(0, 0, 0, 0.6);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elev: var(--bg-elev);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-primary: var(--primary);
+  --color-primary-ink: var(--primary-ink);
+  --color-primary-soft: var(--primary-soft);
+
+  --color-pos: var(--pos);
+  --color-neg: var(--neg);
+  --color-amber: var(--amber);
+  --color-blue: var(--blue);
+  --color-violet: var(--violet);
+  --color-slate: var(--slate);
+  --color-teal: var(--teal);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-pop: var(--shadow-pop);
+
+  --radius-card: var(--radius);
+
+  --font-sans:
+    "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --animate-shimmer: shimmer 1.6s linear infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+html {
+  background: var(--bg);
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-ink);
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Smooth color transitions when toggling light/dark. */
+:root,
+.dark {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
+body,
+.theme-transition,
+.theme-transition * {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.2s ease;
 }
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* Skeleton shimmer used by loading states. */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--line) 60%, transparent) 25%,
+    color-mix(in oklab, var(--line-strong) 80%, transparent) 37%,
+    color-mix(in oklab, var(--line) 60%, transparent) 63%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .skeleton {
+    animation: none;
+  }
+}
+
+/* Custom scrollbar that respects the theme. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
