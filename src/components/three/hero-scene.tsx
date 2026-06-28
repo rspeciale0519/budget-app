@@ -10,21 +10,23 @@ function Coin({
   position,
   color,
   scale = 1,
+  rotation,
 }: {
   position: [number, number, number];
   color: string;
   scale?: number;
+  rotation: [number, number, number];
 }) {
   return (
-    <Float speed={2.2} rotationIntensity={1.6} floatIntensity={1.4}>
-      <mesh position={position} scale={scale} rotation={[Math.PI / 2.4, 0.4, 0]}>
-        <cylinderGeometry args={[0.7, 0.7, 0.16, 48]} />
+    <Float speed={1.8} rotationIntensity={1.1} floatIntensity={1.2}>
+      <mesh position={position} scale={scale} rotation={rotation}>
+        <cylinderGeometry args={[0.7, 0.7, 0.22, 48]} />
         <meshStandardMaterial
           color={color}
-          metalness={0.45}
-          roughness={0.3}
+          metalness={0.55}
+          roughness={0.28}
           emissive={color}
-          emissiveIntensity={0.15}
+          emissiveIntensity={0.08}
         />
       </mesh>
     </Float>
@@ -36,11 +38,11 @@ function Coins() {
   const coins = useMemo(
     () =>
       [
-        { position: [-2.2, 1.1, 0] as [number, number, number], color: "#f5c542", scale: 1.1 },
-        { position: [2.1, 0.4, -1] as [number, number, number], color: "#4f46e5", scale: 0.9 },
-        { position: [0.2, -1.2, 0.5] as [number, number, number], color: "#16a34a", scale: 1 },
-        { position: [-1.4, -0.8, -1.2] as [number, number, number], color: "#0d9488", scale: 0.7 },
-        { position: [1.6, 1.6, 0.4] as [number, number, number], color: "#f5c542", scale: 0.6 },
+        { position: [-3, 1.3, -0.5] as [number, number, number], color: "#e8b73d", scale: 0.95, rotation: [1.1, 0.5, 0.3] as [number, number, number] },
+        { position: [3, 0.6, -1.5] as [number, number, number], color: "#6366f1", scale: 0.8, rotation: [0.8, -0.4, -0.2] as [number, number, number] },
+        { position: [0.6, -1.6, 0] as [number, number, number], color: "#22b07d", scale: 0.9, rotation: [1.3, 0.2, 0.5] as [number, number, number] },
+        { position: [-1.9, -1, -1.5] as [number, number, number], color: "#14b8a6", scale: 0.6, rotation: [0.6, 0.8, 0.1] as [number, number, number] },
+        { position: [2.2, 2, -0.5] as [number, number, number], color: "#e8b73d", scale: 0.5, rotation: [1.0, -0.6, 0.4] as [number, number, number] },
       ],
     [],
   );
@@ -63,7 +65,7 @@ function Coins() {
 export default function HeroScene() {
   return (
     <Canvas
-      camera={{ position: [0, 0, 6], fov: 50 }}
+      camera={{ position: [0, 0, 8], fov: 45 }}
       dpr={[1, 1.75]}
       gl={{ antialias: true, alpha: true }}
       style={{ background: "transparent" }}

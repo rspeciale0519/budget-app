@@ -27,7 +27,7 @@ function HeroFallback() {
 export function LoginHero({ className }: { className?: string }) {
   const reduced = useReducedMotion();
   return (
-    <div className={cn("absolute inset-0 -z-10", className)} aria-hidden>
+    <div className={cn("pointer-events-none absolute inset-0 z-0", className)} aria-hidden>
       {reduced ? <HeroFallback /> : <HeroScene />}
     </div>
   );
