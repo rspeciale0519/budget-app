@@ -2,7 +2,7 @@
 
 import { useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, Environment } from "@react-three/drei";
+import { Float } from "@react-three/drei";
 import type { Group } from "three";
 
 /** A single floating coin (flat cylinder) tinted with a brand color. */
@@ -19,7 +19,13 @@ function Coin({
     <Float speed={2.2} rotationIntensity={1.6} floatIntensity={1.4}>
       <mesh position={position} scale={scale} rotation={[Math.PI / 2.4, 0.4, 0]}>
         <cylinderGeometry args={[0.7, 0.7, 0.16, 48]} />
-        <meshStandardMaterial color={color} metalness={0.85} roughness={0.18} />
+        <meshStandardMaterial
+          color={color}
+          metalness={0.45}
+          roughness={0.3}
+          emissive={color}
+          emissiveIntensity={0.15}
+        />
       </mesh>
     </Float>
   );
@@ -65,8 +71,8 @@ export default function HeroScene() {
       <ambientLight intensity={0.6} />
       <directionalLight position={[4, 5, 3]} intensity={1.6} />
       <pointLight position={[-4, -3, 2]} intensity={0.7} color="#4f46e5" />
+      <pointLight position={[0, 2, 5]} intensity={0.9} color="#fbbf24" />
       <Coins />
-      <Environment preset="sunset" />
     </Canvas>
   );
 }

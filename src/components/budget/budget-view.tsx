@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { setBudgetAction } from "@/app/(app)/w/[workspaceId]/budget/_actions";
@@ -13,13 +14,15 @@ interface CategoryOption {
 }
 
 const BAR: Record<BudgetRow["status"], string> = {
-  under: "bg-[#2563eb]",
-  near: "bg-[#f59e0b]",
-  over: "bg-[#dc2626]",
+  under: "bg-blue",
+  near: "bg-amber",
+  over: "bg-neg",
 };
 
-const inputCls = "rounded-md border border-slate-300 px-3 py-1.5 text-sm";
-const selectCls = "rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm";
+const inputCls =
+  "rounded-md border border-line bg-bg-elev px-3 py-1.5 text-sm text-ink placeholder:text-muted focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30";
+const selectCls =
+  "rounded-md border border-line bg-bg-elev px-2 py-1.5 text-sm text-ink focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30";
 
 function SetBudgetForm({ workspaceId, categories }: { workspaceId: string; categories: CategoryOption[] }) {
   const router = useRouter();
@@ -101,14 +104,16 @@ export function BudgetView({
             <div key={r.categoryId} className="space-y-1.5">
               <div className="flex items-baseline justify-between text-sm">
                 <span className="font-semibold text-ink">{r.name}</span>
-                <span className={`tabular ${r.status === "over" ? "font-bold text-neg" : "text-slate-700"}`}>
+                <span className={`tabular ${r.status === "over" ? "font-bold text-neg" : "text-muted"}`}>
                   {`${r.actual} / ${r.budget}`}
                 </span>
               </div>
-              <div className="h-2.5 overflow-hidden rounded-full bg-[#eef0f3]">
-                <div
+              <div className="h-2.5 overflow-hidden rounded-full bg-bg-elev">
+                <motion.div
                   className={`h-full rounded-full ${BAR[r.status]}`}
-                  style={{ width: `${Math.min(r.pct, 100)}%` }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(r.pct, 100)}%` }}
+                  transition={{ type: "spring", stiffness: 120, damping: 22 }}
                 />
               </div>
             </div>

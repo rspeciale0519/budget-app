@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { Float, Environment } from "@react-three/drei";
+import { Float } from "@react-three/drei";
 
 /**
  * A friendly floating "savings jar": a translucent glass cylinder with a
@@ -14,14 +14,12 @@ function Jar() {
         {/* glass body */}
         <mesh position={[0, -0.1, 0]}>
           <cylinderGeometry args={[0.9, 0.85, 1.6, 48, 1, true]} />
-          <meshPhysicalMaterial
+          <meshStandardMaterial
             color="#9fd6ff"
-            transmission={0.9}
-            thickness={0.5}
-            roughness={0.1}
-            metalness={0}
+            roughness={0.15}
+            metalness={0.1}
             transparent
-            opacity={0.55}
+            opacity={0.45}
           />
         </mesh>
         {/* lid */}
@@ -54,8 +52,8 @@ export default function MascotScene() {
       <ambientLight intensity={0.8} />
       <directionalLight position={[3, 4, 3]} intensity={1.3} />
       <pointLight position={[-3, -2, 2]} intensity={0.5} color="#4f46e5" />
+      <pointLight position={[2, 1, 4]} intensity={0.7} color="#fbbf24" />
       <Jar />
-      <Environment preset="city" />
     </Canvas>
   );
 }

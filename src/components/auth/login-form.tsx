@@ -29,29 +29,40 @@ export function LoginForm() {
     });
   }
 
+  const inputCls =
+    "w-full rounded-md border border-line bg-bg-elev px-3 py-2 text-sm text-ink placeholder:text-muted transition-colors focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30";
+
   return (
-    <div className="w-full max-w-sm space-y-3">
+    <form
+      className="w-full space-y-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        signInWithEmail();
+      }}
+    >
       <input
         type="email"
         placeholder="Email"
+        autoComplete="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+        className={inputCls}
       />
       <input
         type="password"
         placeholder="Password"
+        autoComplete="current-password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+        className={inputCls}
       />
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <Button onClick={signInWithEmail} disabled={busy} className="w-full">
+      {error && <p className="text-sm font-medium text-neg">{error}</p>}
+      <Button type="submit" disabled={busy} className="w-full">
         {busy ? "Signing in…" : "Sign in"}
       </Button>
-      <Button variant="outline" onClick={signInWithGoogle} className="w-full">
+      <Button type="button" variant="outline" onClick={signInWithGoogle} className="w-full">
         Continue with Google
       </Button>
-    </div>
+    </form>
   );
 }

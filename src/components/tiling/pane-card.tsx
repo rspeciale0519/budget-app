@@ -1,9 +1,9 @@
 import type { PaneSummary } from "@/services/dashboard/pane-summary";
 
 const STATUS: Record<PaneSummary["topBills"][number]["status"], string> = {
-  overdue: "text-[#b91c1c]",
-  soon: "text-[#b45309]",
-  scheduled: "text-[#4338ca]",
+  overdue: "text-neg",
+  soon: "text-amber",
+  scheduled: "text-primary",
 };
 
 export function PaneCard({ summary }: { summary: PaneSummary }) {
@@ -21,7 +21,7 @@ export function PaneCard({ summary }: { summary: PaneSummary }) {
           </div>
           <div>
             <div className="text-[10px] font-bold uppercase tracking-[0.03em] text-muted">Safe to spend</div>
-            <div className="tabular text-base font-extrabold text-[#15803d]">{summary.safeToSpend}</div>
+            <div className="tabular text-base font-extrabold text-pos">{summary.safeToSpend}</div>
           </div>
         </div>
         <div className="space-y-1">
@@ -30,10 +30,10 @@ export function PaneCard({ summary }: { summary: PaneSummary }) {
           ) : (
             summary.topBills.map((b, i) => (
               <div key={i} className="flex justify-between text-xs">
-                <span className="text-slate-700">
+                <span className="text-muted">
                   {b.vendor} <span className={`text-[10px] font-semibold ${STATUS[b.status]}`}>{b.status}</span>
                 </span>
-                <span className="tabular text-slate-900">{b.amount}</span>
+                <span className="tabular text-ink">{b.amount}</span>
               </div>
             ))
           )}

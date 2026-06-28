@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, MeshDistortMaterial, Environment } from "@react-three/drei";
+import { Float, MeshDistortMaterial } from "@react-three/drei";
 import type { Mesh } from "three";
 
 /**
@@ -32,8 +32,10 @@ function Orb({ health }: { health: number }) {
           color={color}
           distort={distort}
           speed={2.2}
-          roughness={0.15}
-          metalness={0.6}
+          roughness={0.25}
+          metalness={0.2}
+          emissive={color}
+          emissiveIntensity={0.18}
         />
       </mesh>
     </Float>
@@ -52,8 +54,8 @@ export default function OrbScene({ health }: { health: number }) {
       <ambientLight intensity={0.7} />
       <directionalLight position={[3, 3, 3]} intensity={1.4} />
       <pointLight position={[-3, -2, -2]} intensity={0.6} />
+      <pointLight position={[2, 1, 4]} intensity={0.8} color="#a5b4fc" />
       <Orb health={clamped} />
-      <Environment preset="city" />
     </Canvas>
   );
 }
