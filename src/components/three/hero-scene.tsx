@@ -2,61 +2,85 @@
 
 import { useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float } from "@react-three/drei";
-import type { Group } from "three";
+import { Color, type Group, type Mesh, type MeshStandardMaterial } from "three";
 
-/** A single floating coin (flat cylinder) tinted with a brand color. */
-function Coin({
-  position,
-  color,
-  scale = 1,
-  rotation,
-}: {
-  position: [number, number, number];
-  color: string;
-  scale?: number;
-  rotation: [number, number, number];
-}) {
-  return (
-    <Float speed={1.8} rotationIntensity={1.1} floatIntensity={1.2}>
-      <mesh position={position} scale={scale} rotation={rotation}>
-        <cylinderGeometry args={[0.7, 0.7, 0.22, 48]} />
-        <meshStandardMaterial
-          color={color}
-          metalness={0.55}
-          roughness={0.28}
-          emissive={color}
-          emissiveIntensity={0.08}
-        />
-      </mesh>
-    </Float>
-  );
-}
+const COLS = 26;
+const ROWS = 3;
+const SPACING = 0.46;
 
-function Coins() {
+/**
+ * An animated field of vertical bars that ripples with a traveling wave and
+ * gently trends upward left-to-right — evoking a live cash-flow forecast.
+ */
+function BarField() {
   const group = useRef<Group>(null);
-  const coins = useMemo(
-    () =>
-      [
-        { position: [-3, 1.3, -0.5] as [number, number, number], color: "#e8b73d", scale: 0.95, rotation: [1.1, 0.5, 0.3] as [number, number, number] },
-        { position: [3, 0.6, -1.5] as [number, number, number], color: "#6366f1", scale: 0.8, rotation: [0.8, -0.4, -0.2] as [number, number, number] },
-        { position: [0.6, -1.6, 0] as [number, number, number], color: "#22b07d", scale: 0.9, rotation: [1.3, 0.2, 0.5] as [number, number, number] },
-        { position: [-1.9, -1, -1.5] as [number, number, number], color: "#14b8a6", scale: 0.6, rotation: [0.6, 0.8, 0.1] as [number, number, number] },
-        { position: [2.2, 2, -0.5] as [number, number, number], color: "#e8b73d", scale: 0.5, rotation: [1.0, -0.6, 0.4] as [number, number, number] },
-      ],
-    [],
-  );
+  const meshes = useRef<(Mesh | null)[]>([]);
+
+  const bars = useMemo(() => {
+    const arr: { x: number; z: number; phase: number; rowDim: number }[] = [];
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        arr.push({
+          x: (c - (COLS - 1) / 2) * SPACING,
+          z: (r - (ROWS - 1) / 2) * 0.95,
+          phase: c * 0.42 + r * 0.7,
+          // Back rows render dimmer for depth.
+          rowDim: 1 - r * 0.26,
+        });
+      }
+    }
+    return arr;
+  }, []);
+
+  const lowColor = useMemo(() => new Color("#6366f1"), []); // indigo (low)
+  const highColor = useMemo(() => new Color("#22b07d"), []); // green (growth)
+  const scratch = useMemo(() => new Color(), []);
 
   useFrame((state) => {
+    const t = state.clock.elapsedTime;
+    for (let i = 0; i < meshes.current.length; i++) {
+      const mesh = meshes.current[i];
+      const b = bars[i];
+      if (!mesh || !b) continue;
+
+      const wave = Math.sin(t * 1.05 + b.phase) * 0.5 + 0.5;
+      const trend = b.x / (COLS * SPACING) + 0.5; // 0 (left) -> 1 (right)
+      const height = 0.45 + wave * 2.1 + trend * 1.5;
+
+      mesh.scale.y = height;
+      mesh.position.y = height / 2 - 1.3;
+
+      const mix = Math.min(1, height / 4.2);
+      scratch.copy(lowColor).lerp(highColor, mix);
+      const mat = mesh.material as MeshStandardMaterial;
+      mat.color.copy(scratch);
+      mat.emissive.copy(scratch);
+      mat.emissiveIntensity = 0.18 * b.rowDim;
+      mat.opacity = 0.55 + 0.4 * b.rowDim;
+    }
     if (group.current) {
-      group.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.15) * 0.3;
+      group.current.rotation.y = Math.sin(t * 0.1) * 0.14;
     }
   });
 
   return (
-    <group ref={group}>
-      {coins.map((c, i) => (
-        <Coin key={i} {...c} />
+    <group ref={group} rotation={[0.22, -0.32, 0]}>
+      {bars.map((b, i) => (
+        <mesh
+          key={i}
+          ref={(m) => {
+            meshes.current[i] = m;
+          }}
+          position={[b.x, 0, b.z]}
+        >
+          <boxGeometry args={[0.2, 1, 0.2]} />
+          <meshStandardMaterial
+            metalness={0.25}
+            roughness={0.45}
+            transparent
+            opacity={0.9}
+          />
+        </mesh>
       ))}
     </group>
   );
@@ -65,16 +89,16 @@ function Coins() {
 export default function HeroScene() {
   return (
     <Canvas
-      camera={{ position: [0, 0, 8], fov: 45 }}
+      camera={{ position: [0, 1.4, 9], fov: 42 }}
       dpr={[1, 1.75]}
       gl={{ antialias: true, alpha: true }}
       style={{ background: "transparent" }}
     >
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[4, 5, 3]} intensity={1.6} />
-      <pointLight position={[-4, -3, 2]} intensity={0.7} color="#4f46e5" />
-      <pointLight position={[0, 2, 5]} intensity={0.9} color="#fbbf24" />
-      <Coins />
+      <ambientLight intensity={0.7} />
+      <directionalLight position={[4, 6, 4]} intensity={1.3} />
+      <pointLight position={[-5, 2, 3]} intensity={0.6} color="#6366f1" />
+      <pointLight position={[5, -1, 4]} intensity={0.5} color="#22b07d" />
+      <BarField />
     </Canvas>
   );
 }
