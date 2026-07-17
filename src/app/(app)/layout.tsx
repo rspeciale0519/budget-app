@@ -13,7 +13,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen">
       <TabBar userId={user.id} />
-      <main className="mx-auto max-w-[1180px] px-5 pb-16 pt-1">{children}</main>
+      <main className="mx-auto max-w-[1240px] px-4 pb-20 pt-5 sm:px-6">{children}</main>
       <CommandPalette workspaces={workspaces.map((w) => ({ id: w.id, name: w.name, color: w.color }))} />
     </div>
   );

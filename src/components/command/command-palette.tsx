@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { buildCommands, filterCommands, type Command } from "@/lib/command-palette/commands";
 
 type Workspace = { id: string; name: string; color: string };
@@ -69,19 +70,21 @@ export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-[#0b1020]/60 p-4 pt-[12vh]"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-sunken/70 p-4 pt-[12vh] backdrop-blur-sm"
       onClick={() => setOpen(false)}
     >
       <div
-        className="w-full max-w-[540px] overflow-hidden rounded-[13px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.4)]"
+        className="w-full max-w-[560px] overflow-hidden rounded-card border border-rule-strong bg-surface shadow-overlay"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-2.5 border-b border-line px-4 py-3.5 text-[15px] text-[#374151]">
-          <span aria-hidden>⌘</span>
+        <div className="flex items-center gap-3 border-b border-rule px-4 py-3.5 text-[15px] text-ink">
+          <span aria-hidden className="text-dim">
+            ⌘
+          </span>
           <input
             ref={inputRef}
             aria-label="Command palette"
-            className="w-full bg-transparent outline-none placeholder:text-[#9aa1ad]"
+            className="w-full bg-transparent outline-none placeholder:text-dim"
             placeholder="Type a command or search…"
             value={query}
             onChange={(e) => {
@@ -90,32 +93,43 @@ export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
             }}
             onKeyDown={onInputKey}
           />
+          <kbd className="rounded border border-rule px-1.5 py-0.5 font-mono text-[10px] text-dim">
+            esc
+          </kbd>
         </div>
-        <div className="max-h-[50vh] overflow-auto py-1">
+        <div className="max-h-[50vh] overflow-auto py-1.5">
           {filtered.length === 0 ? (
-            <p className="px-4 py-3 text-sm text-muted">No matching commands</p>
+            <p className="px-4 py-4 text-sm text-muted">No matching commands</p>
           ) : (
             groups.map((group) => {
               const items = filtered.filter((c) => c.group === group);
               if (items.length === 0) return null;
               return (
-                <div key={group}>
-                  <div className="px-4 pb-1 pt-2.5 text-[10.5px] font-bold uppercase tracking-[0.05em] text-[#9aa1ad]">
+                <div key={group} className="px-1.5">
+                  <div className="px-2.5 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-dim">
                     {group}
                   </div>
                   {items.map((cmd) => {
                     const idx = filtered.indexOf(cmd);
+                    const active = idx === selected;
                     return (
                       <button
                         key={cmd.id}
                         type="button"
                         onMouseEnter={() => setSelected(idx)}
                         onClick={() => go(cmd)}
-                        className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-[13.5px] font-semibold ${
-                          idx === selected ? "bg-[#f3f5f8]" : ""
-                        }`}
+                        className={cn(
+                          "flex w-full items-center gap-3 rounded-control px-2.5 py-2 text-left text-[13.5px] font-medium transition-colors",
+                          active ? "bg-raised text-ink" : "text-ink/85",
+                        )}
                       >
-                        <span className="grid h-6 w-6 place-items-center rounded-[7px] bg-[#eef0f3] text-[13px]" aria-hidden>
+                        <span
+                          className={cn(
+                            "grid h-6 w-6 place-items-center rounded-md text-[13px] transition-colors",
+                            active ? "bg-now-tint text-now" : "bg-raised text-muted",
+                          )}
+                          aria-hidden
+                        >
                           {cmd.icon}
                         </span>
                         {cmd.label}

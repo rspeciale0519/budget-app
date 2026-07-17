@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/field";
 import { inviteAction } from "@/app/(app)/settings/_actions";
 
 export function InviteForm({ organizationId }: { organizationId: string }) {
@@ -28,18 +29,18 @@ export function InviteForm({ organizationId }: { organizationId: string }) {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <input
+      <Input
         type="email"
         placeholder="teammate@example.com"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="grow rounded-md border border-slate-300 px-3 py-2 text-sm"
+        className="grow"
       />
       <Button disabled={busy || !email} onClick={invite}>
         {busy ? "Inviting…" : "Invite"}
       </Button>
-      {done && <span className="text-sm text-emerald-700">Invitation sent.</span>}
-      {error && <span className="text-sm text-red-600">{error}</span>}
+      {done && <span className="text-sm text-credit">Invitation sent.</span>}
+      {error && <span className="text-sm text-alert">{error}</span>}
     </div>
   );
 }

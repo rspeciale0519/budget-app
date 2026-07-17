@@ -9,7 +9,7 @@ import { today as todayFn } from "@/lib/calendar-date";
 export const dynamic = "force-dynamic";
 
 function Money({ value }: { value: import("@/lib/money").Money }) {
-  return <span className={`tabular ${isNegative(value) ? "text-neg" : ""}`}>{format(value)}</span>;
+  return <span className={`tabular ${isNegative(value) ? "text-debit" : ""}`}>{format(value)}</span>;
 }
 
 export default async function AllWorkspacesPage() {
@@ -38,8 +38,8 @@ export default async function AllWorkspacesPage() {
           </thead>
           <tbody>
             {data.rows.map((r) => (
-              <tr key={r.workspaceId} className="border-b border-line">
-                <td className="px-2 py-2.5 text-left text-slate-700">{r.name}</td>
+              <tr key={r.workspaceId} className="border-b border-rule">
+                <td className="px-2 py-2.5 text-left text-ink/85">{r.name}</td>
                 <td className="px-2 py-2.5 text-right"><Money value={r.balance} /></td>
                 <td className="px-2 py-2.5 text-right"><Money value={r.in} /></td>
                 <td className="px-2 py-2.5 text-right"><Money value={r.out} /></td>
@@ -47,7 +47,7 @@ export default async function AllWorkspacesPage() {
                 <td className="px-2 py-2.5 text-right"><Money value={r.net} /></td>
               </tr>
             ))}
-            <tr className="border-t-2 border-slate-300 font-extrabold text-ink">
+            <tr className="border-t-2 border-rule-strong font-extrabold text-ink">
               <td className="px-2 py-2.5 text-left">Combined</td>
               <td className="px-2 py-2.5 text-right"><Money value={data.combined.balance} /></td>
               <td className="px-2 py-2.5 text-right"><Money value={data.combined.in} /></td>

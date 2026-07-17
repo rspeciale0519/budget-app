@@ -57,17 +57,17 @@ export function CsvDropZone({
         onClick={() => inputRef.current?.click()}
         className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors ${
           drag
-            ? "border-[#2563eb] bg-[#eff4ff]"
-            : "border-slate-300 bg-slate-50 hover:border-slate-400 hover:bg-slate-100"
+            ? "border-now bg-now-tint"
+            : "border-rule bg-raised hover:border-rule-strong hover:bg-raised"
         }`}
       >
         <span className="text-2xl" aria-hidden>
           ⬆
         </span>
-        <span className="text-sm font-semibold text-slate-700">
+        <span className="text-sm font-semibold text-ink/85">
           {fileName ? `Selected: ${fileName}` : "Drag a CSV here, or click to choose a file"}
         </span>
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-muted">
           Export transactions from your bank as CSV, then drop the file here.
         </span>
         <input
@@ -85,7 +85,7 @@ export function CsvDropZone({
       <button
         type="button"
         onClick={() => setPasting((p) => !p)}
-        className="text-xs font-medium text-[#2563eb] hover:underline focus-visible:outline-none focus-visible:underline"
+        className="text-xs font-medium text-now hover:underline focus-visible:outline-none focus-visible:underline"
       >
         {pasting ? "Hide paste box" : "…or paste CSV text instead"}
       </button>
@@ -93,7 +93,7 @@ export function CsvDropZone({
       {pasting && (
         <div className="space-y-2">
           <textarea
-            className="h-28 w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-sm"
+            className="h-28 w-full rounded-control border border-rule-strong bg-sunken px-3 py-2 font-mono text-sm text-ink"
             value={pasteText}
             onChange={(e) => setPasteText(e.target.value)}
             aria-label="Paste CSV text"
@@ -104,14 +104,14 @@ export function CsvDropZone({
               onFileName("pasted.csv");
               load(pasteText, onLoaded, setError);
             }}
-            className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563eb]/40"
+            className="rounded-control bg-ink px-3 py-2 text-sm font-medium text-paper hover:opacity-85"
           >
             Use pasted text
           </button>
         </div>
       )}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-alert">{error}</p>}
     </div>
   );
 }

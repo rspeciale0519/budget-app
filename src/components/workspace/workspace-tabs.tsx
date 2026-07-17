@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export interface TabWorkspace {
   id: string;
@@ -16,36 +17,51 @@ export function WorkspaceTabs({ workspaces }: { workspaces: TabWorkspace[] }) {
   const allActive = pathname.startsWith("/all");
 
   return (
-    <div className="flex flex-1 items-center gap-1.5 overflow-auto">
+    <div className="flex flex-1 items-center gap-1 overflow-x-auto">
       {workspaces.map((w) => {
         const active = w.id === activeId;
         return (
           <Link
             key={w.id}
             href={`/w/${w.id}`}
-            className={`flex items-center gap-[7px] whitespace-nowrap rounded-[9px] border px-3 py-[7px] text-[13px] font-semibold ${
-              active
-                ? "border-line bg-[#f3f5f8] text-ink shadow-[inset_0_-2px_0_var(--color-pos)]"
-                : "border-transparent text-muted hover:bg-[#f6f7f9]"
-            }`}
+            className={cn(
+              "group relative flex items-center gap-2 whitespace-nowrap rounded-control px-3 py-2 text-[13px] font-semibold transition-colors",
+              active ? "bg-raised text-ink" : "text-muted hover:bg-raised/60 hover:text-ink",
+            )}
           >
-            <span className="h-[9px] w-[9px] rounded-full" style={{ backgroundColor: w.color }} />
+            <span
+              className={cn(
+                "h-2 w-2 rounded-full transition-transform",
+                !active && "opacity-60 group-hover:opacity-100",
+              )}
+              style={{ backgroundColor: w.color }}
+            />
             {w.icon ? <span aria-hidden>{w.icon}</span> : null}
             {w.name}
+            {/* The active tab is underscored in its own workspace color. */}
+            {active ? (
+              <span
+                className="absolute inset-x-2 -bottom-px h-[2px] rounded-full"
+                style={{ backgroundColor: w.color }}
+              />
+            ) : null}
           </Link>
         );
       })}
+
       <span
-        className="cursor-default whitespace-nowrap rounded-[9px] px-2.5 py-[7px] text-[13px] font-bold text-[#9aa1ad]"
+        className="cursor-default whitespace-nowrap rounded-control px-2 py-2 text-[15px] font-semibold text-dim"
         title="Add workspace (coming soon)"
       >
         ＋
       </span>
+
       <Link
         href="/all"
-        className={`ml-1 whitespace-nowrap rounded-[9px] border px-3 py-[7px] text-[13px] font-semibold ${
-          allActive ? "border-line bg-[#f3f5f8] text-ink" : "border-transparent text-[#374151] hover:bg-[#f6f7f9]"
-        }`}
+        className={cn(
+          "ml-1 whitespace-nowrap rounded-control px-3 py-2 text-[13px] font-semibold transition-colors",
+          allActive ? "bg-raised text-ink" : "text-muted hover:bg-raised/60 hover:text-ink",
+        )}
       >
         ▦ All Workspaces
       </Link>

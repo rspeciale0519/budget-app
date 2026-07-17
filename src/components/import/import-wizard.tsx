@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select } from "@/components/ui/field";
 import { guessColumns, guessDateFormat, guessSignRule } from "@/lib/import/auto-detect";
 import {
   EMPTY_MAPPING,
@@ -42,18 +43,18 @@ function Stepper({ step }: { step: Step }) {
           <span
             className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
               i < active
-                ? "bg-emerald-500 text-white"
+                ? "bg-credit text-paper"
                 : i === active
-                  ? "bg-[#2563eb] text-white"
-                  : "bg-slate-200 text-slate-500"
+                  ? "bg-now text-paper"
+                  : "bg-raised text-muted"
             }`}
           >
             {i < active ? "✓" : i + 1}
           </span>
-          <span className={i === active ? "font-semibold text-slate-900" : "text-slate-500"}>
+          <span className={i === active ? "font-semibold text-ink" : "text-muted"}>
             {s.label}
           </span>
-          {i < STEPS.length - 1 && <span className="px-1 text-slate-300">→</span>}
+          {i < STEPS.length - 1 && <span className="px-1 text-dim">→</span>}
         </li>
       ))}
     </ol>
@@ -174,12 +175,12 @@ export function ImportWizard({
   if (accounts.length === 0) {
     return (
       <Card>
-        <CardContent className="space-y-2 py-6 text-sm text-slate-600">
-          <p className="font-medium text-slate-800">Add an account first.</p>
+        <CardContent className="space-y-2 py-6 text-sm text-muted">
+          <p className="font-medium text-ink">Add an account first.</p>
           <p>CSV transactions are imported into an account, and this workspace has none yet.</p>
           <Link
             href={`/w/${workspaceId}/manage`}
-            className="inline-block rounded-md bg-slate-900 px-3 py-2 font-medium text-white hover:bg-slate-700"
+            className="inline-block rounded-control bg-ink px-3 py-2 font-medium text-paper hover:opacity-85"
           >
             Go to Manage → add an account
           </Link>
@@ -199,7 +200,7 @@ export function ImportWizard({
             <button
               type="button"
               onClick={() => setStep(step === "review" ? "map" : "upload")}
-              className="text-xs font-medium text-slate-500 hover:text-slate-800"
+              className="text-xs font-medium text-muted hover:text-ink"
             >
               ← Back
             </button>
@@ -209,18 +210,14 @@ export function ImportWizard({
           {step === "upload" && (
             <>
               <label className="block space-y-1">
-                <span className="text-xs font-semibold text-slate-600">Import into account</span>
-                <select
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                  value={accountId}
-                  onChange={(e) => setAccountId(e.target.value)}
-                >
+                <span className="text-xs font-semibold text-muted">Import into account</span>
+                <Select value={accountId} onChange={(e) => setAccountId(e.target.value)}>
                   {accounts.map((a) => (
                     <option key={a.id} value={a.id}>
                       {a.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </label>
               <CsvDropZone onLoaded={handleLoaded} fileName={fileName} onFileName={setFileName} />
             </>
@@ -228,17 +225,17 @@ export function ImportWizard({
 
           {step === "map" && parsed && (
             <>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-muted">
                 We pre-filled these from <span className="font-medium">{fileName}</span> ·{" "}
                 {parsed.rows.length} rows. Adjust anything that looks wrong.
               </p>
               <ColumnMapper parsed={parsed} value={mapping} onChange={setMapping} />
-              {error && <p className="text-sm text-red-600">{error}</p>}
+              {error && <p className="text-sm text-alert">{error}</p>}
               <Button disabled={busy || !isMappingComplete(mapping)} onClick={preview}>
                 {busy ? "Checking…" : "Preview import"}
               </Button>
               {!isMappingComplete(mapping) && (
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-dim">
                   Pick a Date, Description, and amount column(s) to continue.
                 </p>
               )}
@@ -247,7 +244,7 @@ export function ImportWizard({
 
           {step === "review" && (
             <>
-              {error && <p className="text-sm text-red-600">{error}</p>}
+              {error && <p className="text-sm text-alert">{error}</p>}
               <ImportPreview
                 rows={rows}
                 summary={summary}

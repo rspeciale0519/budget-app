@@ -3,9 +3,7 @@
 import type { SignRule } from "@prisma/client";
 import type { DateFormat } from "@/lib/import/auto-detect";
 import type { DraftMapping, ParsedCsvState } from "@/components/import/types";
-
-const selectCls =
-  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563eb]/30";
+import { Select } from "@/components/ui/field";
 
 const AMOUNT_CHOICES: { rule: SignRule; label: string; hint: string }[] = [
   {
@@ -42,19 +40,19 @@ function HeaderSelect({
 }) {
   return (
     <label className="block space-y-1">
-      <span className="text-xs font-semibold text-slate-600">
+      <span className="text-xs font-semibold text-muted">
         {label}
-        {optional && <span className="font-normal text-slate-400"> (optional)</span>}
+        {optional && <span className="font-normal text-dim"> (optional)</span>}
       </span>
-      <select className={selectCls} value={value} onChange={(e) => onChange(e.target.value)}>
+      <Select value={value} onChange={(e) => onChange(e.target.value)}>
         <option value="">{optional ? "— none —" : "— choose a column —"}</option>
         {headers.map((h) => (
           <option key={h} value={h}>
             {h}
           </option>
         ))}
-      </select>
-      {hint && <span className="block text-[11px] text-slate-400">{hint}</span>}
+      </Select>
+      {hint && <span className="block text-[11px] text-dim">{hint}</span>}
     </label>
   );
 }
@@ -91,14 +89,14 @@ export function ColumnMapper({
       </div>
 
       <fieldset className="space-y-2">
-        <legend className="text-xs font-semibold text-slate-600">How are amounts shown?</legend>
+        <legend className="text-xs font-semibold text-muted">How are amounts shown?</legend>
         {AMOUNT_CHOICES.map((c) => (
           <label
             key={c.rule}
-            className={`flex cursor-pointer gap-2 rounded-md border px-3 py-2 text-sm transition-colors ${
+            className={`flex cursor-pointer gap-2 rounded-control border px-3 py-2 text-sm transition-colors ${
               value.signRule === c.rule
-                ? "border-[#2563eb] bg-[#eff4ff]"
-                : "border-slate-200 hover:bg-slate-50"
+                ? "border-now bg-now-tint"
+                : "border-rule hover:bg-raised"
             }`}
           >
             <input
@@ -109,8 +107,8 @@ export function ColumnMapper({
               onChange={() => set({ signRule: c.rule })}
             />
             <span>
-              <span className="font-medium text-slate-800">{c.label}</span>
-              <span className="block text-[11px] text-slate-500">{c.hint}</span>
+              <span className="font-medium text-ink">{c.label}</span>
+              <span className="block text-[11px] text-muted">{c.hint}</span>
             </span>
           </label>
         ))}
@@ -158,23 +156,23 @@ export function ColumnMapper({
       </div>
 
       <label className="block space-y-1">
-        <span className="text-xs font-semibold text-slate-600">Date format</span>
-        <select
-          className={`${selectCls} max-w-[12rem]`}
+        <span className="text-xs font-semibold text-muted">Date format</span>
+        <Select
+          className="max-w-[12rem]"
           value={value.dateFormat}
           onChange={(e) => set({ dateFormat: e.target.value as DateFormat })}
         >
           <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
           <option value="DD/MM/YYYY">DD/MM/YYYY (UK/EU)</option>
           <option value="YYYY-MM-DD">YYYY-MM-DD (ISO)</option>
-        </select>
+        </Select>
       </label>
 
-      <div className="rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-600">
-        <span className="font-semibold text-slate-500">First row check — </span>
-        Date: <span className="font-mono text-slate-800">{cellOf(value.date)}</span> · Description:{" "}
-        <span className="font-mono text-slate-800">{cellOf(value.description)}</span> · Amount:{" "}
-        <span className="font-mono text-slate-800">
+      <div className="rounded-control bg-raised px-3 py-2 text-xs text-muted">
+        <span className="font-semibold text-muted">First row check — </span>
+        Date: <span className="font-mono text-ink">{cellOf(value.date)}</span> · Description:{" "}
+        <span className="font-mono text-ink">{cellOf(value.description)}</span> · Amount:{" "}
+        <span className="font-mono text-ink">
           {value.signRule === "separate_debit_credit"
             ? `${cellOf(value.debit)} / ${cellOf(value.credit)}`
             : cellOf(value.amount)}

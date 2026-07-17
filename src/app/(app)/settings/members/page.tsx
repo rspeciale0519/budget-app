@@ -27,7 +27,7 @@ export default async function MembersPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-slate-900">Members</h1>
+      <h1 className="text-xl font-semibold text-ink">Members</h1>
       {canManage ? (
         <>
           <Card>
@@ -36,7 +36,7 @@ export default async function MembersPage() {
             </CardHeader>
             <CardContent>
               <InviteForm organizationId={orgMembership.organizationId} />
-              <p className="mt-2 text-xs text-slate-400">
+              <p className="mt-2 text-xs text-dim">
                 Invited teammates get no access until you grant them a workspace.
               </p>
             </CardContent>
@@ -47,16 +47,16 @@ export default async function MembersPage() {
             </CardHeader>
             <CardContent className="space-y-1 text-sm">
               {members.map((m) => (
-                <div key={m.userId} className="flex justify-between border-b border-slate-100 py-1">
-                  <span className="font-mono text-xs text-slate-600">{m.userId}</span>
-                  <span className="text-slate-700">{m.role}</span>
+                <div key={m.userId} className="flex justify-between border-b border-rule py-1">
+                  <span className="font-mono text-xs text-muted">{m.userId}</span>
+                  <span className="text-ink/85">{m.role}</span>
                 </div>
               ))}
             </CardContent>
           </Card>
         </>
       ) : (
-        <p className="text-sm text-slate-500">Only an organization owner or admin can manage members.</p>
+        <p className="text-sm text-muted">Only an organization owner or admin can manage members.</p>
       )}
     </div>
   );

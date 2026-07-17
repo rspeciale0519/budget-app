@@ -27,7 +27,7 @@ function shiftMonth(year: number, month: number, delta: number): string {
 }
 
 const navCls =
-  "rounded-md border border-line bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50";
+  "rounded-control border border-rule bg-surface px-3 py-1.5 text-sm font-medium text-ink/85 transition-colors hover:border-dim hover:bg-raised";
 
 export default async function CalendarPage({
   params,
@@ -48,7 +48,7 @@ export default async function CalendarPage({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-ink">
+        <h1 className="font-serif text-xl text-ink">
           {MONTHS[month - 1] ?? ""} {year}
         </h1>
         <div className="flex items-center gap-2">

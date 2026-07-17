@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input, Label, FieldError } from "@/components/ui/field";
 
 export function LoginForm() {
   const router = useRouter();
@@ -30,28 +31,51 @@ export function LoginForm() {
   }
 
   return (
-    <div className="w-full max-w-sm space-y-3">
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-      />
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <Button onClick={signInWithEmail} disabled={busy} className="w-full">
+    /* A real form: Enter submits, and password managers can see the fields. */
+    <form
+      className="space-y-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void signInWithEmail();
+      }}
+    >
+      <div className="space-y-1.5">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="password">Password</Label>
+        <Input
+          id="password"
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+
+      {error && <FieldError>{error}</FieldError>}
+
+      <Button type="submit" variant="credit" disabled={busy} className="w-full">
         {busy ? "Signing in…" : "Sign in"}
       </Button>
-      <Button variant="outline" onClick={signInWithGoogle} className="w-full">
+
+      <div className="flex items-center gap-3 py-0.5">
+        <span className="h-px flex-1 bg-rule" />
+        <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-dim">or</span>
+        <span className="h-px flex-1 bg-rule" />
+      </div>
+
+      <Button type="button" variant="outline" onClick={signInWithGoogle} className="w-full">
         Continue with Google
       </Button>
-    </div>
+    </form>
   );
 }

@@ -33,17 +33,21 @@ export default async function WorkspaceLayout({
   const typeLabel = ws.type.charAt(0).toUpperCase() + ws.type.slice(1);
 
   return (
-    <div className="space-y-4">
-      <div className="my-[22px] flex flex-wrap items-center gap-3">
+    <div>
+      <div className="mb-5 flex flex-wrap items-center gap-3">
         <div
-          className="grid h-[34px] w-[34px] place-items-center rounded-[10px] font-extrabold text-white"
+          className="grid h-9 w-9 place-items-center rounded-control text-[15px] font-bold text-white shadow-lift"
           style={{ background: ws.color }}
         >
           {ws.name.charAt(0).toUpperCase() || "W"}
         </div>
         <div>
-          <div className="text-xl font-bold text-ink">{ws.name}</div>
-          <div className="text-[12.5px] text-muted">{typeLabel}</div>
+          <h1 className="font-serif text-[22px] leading-tight tracking-[-0.01em] text-ink">
+            {ws.name}
+          </h1>
+          <div className="text-xs font-medium uppercase tracking-[0.06em] text-dim">
+            {typeLabel}
+          </div>
         </div>
       </div>
       <WorkspaceSubNav workspaceId={workspaceId} />

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input, Select } from "@/components/ui/field";
 import {
   addIncomeSourceAction,
   deleteIncomeSourceAction,
@@ -17,7 +18,6 @@ export interface IncomeSourceView {
   nextDate: string;
 }
 
-const inputCls = "w-full rounded-md border border-slate-300 px-3 py-2 text-sm";
 const FREQUENCIES = ["weekly", "monthly", "quarterly", "annual"];
 
 export function IncomeSourceForm({
@@ -59,15 +59,15 @@ export function IncomeSourceForm({
           <CardTitle>Add expected income</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          <input className={inputCls} placeholder="Name (e.g. Salary, Retainer)" value={name} onChange={(e) => setName(e.target.value)} />
-          <input className={inputCls} placeholder="Amount" value={amount} onChange={(e) => setAmount(e.target.value)} />
-          <select className={inputCls} value={frequency} onChange={(e) => setFrequency(e.target.value)}>
+          <Input placeholder="Name (e.g. Salary, Retainer)" value={name} onChange={(e) => setName(e.target.value)} />
+          <Input placeholder="Amount" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          <Select value={frequency} onChange={(e) => setFrequency(e.target.value)}>
             {FREQUENCIES.map((f) => (
               <option key={f} value={f}>{f}</option>
             ))}
-          </select>
-          <input className={inputCls} type="date" value={nextDate} onChange={(e) => setNextDate(e.target.value)} />
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          </Select>
+          <Input type="date" value={nextDate} onChange={(e) => setNextDate(e.target.value)} />
+          {error && <p className="text-sm text-alert">{error}</p>}
           <Button disabled={busy || !name} onClick={add} className="w-full">
             {busy ? "Adding…" : "Add income source"}
           </Button>
@@ -86,13 +86,13 @@ export function IncomeSourceForm({
             <p className="text-muted">None yet — safe-to-spend uses a 30-day window.</p>
           ) : (
             sources.map((s) => (
-              <div key={s.id} className="flex items-center justify-between border-b border-line py-1.5">
-                <span className="text-slate-700">
+              <div key={s.id} className="flex items-center justify-between border-b border-rule py-1.5">
+                <span className="text-ink/85">
                   {s.name} · {s.frequency} · next {s.nextDate}
                 </span>
                 <span className="flex items-center gap-3">
-                  <span className="tabular text-slate-900">${s.amount}</span>
-                  <button onClick={() => remove(s.id)} className="text-xs text-red-600 hover:underline">
+                  <span className="tabular text-ink">${s.amount}</span>
+                  <button onClick={() => remove(s.id)} className="text-xs text-alert hover:underline">
                     remove
                   </button>
                 </span>

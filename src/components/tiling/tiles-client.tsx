@@ -83,7 +83,7 @@ export function TilesClient({ workspaces, layouts, initialConfig, initialSummari
 
   return (
     <div className="space-y-4">
-      <h1 className="my-[22px] text-xl font-bold text-ink">Tiles</h1>
+      <h1 className="my-[22px] font-serif text-2xl text-ink">Tiles</h1>
       <LayoutControls
         workspaces={workspaces}
         layouts={saved}
@@ -99,7 +99,7 @@ export function TilesClient({ workspaces, layouts, initialConfig, initialSummari
         onRestore={handleRestore}
         onDelete={handleDelete}
       />
-      {error && <p className="text-sm text-neg">{error}</p>}
+      {error && <p className="text-sm text-alert">{error}</p>}
       <TiledView
         config={config}
         summaries={summaries}

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AmountInput, Select, FieldError } from "@/components/ui/field";
 import { setBudgetAction } from "@/app/(app)/w/[workspaceId]/budget/_actions";
 import type { BudgetRow } from "@/services/dashboard/budget-vs-actual";
 
@@ -12,16 +13,21 @@ interface CategoryOption {
   name: string;
 }
 
+// Under budget is fine (neutral now-blue); nearing it is a warm caution;
+// over it is the one genuinely-wrong state, so it earns alert-red.
 const BAR: Record<BudgetRow["status"], string> = {
-  under: "bg-[#2563eb]",
-  near: "bg-[#f59e0b]",
-  over: "bg-[#dc2626]",
+  under: "bg-now",
+  near: "bg-debit",
+  over: "bg-alert",
 };
 
-const inputCls = "rounded-md border border-slate-300 px-3 py-1.5 text-sm";
-const selectCls = "rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm";
-
-function SetBudgetForm({ workspaceId, categories }: { workspaceId: string; categories: CategoryOption[] }) {
+function SetBudgetForm({
+  workspaceId,
+  categories,
+}: {
+  workspaceId: string;
+  categories: CategoryOption[];
+}) {
   const router = useRouter();
   const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
   const [amount, setAmount] = useState("");
@@ -42,11 +48,11 @@ function SetBudgetForm({ workspaceId, categories }: { workspaceId: string; categ
   }
 
   return (
-    <Card className="space-y-2 p-3">
+    <Card className="space-y-3 p-3">
       <div className="flex flex-wrap items-end gap-2">
-        <select
+        <Select
           aria-label="Category"
-          className={selectCls}
+          className="w-auto min-w-[10rem]"
           value={categoryId}
           disabled={pending}
           onChange={(e) => setCategoryId(e.target.value)}
@@ -56,11 +62,10 @@ function SetBudgetForm({ workspaceId, categories }: { workspaceId: string; categ
               {c.name}
             </option>
           ))}
-        </select>
-        <input
+        </Select>
+        <AmountInput
           aria-label="Monthly budget amount"
-          className={inputCls}
-          inputMode="decimal"
+          className="w-auto min-w-[9rem] flex-1"
           placeholder="Monthly amount"
           value={amount}
           disabled={pending}
@@ -68,14 +73,13 @@ function SetBudgetForm({ workspaceId, categories }: { workspaceId: string; categ
         />
         <Button
           variant="primary"
-          className="px-3 py-1.5 text-xs"
           disabled={pending || categoryId === "" || amount.trim() === ""}
           onClick={save}
         >
           Set budget
         </Button>
       </div>
-      {error && <p className="text-xs font-semibold text-neg">{error}</p>}
+      {error && <FieldError>{error}</FieldError>}
     </Card>
   );
 }
@@ -93,21 +97,23 @@ export function BudgetView({
     <div className="space-y-4">
       <SetBudgetForm workspaceId={workspaceId} categories={categories} />
 
-      <Card className="space-y-4 p-4">
+      <Card className="space-y-5 p-5">
         {rows.length === 0 ? (
           <p className="text-sm text-muted">No budgets set yet — add one above.</p>
         ) : (
           rows.map((r) => (
-            <div key={r.categoryId} className="space-y-1.5">
+            <div key={r.categoryId} className="space-y-2">
               <div className="flex items-baseline justify-between text-sm">
                 <span className="font-semibold text-ink">{r.name}</span>
-                <span className={`tabular ${r.status === "over" ? "font-bold text-neg" : "text-slate-700"}`}>
+                <span
+                  className={`tabular ${r.status === "over" ? "font-semibold text-alert" : "text-muted"}`}
+                >
                   {`${r.actual} / ${r.budget}`}
                 </span>
               </div>
-              <div className="h-2.5 overflow-hidden rounded-full bg-[#eef0f3]">
+              <div className="h-2 overflow-hidden rounded-full bg-raised">
                 <div
-                  className={`h-full rounded-full ${BAR[r.status]}`}
+                  className={`h-full rounded-full transition-[width] duration-500 ${BAR[r.status]}`}
                   style={{ width: `${Math.min(r.pct, 100)}%` }}
                 />
               </div>

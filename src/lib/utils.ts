@@ -1,6 +1,13 @@
-export type ClassValue = string | false | null | undefined;
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
-/** Minimal className joiner (shadcn-compatible `cn` surface). */
+export type { ClassValue };
+
+/**
+ * Merge class names so later classes win. Without tailwind-merge, `cn("bg-surface",
+ * "bg-transparent")` emits both and source order decides — every `className`
+ * override passed into a primitive would silently no-op.
+ */
 export function cn(...classes: ClassValue[]): string {
-  return classes.filter(Boolean).join(" ");
+  return twMerge(clsx(classes));
 }

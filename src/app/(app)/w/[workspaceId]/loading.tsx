@@ -3,12 +3,14 @@
 // navigation from feeling frozen. Mirrors the dashboard's shape.
 
 function Bar({ className = "" }: { className?: string }) {
-  return <div className={`rounded bg-[#eef0f3] ${className}`} />;
+  return <div className={`rounded bg-raised ${className}`} />;
 }
 
 function CardSkeleton({ className = "", children }: { className?: string; children?: React.ReactNode }) {
   return (
-    <div className={`rounded-[14px] border border-line bg-card p-4 shadow-card ${className}`}>{children}</div>
+    <div className={`rounded-card border border-rule bg-surface p-4 shadow-card ${className}`}>
+      {children}
+    </div>
   );
 }
 
@@ -32,7 +34,7 @@ export default function WorkspaceLoading() {
       </div>
 
       {/* two-column main */}
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1.4fr_1fr]">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[1.5fr_1fr]">
         <div className="flex flex-col gap-4">
           <CardSkeleton>
             <Bar className="h-4 w-40" />

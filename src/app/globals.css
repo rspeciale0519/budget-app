@@ -1,30 +1,169 @@
 @import "tailwindcss";
 
-/* Design tokens from the approved mockup (docs/temp/budget-app-mockup-v1.html). */
-@theme {
-  --color-bg: #f4f5f7;
-  --color-card: #ffffff;
-  --color-ink: #1a1d24;
-  --color-muted: #6b7280;
-  --color-line: #e7e9ee;
-  --color-pos: #16a34a;
-  --color-neg: #dc2626;
-  --color-amber: #d97706;
-  --color-blue: #2563eb;
-  --color-violet: #7c3aed;
-  --color-slate: #64748b;
+/*
+  Ledger — "Instrument"
 
-  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 16px rgba(16, 24, 40, 0.06);
+  Two rules govern this palette:
+
+  1. Hue encodes DIRECTION (money in / money out). Opacity encodes CERTAINTY
+     (cleared / projected). They are orthogonal, so they compose: a projected
+     inflow is credit-hue at low opacity.
+
+  2. Red is scarce. Most finance UIs burn red on every expense, so red stops
+     meaning anything. Here spending is not an error — outflow is warm amber.
+     `alert` is reserved for what is actually wrong (overdue, negative runway).
+     When it appears, it means something.
+
+  Themes flip the raw vars below; `@theme inline` makes each utility read through
+  the var instead of baking its value at build time.
+*/
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --paper: #070a11;
+  --surface: #0d1119;
+  --raised: #131926;
+  --sunken: #05070c;
+
+  --rule: #1e2634;
+  --rule-strong: #2b3547;
+
+  --ink: #eaeef6;
+  --ink-muted: #8792a8;
+  --ink-dim: #5a657c;
+
+  --credit: #5eead4;
+  --credit-tint: #0e2b2a;
+  --debit: #f0a868;
+  --debit-tint: #2e1f12;
+  --alert: #f4526a;
+  --alert-tint: #2e1119;
+  --now: #7da2ff;
+  --now-tint: #131f3d;
+  --scheduled: #a78bfa;
+  --scheduled-tint: #1d1733;
+
+  --shadow-card-v: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  --shadow-lift-v: 0 2px 4px rgba(0, 0, 0, 0.4), 0 16px 40px -12px rgba(0, 0, 0, 0.6);
+  --shadow-overlay-v: 0 32px 80px -12px rgba(0, 0, 0, 0.8);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --paper: #f7f7f5;
+  --surface: #ffffff;
+  --raised: #f1f2f4;
+  --sunken: #ebecee;
+
+  --rule: #e2e4e9;
+  --rule-strong: #cbcfd8;
+
+  --ink: #12151c;
+  --ink-muted: #626c80;
+  --ink-dim: #949cad;
+
+  --credit: #0f8a76;
+  --credit-tint: #ddf5f0;
+  --debit: #b3651a;
+  --debit-tint: #fbeddd;
+  --alert: #d02444;
+  --alert-tint: #fce1e6;
+  --now: #2d5bd7;
+  --now-tint: #e2e9fb;
+  --scheduled: #6d47c9;
+  --scheduled-tint: #ece5fb;
+
+  --shadow-card-v: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 16px rgba(16, 24, 40, 0.06);
+  --shadow-lift-v: 0 2px 4px rgba(16, 24, 40, 0.06), 0 12px 32px -8px rgba(16, 24, 40, 0.14);
+  --shadow-overlay-v: 0 32px 80px -12px rgba(16, 24, 40, 0.28);
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-sunken: var(--sunken);
+
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+
+  --color-ink: var(--ink);
+  --color-muted: var(--ink-muted);
+  --color-dim: var(--ink-dim);
+
+  --color-credit: var(--credit);
+  --color-credit-tint: var(--credit-tint);
+  --color-debit: var(--debit);
+  --color-debit-tint: var(--debit-tint);
+  --color-alert: var(--alert);
+  --color-alert-tint: var(--alert-tint);
+  --color-now: var(--now);
+  --color-now-tint: var(--now-tint);
+  --color-scheduled: var(--scheduled);
+  --color-scheduled-tint: var(--scheduled-tint);
+
+  --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", monospace;
+
+  --shadow-card: var(--shadow-card-v);
+  --shadow-lift: var(--shadow-lift-v);
+  --shadow-overlay: var(--shadow-overlay-v);
+
+  --radius-card: 14px;
+  --radius-control: 9px;
+
+  --ease-instrument: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+  background: var(--paper);
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-ink);
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
+/*
+  Money is data, not prose: mono, tabular, slightly tightened so long figures stay
+  scannable down a column. Kept as a class — `.tabular` is already used app-wide.
+*/
 .tabular {
+  font-family: var(--font-jetbrains-mono), ui-monospace, "SF Mono", monospace;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--now) 40%, transparent);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--now);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule-strong) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

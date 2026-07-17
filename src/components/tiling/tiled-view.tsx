@@ -40,7 +40,7 @@ function Split({
         <Fragment key={i}>
           {i > 0 && (
             <Separator
-              className={`${handleCls} rounded bg-line transition-colors hover:bg-pos`}
+              className={`${handleCls} rounded bg-rule transition-colors hover:bg-now`}
             />
           )}
           <Panel id={String(i)} minSize={12} className="overflow-auto p-1">

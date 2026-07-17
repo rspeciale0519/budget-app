@@ -22,16 +22,19 @@ export default async function WorkspaceDashboard({
   const data = await getDashboardData(user.id, workspaceId, period, todayFn());
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex justify-end">
-        <div className="flex overflow-hidden rounded-[9px] border border-line bg-white">
+        <div className="inline-flex gap-0.5 rounded-control border border-rule bg-surface p-0.5">
           {PERIODS.map((p) => (
             <Link
               key={p}
               href={`/w/${workspaceId}?period=${p}`}
-              className={`px-3 py-[7px] text-[12.5px] font-semibold capitalize ${
-                p === period ? "bg-pos text-white" : "text-muted hover:bg-[#f3f5f8]"
-              }`}
+              aria-current={p === period ? "true" : undefined}
+              className={
+                p === period
+                  ? "rounded-[7px] bg-raised px-3 py-1.5 text-[12.5px] font-semibold capitalize text-ink"
+                  : "rounded-[7px] px-3 py-1.5 text-[12.5px] font-semibold capitalize text-muted transition-colors hover:text-ink"
+              }
             >
               {p}
             </Link>

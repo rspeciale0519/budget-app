@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input, Select } from "@/components/ui/field";
 import type { PaneConfig } from "@/lib/zod/layout";
 import type { SavedLayout } from "@/services/layout-service";
 import type { WorkspaceOption } from "@/components/tiling/tiles-client";
 
-const selectCls = "rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm";
-const inputCls = "rounded-md border border-slate-300 px-3 py-1.5 text-sm";
+const EYEBROW = "text-[10px] font-semibold uppercase tracking-[0.06em] text-muted";
 
 function rootChildren(config: PaneConfig): PaneConfig[] {
   return config.type === "split" ? config.children : [config];
@@ -50,12 +50,12 @@ export function LayoutControls({
   return (
     <Card className="space-y-3 p-3">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[10px] font-bold uppercase tracking-[0.04em] text-muted">Panes</span>
+        <span className={EYEBROW}>Panes</span>
         {children.map((child, i) => (
           <div key={i} className="flex items-center gap-1">
-            <select
+            <Select
               aria-label={`Pane ${i + 1} workspace`}
-              className={selectCls}
+              className="h-8 w-auto min-w-[8rem] text-xs"
               value={child.type === "leaf" ? child.workspaceId : ""}
               disabled={busy}
               onChange={(e) => onAssign(i, e.target.value)}
@@ -65,10 +65,10 @@ export function LayoutControls({
                   {w.name}
                 </option>
               ))}
-            </select>
+            </Select>
             <Button
               variant="ghost"
-              className="px-2 py-1 text-xs"
+              size="sm"
               disabled={busy || children.length <= 1}
               onClick={() => onRemovePane(i)}
               title="Remove pane"
@@ -77,23 +77,18 @@ export function LayoutControls({
             </Button>
           </div>
         ))}
-        <Button
-          variant="outline"
-          className="px-2 py-1 text-xs"
-          disabled={busy || !firstWs}
-          onClick={() => onAddPane(firstWs)}
-        >
+        <Button variant="outline" size="sm" disabled={busy || !firstWs} onClick={() => onAddPane(firstWs)}>
           + Add pane
         </Button>
-        <Button variant="outline" className="px-2 py-1 text-xs" disabled={busy} onClick={onToggleDirection}>
+        <Button variant="outline" size="sm" disabled={busy} onClick={onToggleDirection}>
           {direction === "row" ? "⬍ Stack as column" : "⬌ Arrange as row"}
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 border-t border-line pt-3">
-        <input
+      <div className="flex flex-wrap items-center gap-2 border-t border-rule pt-3">
+        <Input
           aria-label="Layout name"
-          className={inputCls}
+          className="h-8 w-auto min-w-[9rem] flex-1 text-xs"
           placeholder="Layout name"
           value={name}
           disabled={busy}
@@ -101,7 +96,7 @@ export function LayoutControls({
         />
         <Button
           variant="primary"
-          className="px-3 py-1.5 text-xs"
+          size="sm"
           disabled={busy || name.trim() === ""}
           onClick={() => {
             onSave(name.trim());
@@ -111,10 +106,10 @@ export function LayoutControls({
           Save layout
         </Button>
 
-        <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.04em] text-muted">Restore</span>
-        <select
+        <span className={`ml-2 ${EYEBROW}`}>Restore</span>
+        <Select
           aria-label="Saved layouts"
-          className={selectCls}
+          className="h-8 w-auto min-w-[9rem] text-xs"
           value={restoreId}
           disabled={busy || layouts.length === 0}
           onChange={(e) => setRestoreId(e.target.value)}
@@ -125,10 +120,10 @@ export function LayoutControls({
               {l.name}
             </option>
           ))}
-        </select>
+        </Select>
         <Button
           variant="outline"
-          className="px-3 py-1.5 text-xs"
+          size="sm"
           disabled={busy || restoreId === ""}
           onClick={() => onRestore(restoreId)}
         >
@@ -136,7 +131,8 @@ export function LayoutControls({
         </Button>
         <Button
           variant="ghost"
-          className="px-2 py-1.5 text-xs text-neg"
+          size="sm"
+          className="text-alert"
           disabled={busy || restoreId === ""}
           onClick={() => {
             onDelete(restoreId);
