@@ -4,15 +4,17 @@ export const THEME_STORAGE_KEY = "ledger:theme";
 
 /**
  * Runs before first paint to stamp `data-theme` on <html>. Inlined in <head> so
- * a stored light preference never flashes through the dark default.
+ * a stored dark preference never flashes through the light default.
  *
- * Kept as a string (not a component) because it must execute synchronously,
- * ahead of hydration. Wrapped in try/catch: localStorage throws in some
- * embedded and privacy-hardened browsers, and a theme is not worth a blank page.
+ * Sterling is a light-first design, so light is the default; only an explicit
+ * stored choice switches to dark. Kept as a string (not a component) because it
+ * must execute synchronously, ahead of hydration. Wrapped in try/catch:
+ * localStorage throws in some embedded and privacy-hardened browsers, and a
+ * theme is not worth a blank page.
  */
 export const THEME_BOOT_SCRIPT = `(function(){try{var t=localStorage.getItem(${JSON.stringify(
   THEME_STORAGE_KEY,
-)});if(!t){t=window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}document.documentElement.setAttribute("data-theme",t);}catch(e){}})();`;
+)});if(t!=="dark"&&t!=="light"){t="light";}document.documentElement.setAttribute("data-theme",t);}catch(e){}})();`;
 
 export function applyTheme(theme: Theme): void {
   document.documentElement.setAttribute("data-theme", theme);

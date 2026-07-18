@@ -1,84 +1,88 @@
 @import "tailwindcss";
 
 /*
-  Ledger — "Instrument"
+  Ledger — "Sterling"
 
-  Two rules govern this palette:
+  A light, editorial money instrument: ivory paper, ink, racing green. Set like
+  a private-bank statement.
 
-  1. Hue encodes DIRECTION (money in / money out). Opacity encodes CERTAINTY
-     (cleared / projected). They are orthogonal, so they compose: a projected
-     inflow is credit-hue at low opacity.
+  Two rules still govern the palette:
 
-  2. Red is scarce. Most finance UIs burn red on every expense, so red stops
-     meaning anything. Here spending is not an error — outflow is warm amber.
-     `alert` is reserved for what is actually wrong (overdue, negative runway).
-     When it appears, it means something.
+  1. Hue encodes DIRECTION. Money in is green; spending is a restrained gold;
+     everything neutral is ink. Opacity encodes CERTAINTY (cleared / projected).
 
-  Themes flip the raw vars below; `@theme inline` makes each utility read through
-  the var instead of baking its value at build time.
+  2. Red is scarce — reserved for what is actually wrong (overdue, negative
+     runway, destructive actions). When it appears, it means something.
+
+  `now` is a quiet slate blue: the present-moment marker and the link/focus
+  colour, deliberately distinct from the green trajectory line so the two never
+  merge on the forecast.
+
+  Light is the default; a Sterling-dark variant flips the raw vars for the
+  toggle. `@theme inline` makes each utility read through the var.
 */
 
 :root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --paper: #f1f0ea;
+  --surface: #fbfaf5;
+  --raised: #e8e6dc;
+  --sunken: #e3e0d5;
+
+  --rule: #e1ded4;
+  --rule-strong: #ccc7b9;
+
+  --ink: #1d1b17;
+  --ink-muted: #6a655b;
+  --ink-dim: #9a9482;
+
+  --credit: #1f6b4a;
+  --credit-tint: #dfebe2;
+  --debit: #b98a16;
+  --debit-tint: #f1e8ce;
+  --alert: #b02a3b;
+  --alert-tint: #f4e0e2;
+  --now: #345b7e;
+  --now-tint: #e1e8ef;
+  --scheduled: #5b4c7a;
+  --scheduled-tint: #e8e3f0;
+
+  --shadow-card-v: 0 1px 2px rgba(40, 36, 28, 0.04), 0 4px 16px rgba(40, 36, 28, 0.07);
+  --shadow-lift-v: 0 2px 4px rgba(40, 36, 28, 0.06), 0 12px 32px -8px rgba(40, 36, 28, 0.14);
+  --shadow-overlay-v: 0 32px 80px -12px rgba(40, 36, 28, 0.24);
+}
+
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --paper: #070a11;
-  --surface: #0d1119;
-  --raised: #131926;
-  --sunken: #05070c;
+  --paper: #14140f;
+  --surface: #1b1b14;
+  --raised: #24231a;
+  --sunken: #0e0e09;
 
-  --rule: #1e2634;
-  --rule-strong: #2b3547;
+  --rule: #302e23;
+  --rule-strong: #423f31;
 
-  --ink: #eaeef6;
-  --ink-muted: #8792a8;
-  --ink-dim: #5a657c;
+  --ink: #eceadf;
+  --ink-muted: #9e988a;
+  --ink-dim: #6e6a5b;
 
-  --credit: #5eead4;
-  --credit-tint: #0e2b2a;
-  --debit: #f0a868;
-  --debit-tint: #2e1f12;
-  --alert: #f4526a;
-  --alert-tint: #2e1119;
-  --now: #7da2ff;
-  --now-tint: #131f3d;
-  --scheduled: #a78bfa;
-  --scheduled-tint: #1d1733;
+  --credit: #57c48e;
+  --credit-tint: #163021;
+  --debit: #d8a83a;
+  --debit-tint: #322810;
+  --alert: #e2647a;
+  --alert-tint: #33161b;
+  --now: #82a8cf;
+  --now-tint: #17242f;
+  --scheduled: #ac92d0;
+  --scheduled-tint: #201a2e;
 
   --shadow-card-v: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -8px rgba(0, 0, 0, 0.5);
   --shadow-lift-v: 0 2px 4px rgba(0, 0, 0, 0.4), 0 16px 40px -12px rgba(0, 0, 0, 0.6);
   --shadow-overlay-v: 0 32px 80px -12px rgba(0, 0, 0, 0.8);
-}
-
-[data-theme="light"] {
-  color-scheme: light;
-
-  --paper: #f7f7f5;
-  --surface: #ffffff;
-  --raised: #f1f2f4;
-  --sunken: #ebecee;
-
-  --rule: #e2e4e9;
-  --rule-strong: #cbcfd8;
-
-  --ink: #12151c;
-  --ink-muted: #626c80;
-  --ink-dim: #949cad;
-
-  --credit: #0f8a76;
-  --credit-tint: #ddf5f0;
-  --debit: #b3651a;
-  --debit-tint: #fbeddd;
-  --alert: #d02444;
-  --alert-tint: #fce1e6;
-  --now: #2d5bd7;
-  --now-tint: #e2e9fb;
-  --scheduled: #6d47c9;
-  --scheduled-tint: #ece5fb;
-
-  --shadow-card-v: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 16px rgba(16, 24, 40, 0.06);
-  --shadow-lift-v: 0 2px 4px rgba(16, 24, 40, 0.06), 0 12px 32px -8px rgba(16, 24, 40, 0.14);
-  --shadow-overlay-v: 0 32px 80px -12px rgba(16, 24, 40, 0.28);
 }
 
 @theme inline {
@@ -105,9 +109,10 @@
   --color-scheduled: var(--scheduled);
   --color-scheduled-tint: var(--scheduled-tint);
 
-  --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", monospace;
+  /* One family carries the UI; hierarchy is weight and size, not a second face. */
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
 
   --shadow-card: var(--shadow-card-v);
   --shadow-lift: var(--shadow-lift-v);
@@ -126,23 +131,40 @@ html {
 body {
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/*
-  Money is data, not prose: mono, tabular, slightly tightened so long figures stay
-  scannable down a column. Kept as a class — `.tabular` is already used app-wide.
-*/
+/* Money is data: every figure is set in Geist Mono, tabular, so columns align. */
 .tabular {
-  font-family: var(--font-jetbrains-mono), ui-monospace, "SF Mono", monospace;
+  font-family: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
 
+/*
+  The sign-in balance line writes itself once, then holds — like a pen finishing
+  a ledger entry. One pass, no loop. The reduced-motion block below collapses it
+  to its finished state, so motion-sensitive users see the line already drawn.
+*/
+@keyframes ledger-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.ledger-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: ledger-draw 1.7s var(--ease-instrument) 0.15s forwards;
+}
+
 ::selection {
-  background: color-mix(in oklab, var(--now) 40%, transparent);
+  background: color-mix(in oklab, var(--now) 30%, transparent);
   color: var(--ink);
 }
 

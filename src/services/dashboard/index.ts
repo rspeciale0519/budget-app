@@ -9,6 +9,7 @@ import type {
 } from "@/lib/mock/dashboard";
 import { rlsClientFor } from "@/lib/prisma-rls";
 import { assertWorkspaceAccess } from "@/services/authz";
+import { categoryColor, paletteAt } from "@/lib/chart-palette";
 import { format, money, sum, toCents, type Money } from "@/lib/money";
 import { addDays, compare, fromDbDate, type CalendarDate } from "@/lib/calendar-date";
 import { periodRange, type Period } from "@/services/dashboard/period";
@@ -26,13 +27,6 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 function shortLabel(d: CalendarDate): string {
   const p = d.split("-");
   return `${MONTHS[Number(p[1]) - 1]} ${p[2]}`;
-}
-
-const PALETTE = ["#2563eb", "#16a34a", "#d97706", "#7c3aed", "#64748b", "#0ea5e9", "#db2777", "#ea580c"];
-function colorFor(id: string): string {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return PALETTE[h % PALETTE.length]!;
 }
 
 function daysBetween(a: CalendarDate, b: CalendarDate): number {
@@ -134,7 +128,7 @@ export async function getDashboardData(
     name: c.name,
     amount: format(c.amount),
     pct: c.pct,
-    color: colorFor(c.categoryId),
+    color: categoryColor(c.categoryId),
   }));
 
   // Combine overdue + upcoming (dedupe by id), keep due-date order.
@@ -154,7 +148,7 @@ export async function getDashboardData(
     target: format(g.target),
     saved: format(g.saved),
     pct: g.pct,
-    color: PALETTE[i % PALETTE.length]!,
+    color: paletteAt(i),
   }));
 
   const debtsOut: DebtItem[] = debts.items.map((d) => ({

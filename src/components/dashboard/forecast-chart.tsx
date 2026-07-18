@@ -159,7 +159,8 @@ export function ForecastChart({
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle = now;
-    ctx.font = "600 9px var(--font-jetbrains-mono, monospace)";
+    // Canvas font strings don't resolve CSS vars, so name a concrete stack.
+    ctx.font = "600 9px ui-monospace, 'SF Mono', monospace";
     ctx.textBaseline = "alphabetic";
     ctx.fillText("NOW", nowX + 4, PAD.top - 8);
 
