@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { renderToString } from "react-dom/server";
 import { Dashboard, SafeToSpendPanel } from "@/components/dashboard/dashboard";
+import { ToastProvider } from "@/components/ui/toast";
 import { mockDashboard } from "@/lib/mock/dashboard";
 
 vi.mock("next/navigation", () => ({
@@ -9,7 +10,11 @@ vi.mock("next/navigation", () => ({
 
 describe("Dashboard", () => {
   it("renders KPI values and widget sections from mock data", () => {
-    const html = renderToString(<Dashboard data={mockDashboard} />);
+    const html = renderToString(
+      <ToastProvider>
+        <Dashboard data={mockDashboard} />
+      </ToastProvider>,
+    );
     expect(html).toContain(mockDashboard.kpis.safeToSpend);
     expect(html).toContain(mockDashboard.kpis.totalBalance);
     expect(html).toContain("Cash-flow forecast");
@@ -18,7 +23,11 @@ describe("Dashboard", () => {
   });
 
   it("conveys bill status by label, not color alone (accessibility)", () => {
-    const html = renderToString(<Dashboard data={mockDashboard} />);
+    const html = renderToString(
+      <ToastProvider>
+        <Dashboard data={mockDashboard} />
+      </ToastProvider>,
+    );
     expect(html).toContain("Overdue");
     expect(html).toContain("Unpaid");
   });

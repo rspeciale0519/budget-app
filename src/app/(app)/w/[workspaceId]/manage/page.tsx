@@ -19,14 +19,8 @@ export default async function ManagePage({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  let accounts: { id: string; name: string }[] = [];
-  let txns: { id: string; date: Date; description: string; amount: { toFixed(n: number): string } }[] = [];
-  try {
-    accounts = (await listAccounts(user.id, workspaceId)).map((a) => ({ id: a.id, name: a.name }));
-    txns = await listTransactions(user.id, workspaceId, { pageSize: 20 });
-  } catch {
-    redirect("/");
-  }
+  const accounts = (await listAccounts(user.id, workspaceId)).map((a) => ({ id: a.id, name: a.name }));
+  const txns = await listTransactions(user.id, workspaceId, { pageSize: 20 });
 
   return (
     <div className="space-y-4">

@@ -15,18 +15,13 @@ export default async function IncomePage({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  let sources: IncomeSourceView[] = [];
-  try {
-    sources = (await listIncomeSources(user.id, workspaceId)).map((s) => ({
-      id: s.id,
-      name: s.name,
-      amount: s.amount.toFixed(2),
-      frequency: s.frequency,
-      nextDate: fromDbDate(s.nextDate),
-    }));
-  } catch {
-    redirect("/");
-  }
+  const sources: IncomeSourceView[] = (await listIncomeSources(user.id, workspaceId)).map((s) => ({
+    id: s.id,
+    name: s.name,
+    amount: s.amount.toFixed(2),
+    frequency: s.frequency,
+    nextDate: fromDbDate(s.nextDate),
+  }));
 
   return (
     <div className="space-y-4">

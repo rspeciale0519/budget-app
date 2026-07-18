@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { getWorkspace } from "@/services/workspace-service";
 import { WorkspaceSubNav } from "@/components/workspace/workspace-sub-nav";
@@ -22,8 +23,14 @@ export default async function WorkspaceLayout({
     return (
       <div className="py-16">
         <Card>
-          <CardContent className="py-10 text-center text-sm text-muted">
-            You don&apos;t have access to this workspace.
+          <CardContent className="space-y-4 py-10 text-center text-sm text-muted">
+            <p>You don&apos;t have access to this workspace.</p>
+            <Link
+              href="/"
+              className="inline-flex h-9 items-center justify-center rounded-control border border-rule-strong bg-surface px-3.5 text-[13px] font-medium text-ink transition-colors hover:border-dim hover:bg-raised"
+            >
+              Back to your dashboard
+            </Link>
           </CardContent>
         </Card>
       </div>

@@ -14,12 +14,7 @@ export default async function ImportPage({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  let accounts: { id: string; name: string }[] = [];
-  try {
-    accounts = (await listAccounts(user.id, workspaceId)).map((a) => ({ id: a.id, name: a.name }));
-  } catch {
-    redirect("/");
-  }
+  const accounts = (await listAccounts(user.id, workspaceId)).map((a) => ({ id: a.id, name: a.name }));
 
   return (
     <div className="space-y-4">

@@ -9,6 +9,7 @@ import { StatusTag } from "@/components/ui/status-tag";
 import { ForecastChart, type ForecastPoint } from "@/components/dashboard/forecast-chart";
 import { markBillPaidStandaloneAction } from "@/app/(app)/w/[workspaceId]/_actions";
 import { MatchSuggestions } from "@/components/match/match-suggestions";
+import { useToast } from "@/components/ui/toast";
 import type { DashboardData } from "@/lib/mock/dashboard";
 
 function num(money: string): number {
@@ -155,6 +156,7 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
   const [showMath, setShowMath] = useState(false);
   const [paying, setPaying] = useState<string | null>(null);
   const router = useRouter();
+  const { toast } = useToast();
 
   const forecastPoints: ForecastPoint[] = data.forecast.map((p) => ({
     label: p.date,
@@ -168,7 +170,12 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
     setPaying(billId);
     const result = await markBillPaidStandaloneAction(workspaceId, billId);
     setPaying(null);
-    if (result.ok) router.refresh();
+    if (result.ok) {
+      toast("Marked paid");
+      router.refresh();
+    } else {
+      toast(result.error ?? "Could not mark that bill paid — try again.", { kind: "error" });
+    }
   }
 
   return (

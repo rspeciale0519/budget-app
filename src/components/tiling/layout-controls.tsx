@@ -43,6 +43,7 @@ export function LayoutControls({
 }: LayoutControlsProps) {
   const [name, setName] = useState("");
   const [restoreId, setRestoreId] = useState("");
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const children = rootChildren(config);
   const direction = config.type === "split" ? config.direction : "row";
   const firstWs = workspaces[0]?.id ?? "";
@@ -130,16 +131,22 @@ export function LayoutControls({
           Restore
         </Button>
         <Button
-          variant="ghost"
+          variant={confirmingDelete ? "danger" : "ghost"}
           size="sm"
-          className="text-alert"
+          className={confirmingDelete ? undefined : "text-alert"}
           disabled={busy || restoreId === ""}
           onClick={() => {
+            if (!confirmingDelete) {
+              setConfirmingDelete(true);
+              return;
+            }
+            setConfirmingDelete(false);
             onDelete(restoreId);
             setRestoreId("");
           }}
+          onBlur={() => setConfirmingDelete(false)}
         >
-          Delete
+          {confirmingDelete ? "Delete?" : "Delete"}
         </Button>
       </div>
     </Card>

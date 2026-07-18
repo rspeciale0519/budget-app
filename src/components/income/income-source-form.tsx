@@ -9,6 +9,7 @@ import {
   addIncomeSourceAction,
   deleteIncomeSourceAction,
 } from "@/app/(app)/w/[workspaceId]/_actions";
+import { useToast } from "@/components/ui/toast";
 
 export interface IncomeSourceView {
   id: string;
@@ -34,6 +35,9 @@ export function IncomeSourceForm({
   const [nextDate, setNextDate] = useState("2026-07-01");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   async function add() {
     setBusy(true);
@@ -48,8 +52,20 @@ export function IncomeSourceForm({
   }
 
   async function remove(id: string) {
-    await deleteIncomeSourceAction(workspaceId, id);
-    router.refresh();
+    if (confirmingId !== id) {
+      setConfirmingId(id);
+      return;
+    }
+    setConfirmingId(null);
+    setRemovingId(id);
+    const result = await deleteIncomeSourceAction(workspaceId, id);
+    setRemovingId(null);
+    if (result.ok) {
+      toast("Income source removed");
+      router.refresh();
+    } else {
+      toast(result.error ?? "Could not remove that income source.", { kind: "error" });
+    }
   }
 
   return (
@@ -92,9 +108,15 @@ export function IncomeSourceForm({
                 </span>
                 <span className="flex items-center gap-3">
                   <span className="tabular text-ink">${s.amount}</span>
-                  <button onClick={() => remove(s.id)} className="text-xs text-alert hover:underline">
-                    remove
-                  </button>
+                  <Button
+                    variant={confirmingId === s.id ? "danger" : "ghost"}
+                    size="sm"
+                    disabled={removingId === s.id}
+                    onClick={() => remove(s.id)}
+                    onBlur={() => setConfirmingId(null)}
+                  >
+                    {removingId === s.id ? "Removing…" : confirmingId === s.id ? "Remove?" : "Remove"}
+                  </Button>
                 </span>
               </div>
             ))

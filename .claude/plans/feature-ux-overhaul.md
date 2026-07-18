@@ -40,7 +40,7 @@ Verified-fact note: every service function, schema field, and component prop ref
 **Interfaces:**
 - Produces: `ToastProvider({ children })`; `useToast(): { toast: (message: string, opts?: { kind?: "success" | "error"; actionLabel?: string; onAction?: () => void; durationMs?: number }) => void }`. Later tasks call `toast("Saved")`, `toast("Could not save", { kind: "error" })`, and `toast("Import undone", { actionLabel: "Undo", onAction })`.
 
-- [ ] **Step 1: Write the failing component test** (`// @vitest-environment jsdom` header comment, React Testing Library is already in devDeps — mirror `src/components/budget/budget-view.test.tsx` imports)
+- [x] **Step 1: Write the failing component test** — ADAPTED at implementation: the repo has no jsdom/RTL (and the no-new-deps constraint forbids adding them); tests use the repo's `renderToString` pattern instead, asserting children render, the `aria-live="polite"` region exists, and `useToast` throws outside the provider. Interaction behavior is covered by browser-verify steps.
 
 ```tsx
 // @vitest-environment jsdom
@@ -69,9 +69,9 @@ it("shows a toast with an action and auto-dismisses", async () => {
 });
 ```
 
-- [ ] **Step 2: Run it** — `pnpm vitest run src/components/ui/toast.test.tsx` → FAIL (module not found).
+- [x] **Step 2: Run it** — `pnpm vitest run src/components/ui/toast.test.tsx` → FAIL (module not found).
 
-- [ ] **Step 3: Implement `toast.tsx`**
+- [x] **Step 3: Implement `toast.tsx`**
 
 ```tsx
 "use client";
@@ -139,9 +139,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 }
 ```
 
-- [ ] **Step 4: Wrap the app** — in `src/app/(app)/layout.tsx`, import `ToastProvider` and wrap the returned `<div className="min-h-screen">…</div>` contents: `<ToastProvider><div className="min-h-screen">…</div></ToastProvider>`.
+- [x] **Step 4: Wrap the app** — in `src/app/(app)/layout.tsx`, import `ToastProvider` and wrap the returned `<div className="min-h-screen">…</div>` contents: `<ToastProvider><div className="min-h-screen">…</div></ToastProvider>`.
 
-- [ ] **Step 5: Verify** — test passes; `pnpm type-check` clean.
+- [x] **Step 5: Verify** — test passes; `pnpm type-check` clean.
 
 ### Task 1.2: Error boundary and not-found pages; stop silent redirects
 
@@ -149,7 +149,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 - Create: `src/app/error.tsx`, `src/app/not-found.tsx`
 - Modify: `src/app/(app)/w/[workspaceId]/manage/page.tsx:24-29`, `src/app/(app)/w/[workspaceId]/import/page.tsx:16-22`, `src/app/(app)/w/[workspaceId]/income/page.tsx:19-28`
 
-- [ ] **Step 1: `src/app/error.tsx`**
+- [x] **Step 1: `src/app/error.tsx`**
 
 ```tsx
 "use client";
@@ -171,23 +171,23 @@ export default function AppError({ reset }: { error: Error; reset: () => void })
 }
 ```
 
-- [ ] **Step 2: `src/app/not-found.tsx`** — same shape: heading "Page not found", body "That page doesn't exist or may have moved.", `<Link href="/">` styled as a `Button` (use `<Link href="/" className="...">Back to your dashboard</Link>` with the outline-button classes from `tab-bar.tsx:37`).
+- [x] **Step 2: `src/app/not-found.tsx`** — same shape: heading "Page not found", body "That page doesn't exist or may have moved.", `<Link href="/">` styled as a `Button` (use `<Link href="/" className="...">Back to your dashboard</Link>` with the outline-button classes from `tab-bar.tsx:37`).
 
-- [ ] **Step 3: Remove the silent `catch { redirect("/") }` blocks.** In each of the three listed pages the data load is wrapped in try/catch that redirects to `/`. Delete the try/catch and let genuine errors throw to `error.tsx`. Keep the existing not-signed-in `redirect("/login")` and workspace-access handling (the friendly access card in `w/[workspaceId]/layout.tsx:21-31` already covers no-access, because `ForbiddenError` from the layout renders it before these pages run).
+- [x] **Step 3: Remove the silent `catch { redirect("/") }` blocks.** In each of the three listed pages the data load is wrapped in try/catch that redirects to `/`. Delete the try/catch and let genuine errors throw to `error.tsx`. Keep the existing not-signed-in `redirect("/login")` and workspace-access handling (the friendly access card in `w/[workspaceId]/layout.tsx:21-31` already covers no-access, because `ForbiddenError` from the layout renders it before these pages run).
 
-- [ ] **Step 4: No-access dead-end fix** — in `src/app/(app)/w/[workspaceId]/layout.tsx:21-31`, the friendly "You don't have access to this workspace." card gets a primary action: `<Link href="/">Back to your dashboard</Link>` styled with the outline-button classes.
+- [x] **Step 4: No-access dead-end fix** — in `src/app/(app)/w/[workspaceId]/layout.tsx:21-31`, the friendly "You don't have access to this workspace." card gets a primary action: `<Link href="/">Back to your dashboard</Link>` styled with the outline-button classes.
 
-- [ ] **Step 5: Verify** — `pnpm type-check && pnpm lint`; manually load a workspace page while the DB is up (renders) — behavior for real errors is now the branded boundary instead of a silent bounce.
+- [x] **Step 5: Verify** — `pnpm type-check && pnpm lint`; manually load a workspace page while the DB is up (renders) — behavior for real errors is now the branded boundary instead of a silent bounce.
 
 ### Task 1.3: Surface failures on money actions; confirm destructive ones
 
 **Files:**
 - Modify: `src/components/dashboard/dashboard.tsx:166-172` (mark paid), `src/components/income/income-source-form.tsx:50-53,95-97` (remove income), `src/components/tiling/layout-controls.tsx:132-143` (delete layout)
 
-- [ ] **Step 1: Mark paid.** In `dashboard.tsx`, the bill row's mark-paid handler currently ignores `!res.ok`. Import `useToast`, and on failure call `toast(res.error ?? "Could not mark that bill paid — try again.", { kind: "error" })`; on success `toast("Marked paid")`.
-- [ ] **Step 2: Income remove.** In `income-source-form.tsx`, add a `busy` state to the remove handler (disable the control while pending), replace the bare link with a `Button variant="ghost" size="sm"`, and change the flow to confirm-then-delete: first click flips the row control to "Remove?" (danger variant); second click within that render actually calls `deleteIncomeSourceAction`. On failure: `toast(res.error ?? "Could not remove that income source.", { kind: "error" })`. On success: `toast("Income source removed")`.
-- [ ] **Step 3: Layout delete.** Same two-click confirm pattern on the Delete button in `layout-controls.tsx`; toast on failure.
-- [ ] **Step 4: Verify** — `pnpm type-check && pnpm lint && pnpm test`; in the browser: mark a bill paid (toast appears), remove an income source (requires the second confirming click).
+- [x] **Step 1: Mark paid.** In `dashboard.tsx`, the bill row's mark-paid handler currently ignores `!res.ok`. Import `useToast`, and on failure call `toast(res.error ?? "Could not mark that bill paid — try again.", { kind: "error" })`; on success `toast("Marked paid")`.
+- [x] **Step 2: Income remove.** In `income-source-form.tsx`, add a `busy` state to the remove handler (disable the control while pending), replace the bare link with a `Button variant="ghost" size="sm"`, and change the flow to confirm-then-delete: first click flips the row control to "Remove?" (danger variant); second click within that render actually calls `deleteIncomeSourceAction`. On failure: `toast(res.error ?? "Could not remove that income source.", { kind: "error" })`. On success: `toast("Income source removed")`.
+- [x] **Step 3: Layout delete.** Same two-click confirm pattern on the Delete button in `layout-controls.tsx`; toast on failure.
+- [x] **Step 4: Verify** — done: gates green; browser-verified via chrome-devtools (prod build, port 3010): mark-paid showed "Marked paid" toast + safe-to-spend recalc; income remove required the "Remove?" confirm click and showed "Income source removed" toast; no console errors.
 
 **Phase 1 checkpoint:** roadmap update → `/git-workflow-planning:checkpoint 1 "feedback foundations: toast, error pages, surfaced failures"`.
 
