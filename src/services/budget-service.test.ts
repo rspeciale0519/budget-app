@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { randomUUID } from "node:crypto";
 import { prismaAdmin } from "@/lib/prisma-admin";
 import { rlsClientFor } from "@/lib/prisma-rls";
-import { setBudget, listBudgets, deleteBudget } from "@/services/budget-service";
+import { setBudget, listBudgets, deleteBudget, moveBudget } from "@/services/budget-service";
 import { ForbiddenError } from "@/services/authz";
 import { money, compare } from "@/lib/money";
 
@@ -59,5 +59,30 @@ describe("budget-service", () => {
 
   it("denies a viewer (write needs admin)", async () => {
     await expect(setBudget(viewer, workspaceId, categoryId, "100.00")).rejects.toBeInstanceOf(ForbiddenError);
+  });
+
+  it("moves money between category budgets atomically and enforces the cap", async () => {
+    const dining = await prismaAdmin.category.create({ data: { workspaceId, name: "Dining X", kind: "expense" } });
+    await setBudget(admin, workspaceId, categoryId, "200.00"); // Postage
+    await setBudget(admin, workspaceId, dining.id, "100.00");
+
+    await moveBudget(admin, workspaceId, dining.id, categoryId, "50.00");
+    const list = await listBudgets(admin, workspaceId);
+    const postage = list.find((b) => b.categoryId === categoryId)!;
+    const din = list.find((b) => b.categoryId === dining.id)!;
+    expect(compare(postage.amount, money("250.00"))).toBe(0);
+    expect(compare(din.amount, money("50.00"))).toBe(0);
+
+    await expect(moveBudget(admin, workspaceId, dining.id, categoryId, "500.00")).rejects.toThrow(
+      "You can only move up to",
+    );
+    await expect(moveBudget(admin, workspaceId, dining.id, dining.id, "10.00")).rejects.toThrow(
+      "different categories",
+    );
+
+    // Clean up rows this test added so the first test's expectations stay valid on re-runs.
+    for (const b of await listBudgets(admin, workspaceId)) {
+      await deleteBudget(admin, workspaceId, b.id);
+    }
   });
 });

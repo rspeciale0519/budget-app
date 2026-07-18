@@ -1,6 +1,6 @@
 import { rlsClientFor } from "@/lib/prisma-rls";
 import { assertWorkspaceAccess } from "@/services/authz";
-import { money, isNegative, type Money } from "@/lib/money";
+import { money, add, sub, compare, format, isNegative, type Money } from "@/lib/money";
 import * as repo from "@/repositories/budget-repo";
 
 export interface SavedBudget {
@@ -40,4 +40,42 @@ export async function listBudgets(userId: string, workspaceId: string): Promise<
 export async function deleteBudget(userId: string, workspaceId: string, budgetId: string): Promise<void> {
   await assertWorkspaceAccess(userId, workspaceId, "admin");
   await rlsClientFor(userId).run((tx) => repo.deleteById(tx, budgetId));
+}
+
+/** Envelope move: shrink one category's monthly budget and grow another's, atomically. */
+export async function moveBudget(
+  userId: string,
+  workspaceId: string,
+  fromCategoryId: string,
+  toCategoryId: string,
+  amount: string,
+): Promise<void> {
+  await assertWorkspaceAccess(userId, workspaceId, "admin");
+  if (fromCategoryId === toCategoryId) throw new Error("Pick two different categories");
+  const moved = money(amount);
+  if (compare(moved, money(0)) <= 0) throw new Error("Enter a positive amount to move");
+
+  await rlsClientFor(userId).run(async (tx) => {
+    const rows = await repo.listByWorkspace(tx, workspaceId);
+    const from = rows.find((r) => r.categoryId === fromCategoryId);
+    const to = rows.find((r) => r.categoryId === toCategoryId);
+    if (!from || !to) throw new Error("No budget set for that category yet");
+    const fromAmount = money(from.amount.toFixed(2));
+    if (compare(moved, fromAmount) > 0) {
+      throw new Error(`You can only move up to ${format(fromAmount)}`);
+    }
+    const toAmount = money(to.amount.toFixed(2));
+    await repo.upsertAmount(tx, {
+      workspaceId,
+      categoryId: fromCategoryId,
+      period: from.period,
+      amount: sub(fromAmount, moved).toFixed(2),
+    });
+    await repo.upsertAmount(tx, {
+      workspaceId,
+      categoryId: toCategoryId,
+      period: to.period,
+      amount: add(toAmount, moved).toFixed(2),
+    });
+  });
 }

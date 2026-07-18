@@ -6,10 +6,15 @@ import { toUtcDate, type CalendarDate } from "@/lib/calendar-date";
 import { periodRange } from "@/services/dashboard/period";
 
 export interface BudgetRow {
+  budgetId: string;
   categoryId: string;
   name: string;
   budget: string;
+  /** Raw budget amount ("200.00") for prefilling the inline editor. */
+  budgetRaw: string;
   actual: string;
+  /** Formatted magnitude of (actual − budget): "$40.00 over" or "$20.00 left". */
+  delta: string;
   pct: number;
   status: "under" | "near" | "over";
 }
@@ -60,11 +65,15 @@ export async function budgetVsActual(
         const pct = Math.round(Math.min(ratio, 1.5) * 100);
         const over = compare(actual, b.amount) > 0;
         const status: BudgetRow["status"] = over ? "over" : pct >= 85 ? "near" : "under";
+        const diff = over ? sub(actual, b.amount) : sub(b.amount, actual);
         return {
+          budgetId: b.id,
           categoryId: b.categoryId,
           name: nameById.get(b.categoryId) ?? "Category",
           budget: format(b.amount),
+          budgetRaw: b.amount.toFixed(2),
           actual: format(actual),
+          delta: format(diff),
           pct,
           status,
         };

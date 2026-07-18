@@ -3,30 +3,12 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { billCalendar } from "@/services/dashboard/bill-calendar";
 import { today as todayFn } from "@/lib/calendar-date";
+import { MONTHS, parseYm, shiftMonth } from "@/lib/month-nav";
 import { BillCalendarView } from "@/components/calendar/bill-calendar-view";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Calendar" };
-
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
-
-function parseYm(ym: string | undefined, fallback: string): { year: number; month: number } {
-  const m = /^(\d{4})-(\d{2})$/.exec(ym ?? "");
-  if (m && Number(m[2]) >= 1 && Number(m[2]) <= 12) return { year: Number(m[1]), month: Number(m[2]) };
-  const p = fallback.split("-");
-  return { year: Number(p[0]), month: Number(p[1]) };
-}
-
-function shiftMonth(year: number, month: number, delta: number): string {
-  const idx = year * 12 + (month - 1) + delta;
-  const y = Math.floor(idx / 12);
-  const mo = (idx % 12) + 1;
-  return `${y}-${String(mo).padStart(2, "0")}`;
-}
 
 const navCls =
   "rounded-control border border-rule bg-surface px-3 py-1.5 text-sm font-medium text-ink/85 transition-colors hover:border-dim hover:bg-raised";
@@ -56,6 +38,9 @@ export default async function CalendarPage({
         <div className="flex items-center gap-2">
           <Link href={`/w/${workspaceId}/calendar?ym=${shiftMonth(year, month, -1)}`} className={navCls}>
             ← Prev
+          </Link>
+          <Link href={`/w/${workspaceId}/calendar`} className={navCls}>
+            Today
           </Link>
           <Link href={`/w/${workspaceId}/calendar?ym=${shiftMonth(year, month, 1)}`} className={navCls}>
             Next →

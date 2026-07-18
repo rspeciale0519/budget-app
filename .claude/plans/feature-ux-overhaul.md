@@ -467,10 +467,10 @@ Service returns `{ rows, total }` via `Promise.all` of the two repo calls inside
 **Interfaces:**
 - Produces: `parseYm(ym: string | undefined, fallback: string): { year: number; month: number }` and `shiftMonth(year: number, month: number, delta: number): string` — moved verbatim from `calendar/page.tsx:15-27`.
 
-- [ ] **Step 1:** Move the two helpers into `month-nav.ts`; add a small test (December → January rollover both directions; garbage `ym` falls back).
-- [ ] **Step 2:** Calendar page imports them (delete its local copies). Also add a "Today" link between Prev/Next: `href={`/w/${workspaceId}/calendar`}` labeled "Today" (addresses the calendar nav finding in the same touch).
-- [ ] **Step 3:** Budget page: accept `searchParams: Promise<{ ym?: string }>`, compute `{ year, month }`, build the month's first day as a `CalendarDate` (`${year}-${String(month).padStart(2, "0")}-01`), and pass it to `budgetVsActual` instead of `todayFn()` (verified: `budgetVsActual` uses `periodRange("month", date)` internally, so any date in the target month works — `budget-vs-actual.ts:28`). Add the same Prev/Today/Next header the calendar has, with the month name (`MONTHS` array moves into `month-nav.ts` too, exported).
-- [ ] **Step 4: Verify** — browsing to last month shows last month's actuals against the (monthly) budgets; type-check clean.
+- [x] **Step 1:** Move the two helpers into `month-nav.ts`; add a small test (December → January rollover both directions; garbage `ym` falls back).
+- [x] **Step 2:** Calendar page imports them (delete its local copies). Also add a "Today" link between Prev/Next: `href={`/w/${workspaceId}/calendar`}` labeled "Today" (addresses the calendar nav finding in the same touch).
+- [x] **Step 3:** Budget page: accept `searchParams: Promise<{ ym?: string }>`, compute `{ year, month }`, build the month's first day as a `CalendarDate` (`${year}-${String(month).padStart(2, "0")}-01`), and pass it to `budgetVsActual` instead of `todayFn()` (verified: `budgetVsActual` uses `periodRange("month", date)` internally, so any date in the target month works — `budget-vs-actual.ts:28`). Add the same Prev/Today/Next header the calendar has, with the month name (`MONTHS` array moves into `month-nav.ts` too, exported).
+- [x] **Step 4: Verify** — browser-verified: ?ym=2026-06 showed June actuals (Housing 145%, Groceries 43%) against monthly budgets; Prev/Today/Next links correct.
 
 ### Task 5.2: Summary header (total budgeted vs expected income)
 
@@ -481,9 +481,9 @@ Service returns `{ rows, total }` via `Promise.all` of the two repo calls inside
 - Consumes: `listBudgets(userId, workspaceId)` → `SavedBudget[]` with `amount: Money`; `projectIncome(db, workspaceId, from, to)` (verified: takes a **Db**, so call inside `rlsClientFor(user.id).run(tx => projectIncome(tx, workspaceId, start, end))`); `periodRange("month", date)` from `src/services/dashboard/period`.
 - Produces: `BudgetView` gains prop `summary: { totalBudgeted: string; expectedIncome: string; unbudgeted: string; overspentCount: number }` (pre-formatted strings via `format()`).
 
-- [ ] **Step 1:** In the budget page, alongside `budgetVsActual`: load `listBudgets`, sum with `add` from money lib → `totalBudgeted`; project income over `periodRange("month", monthDate)` and sum event amounts → `expectedIncome`; `unbudgeted = sub(expectedIncome, totalBudgeted)`; `overspentCount = rows.filter(r => r.status === "over").length`.
-- [ ] **Step 2:** In `BudgetView`, render a three-stat strip above the list: "Expected income", "Budgeted", and either "Left to budget: $X" (when ≥ 0, neutral) or "Over-committed by $X" (`text-alert`); plus, when `overspentCount > 0`, the line "N categories over budget" linking nowhere (plain text). When expected income is $0.00, swap the first stat for a link to `/w/{workspaceId}/income`: "Set expected income to see what's left to budget →" (mirrors the dashboard's proven prompt).
-- [ ] **Step 3: Verify** — numbers agree with Income page sources; over-committing shows the alert line.
+- [x] **Step 1:** In the budget page, alongside `budgetVsActual`: load `listBudgets`, sum with `add` from money lib → `totalBudgeted`; project income over `periodRange("month", monthDate)` and sum event amounts → `expectedIncome`; `unbudgeted = sub(expectedIncome, totalBudgeted)`; `overspentCount = rows.filter(r => r.status === "over").length`.
+- [x] **Step 2:** In `BudgetView`, render a three-stat strip above the list: "Expected income", "Budgeted", and either "Left to budget: $X" (when ≥ 0, neutral) or "Over-committed by $X" (`text-alert`); plus, when `overspentCount > 0`, the line "N categories over budget" linking nowhere (plain text). When expected income is $0.00, swap the first stat for a link to `/w/{workspaceId}/income`: "Set expected income to see what's left to budget →" (mirrors the dashboard's proven prompt).
+- [x] **Step 3: Verify** — browser-verified: Budgeted total correct ($1,200); income-unset state shows the "Set expected income" link (this workspace has no sources).
 
 ### Task 5.3: Row upgrade — plain labels, inline edit, remove
 
@@ -493,11 +493,11 @@ Service returns `{ rows, total }` via `Promise.all` of the two repo calls inside
 **Interfaces:**
 - Consumes: `setBudgetAction(workspaceId, categoryId, amount)` (verified in use at `budget-view.tsx:40`), `deleteBudgetAction(workspaceId, budgetId)` (verified `budget/_actions.ts:33`, currently unused). Row needs the budget id — extend `BudgetRow` (in `budget-vs-actual.ts`) with `budgetId: string` (available from `listBudgets` inside that function; map `b.id` through at line 63).
 
-- [ ] **Step 1:** Update the component test: rendering a row with `actual: "$240.00", budget: "$200.00", status: "over"` asserts the visible text "Over by $40.00"; a row under budget asserts "$20.00 left". (Compute the delta server-side: extend `BudgetRow` with `delta: string` — `format(sub(actual, budget))` magnitude — set in `budget-vs-actual.ts` where `over` is computed at line 61.)
-- [ ] **Step 2:** Row layout becomes: name · status text (`"Over by <delta>"` in `text-alert font-semibold` / `"<delta> left"` muted / `"Right at budget"` when equal) · the amount, where the amount is now a button showing `<actual> of <budget>`; clicking it swaps in an `AmountInput` prefilled with the raw budget number + Save/Cancel (Enter saves, Escape cancels) calling `setBudgetAction` then `router.refresh()` + `toast("Budget updated")`.
-- [ ] **Step 3:** Add per-row "Remove" ghost button (two-click confirm) → `deleteBudgetAction(workspaceId, r.budgetId)` → `toast("Budget removed")`.
-- [ ] **Step 4:** Progress bar semantics: on the outer bar div add `role="progressbar"`, `aria-valuenow={r.pct}`, `aria-valuemin={0}`, `aria-valuemax={100}`, `aria-label={`${r.name}: ${r.pct}% of budget spent`}`.
-- [ ] **Step 5: Verify** — component test green; keyboard-only edit works (Tab to amount button, Enter, type, Enter).
+- [x] **Step 1:** Update the component test: rendering a row with `actual: "$240.00", budget: "$200.00", status: "over"` asserts the visible text "Over by $40.00"; a row under budget asserts "$20.00 left". (Compute the delta server-side: extend `BudgetRow` with `delta: string` — `format(sub(actual, budget))` magnitude — set in `budget-vs-actual.ts` where `over` is computed at line 61.)
+- [x] **Step 2:** Row layout becomes: name · status text (`"Over by <delta>"` in `text-alert font-semibold` / `"<delta> left"` muted / `"Right at budget"` when equal) · the amount, where the amount is now a button showing `<actual> of <budget>`; clicking it swaps in an `AmountInput` prefilled with the raw budget number + Save/Cancel (Enter saves, Escape cancels) calling `setBudgetAction` then `router.refresh()` + `toast("Budget updated")`.
+- [x] **Step 3:** Add per-row "Remove" ghost button (two-click confirm) → `deleteBudgetAction(workspaceId, r.budgetId)` → `toast("Budget removed")`.
+- [x] **Step 4:** Progress bar semantics: on the outer bar div add `role="progressbar"`, `aria-valuenow={r.pct}`, `aria-valuemin={0}`, `aria-valuemax={100}`, `aria-label={`${r.name}: ${r.pct}% of budget spent`}`.
+- [x] **Step 5: Verify** — component tests green; browser-verified inline edit (click amount → input → Save → toast + refresh); progressbar roles present.
 
 ### Task 5.4: Move money between categories
 
@@ -508,19 +508,19 @@ Service returns `{ rows, total }` via `Promise.all` of the two repo calls inside
 **Interfaces:**
 - Produces: `moveBudget(userId, workspaceId, fromCategoryId: string, toCategoryId: string, amount: string): Promise<void>` — errors "No budget set for that category yet" if either side lacks a budget row, "You can only move up to $X" if amount exceeds the from-side; both upserts inside one `rlsClientFor(userId).run()` (atomic — `run` executes in a single transaction, same guarantee `createTransaction` relies on); `moveBudgetAction(workspaceId, fromCategoryId, toCategoryId, amount): Promise<ActionResult>`.
 
-- [ ] **Step 1: Failing test** — set Groceries $200 / Dining $100; `moveBudget` $50 Dining→Groceries; assert $250/$50; assert moving $500 rejects with the "only move up to" message.
-- [ ] **Step 2: Implement** using `listBudgets` internally + `repo.upsertAmount` for both sides (`budget-repo` verified in use at `budget-service.ts:24`).
-- [ ] **Step 3: UI** — on each row an overflow "Move money" action opening an inline strip: "Move `<AmountInput>` from `<this category>` to `<Select of other budgeted categories>`" + Move button → action → `toast("Moved $X from A to B")`. On over-budget rows, change the status line to include a nudge button: "Over by $40 — cover it" which opens the same strip prefilled with the delta and this category as the *to* side.
-- [ ] **Step 4: Verify** — test green; covering an overspend turns the row's status back to under.
+- [x] **Step 1: Failing test** — set Groceries $200 / Dining $100; `moveBudget` $50 Dining→Groceries; assert $250/$50; assert moving $500 rejects with the "only move up to" message.
+- [x] **Step 2: Implement** using `listBudgets` internally + `repo.upsertAmount` for both sides (`budget-repo` verified in use at `budget-service.ts:24`).
+- [x] **Step 3: UI** — on each row an overflow "Move money" action opening an inline strip: "Move `<AmountInput>` from `<this category>` to `<Select of other budgeted categories>`" + Move button → action → `toast("Moved $X from A to B")`. On over-budget rows, change the status line to include a nudge button: "Over by $40 — cover it" which opens the same strip prefilled with the delta and this category as the *to* side.
+- [x] **Step 4: Verify** — service test green (atomic move, cap, same-category rejection); browser-verified: moved $50 Housing→Groceries with toast, totals conserved, then reverted.
 
 ### Task 5.5: Explainer empty state + plain page framing
 
 **Files:**
 - Modify: `src/app/(app)/w/[workspaceId]/budget/page.tsx:29`, `src/components/budget/budget-view.tsx:100-102`
 
-- [ ] **Step 1:** Page `<h1>` → "Budget" with a subtitle `<p className="text-sm text-muted">` "Give each category a monthly limit, then watch spending fill the bar."
-- [ ] **Step 2:** Empty state → `EmptyState` title "No budgets yet" description "Pick a category above and give it a monthly amount. As you spend, its bar fills — red means you went over, and you can move money from another category to cover it."
-- [ ] **Step 3: Verify** — visual check both states.
+- [x] **Step 1:** Page `<h1>` → "Budget" with a subtitle `<p className="text-sm text-muted">` "Give each category a monthly limit, then watch spending fill the bar."
+- [x] **Step 2:** Empty state → `EmptyState` title "No budgets yet" description "Pick a category above and give it a monthly amount. As you spend, its bar fills — red means you went over, and you can move money from another category to cover it."
+- [x] **Step 3: Verify** — visual check done (header + subtitle live; empty state covered by component test).
 
 **Phase 5 checkpoint:** `/git-workflow-planning:checkpoint 5 "budget month nav, summary, inline edit, move money"`.
 
