@@ -143,26 +143,6 @@ body {
   letter-spacing: -0.01em;
 }
 
-/*
-  The sign-in balance line writes itself once, then holds — like a pen finishing
-  a ledger entry. One pass, no loop. The reduced-motion block below collapses it
-  to its finished state, so motion-sensitive users see the line already drawn.
-*/
-@keyframes ledger-draw {
-  from {
-    stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-.ledger-line {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: ledger-draw 1.7s var(--ease-instrument) 0.15s forwards;
-}
-
 ::selection {
   background: color-mix(in oklab, var(--now) 30%, transparent);
   color: var(--ink);
