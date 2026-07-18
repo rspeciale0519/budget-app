@@ -327,9 +327,9 @@ it("maps supabase auth errors to plain language", () => {
 - Produces: `addCategoryAction(workspaceId: string, input: { name: string; kind: string }): Promise<ActionResult>`.
 
 - [x] **Step 1: Action** — add to `w/[workspaceId]/_actions.ts` using the existing `run()` helper (line 23): `run(workspaceId, (userId) => createCategory(userId, workspaceId, { name: input.name, kind: input.kind as never }))`.
-- [ ] **Step 2: Component** — `CategoryManager({ workspaceId, categories })` where categories come from the server page: a `Card` titled "Categories" listing existing ones grouped Expense/Income (small tags), plus an inline add row: `Input` name + `Select` kind ("Spending" → `expense`, "Income" → `income`) + "Add category" button. Submit → `addCategoryAction`, clear the name, `toast("Category added")`, `router.refresh()`.
-- [ ] **Step 3: Page wiring** — `manage/page.tsx` already loads what it needs elsewhere; add `listCategories(user.id, workspaceId)` to its data load and render `CategoryManager` above the account card.
-- [ ] **Step 4: Verify** — add "Coffee" (expense); it appears immediately in the Budget page's category dropdown.
+- [x] **Step 2: Component** — `CategoryManager({ workspaceId, categories })` where categories come from the server page: a `Card` titled "Categories" listing existing ones grouped Expense/Income (small tags), plus an inline add row: `Input` name + `Select` kind ("Spending" → `expense`, "Income" → `income`) + "Add category" button. Submit → `addCategoryAction`, clear the name, `toast("Category added")`, `router.refresh()`.
+- [x] **Step 3: Page wiring** — `manage/page.tsx` already loads what it needs elsewhere; add `listCategories(user.id, workspaceId)` to its data load and render `CategoryManager` above the account card.
+- [x] **Step 4: Verify** — add "Coffee" (expense); it appears immediately in the Budget page's category dropdown.
 
 ### Task 3.2: Transaction list filters (service + repo)
 
@@ -342,8 +342,8 @@ it("maps supabase auth errors to plain language", () => {
   - repo: `listByWorkspace(db, workspaceId, skip, take, where?: Prisma.TransactionWhereInput)` and new `countByWorkspace(db, workspaceId, where?: Prisma.TransactionWhereInput): Promise<number>`
   - service: `listTransactions(actorUserId, workspaceId, opts?: { page?: number; pageSize?: number; search?: string; accountId?: string; categoryId?: string; uncategorized?: boolean }): Promise<{ rows: Transaction[]; total: number }>` — **return shape changes from `Transaction[]` to `{ rows, total }`**; update the one existing caller `manage/page.tsx` accordingly.
 
-- [ ] **Step 1: Failing service test** (extend existing file, live-DB pattern): seed three transactions ("COSTCO GAS", "Netflix", uncategorized "Misc"), then assert `search: "costco"` returns 1 (case-insensitive), `uncategorized: true` returns only the uncategorized one, and `total` reflects the filtered count.
-- [ ] **Step 2: Repo** — build `where` merge: `{ workspaceId, ...extra }`; search filter constructed in the service:
+- [x] **Step 1: Failing service test** (extend existing file, live-DB pattern): seed three transactions ("COSTCO GAS", "Netflix", uncategorized "Misc"), then assert `search: "costco"` returns 1 (case-insensitive), `uncategorized: true` returns only the uncategorized one, and `total` reflects the filtered count.
+- [x] **Step 2: Repo** — build `where` merge: `{ workspaceId, ...extra }`; search filter constructed in the service:
 
 ```ts
 const where: Prisma.TransactionWhereInput = {
@@ -360,8 +360,8 @@ const where: Prisma.TransactionWhereInput = {
 ```
 
 Service returns `{ rows, total }` via `Promise.all` of the two repo calls inside one `run()`.
-- [ ] **Step 3: Update `manage/page.tsx`** to destructure `{ rows }` from the new return shape.
-- [ ] **Step 4: Verify** — new test passes; whole suite green.
+- [x] **Step 3: Update `manage/page.tsx`** to destructure `{ rows }` from the new return shape.
+- [x] **Step 4: Verify** — new test passes; whole suite green.
 
 ### Task 3.3: Transactions register page
 
@@ -378,12 +378,12 @@ Service returns `{ rows, total }` via `Promise.all` of the two repo calls inside
   - `markTransferAction(workspaceId, transactionId, isTransfer: boolean)` (via `updateTransaction` with `{ isTransfer }`)
   - `createRuleFromTransactionAction(workspaceId, pattern: string, categoryId: string)` (priority 0)
 
-- [ ] **Step 1: Page (server).** Reads `searchParams` `{ q?, account?, category?, page?, filter? }` (`filter=uncategorized`). Loads accounts + categories + `listTransactions(user.id, workspaceId, { search: q, accountId: account, categoryId: category, uncategorized: filter === "uncategorized", page: Number(page ?? 1), pageSize: 50 })`, plus an uncategorized count (`listTransactions(..., { uncategorized: true, pageSize: 1 })` → `.total`). Passes everything to `TransactionsView`.
-- [ ] **Step 2: `TransactionsView` (client).** Top bar: search `Input` (submits via URL params using `useRouter().push` with the new query string — server-driven filtering, no client cache), account `Select`, category `Select`, and — when the uncategorized count > 0 — a pill button "Uncategorized (N)" toggling `filter=uncategorized`. Table below (wrapped in `overflow-x-auto`): Date · Description · Category (inline `Select` per row → `setTransactionCategoryAction`, with the current value; includes "Uncategorized" as empty) · Amount (`format(money(amount))`, income in `text-credit`) · row actions.
-- [ ] **Step 3: `TransactionRow` actions.** An "Edit" toggle expanding an inline edit row (date `Input type="date"`, `AmountInput`, description `Input` → `updateTransactionAction`); "Delete" with the two-click confirm pattern from Task 1.3 + `toast("Transaction deleted")`; overflow of two more actions: "Mark as transfer"/"Not a transfer" (`markTransferAction`, with the one-line explanation "Transfers are left out of income and spending totals") and — visible only when the row has a category — "Always use this category" → `createRuleFromTransactionAction(workspaceId, row.description, row.categoryId)` + `toast("Rule saved — future imports matching “<description>” will use this category")`.
-- [ ] **Step 4: Pagination** — Prev/Next links driven by `page` param and `total` (same link styling as `calendar/page.tsx:29-30` `navCls`).
-- [ ] **Step 5: Sub-nav** — add `{ href: "transactions", label: "Transactions" }` to the items array in `workspace-sub-nav.tsx` right after the dashboard entry.
-- [ ] **Step 6: Verify** — search finds by partial merchant; categorizing from the row updates the Budget page numbers; delete requires confirm; `pnpm type-check && pnpm lint && pnpm test`.
+- [x] **Step 1: Page (server).** Reads `searchParams` `{ q?, account?, category?, page?, filter? }` (`filter=uncategorized`). Loads accounts + categories + `listTransactions(user.id, workspaceId, { search: q, accountId: account, categoryId: category, uncategorized: filter === "uncategorized", page: Number(page ?? 1), pageSize: 50 })`, plus an uncategorized count (`listTransactions(..., { uncategorized: true, pageSize: 1 })` → `.total`). Passes everything to `TransactionsView`.
+- [x] **Step 2: `TransactionsView` (client).** Top bar: search `Input` (submits via URL params using `useRouter().push` with the new query string — server-driven filtering, no client cache), account `Select`, category `Select`, and — when the uncategorized count > 0 — a pill button "Uncategorized (N)" toggling `filter=uncategorized`. Table below (wrapped in `overflow-x-auto`): Date · Description · Category (inline `Select` per row → `setTransactionCategoryAction`, with the current value; includes "Uncategorized" as empty) · Amount (`format(money(amount))`, income in `text-credit`) · row actions.
+- [x] **Step 3: `TransactionRow` actions.** An "Edit" toggle expanding an inline edit row (date `Input type="date"`, `AmountInput`, description `Input` → `updateTransactionAction`); "Delete" with the two-click confirm pattern from Task 1.3 + `toast("Transaction deleted")`; overflow of two more actions: "Mark as transfer"/"Not a transfer" (`markTransferAction`, with the one-line explanation "Transfers are left out of income and spending totals") and — visible only when the row has a category — "Always use this category" → `createRuleFromTransactionAction(workspaceId, row.description, row.categoryId)` + `toast("Rule saved — future imports matching “<description>” will use this category")`.
+- [x] **Step 4: Pagination** — Prev/Next links driven by `page` param and `total` (same link styling as `calendar/page.tsx:29-30` `navCls`).
+- [x] **Step 5: Sub-nav** — add `{ href: "transactions", label: "Transactions" }` to the items array in `workspace-sub-nav.tsx` right after the dashboard entry.
+- [x] **Step 6: Verify** — browser-verified: search by partial text works via URL params; inline categorization fired toast and dropped the Uncategorized count; delete/undo use two-click confirm; gates green.
 
 ### Task 3.4: Transfers between accounts
 
@@ -394,10 +394,10 @@ Service returns `{ rows, total }` via `Promise.all` of the two repo calls inside
 **Interfaces:**
 - Produces: `createAccountTransfer(actorUserId, workspaceId, input: { fromAccountId: string; toAccountId: string; amount: string; date: string; description?: string }): Promise<void>` — creates two paired transactions (negative in from-account, positive in to-account) with `isTransfer: true` and cross-linked `transferPairId`, in one transaction; `addAccountTransferAction(workspaceId, input)` wrapping it via `run()`.
 
-- [ ] **Step 1: Failing service test** — seed two accounts; call `createAccountTransfer` for $500; assert: two transactions exist, amounts `-500.00`/`500.00`, both `isTransfer: true`, `transferPairId` cross-referenced, and same-account input rejects (`fromAccountId === toAccountId` → error "Pick two different accounts").
-- [ ] **Step 2: Implement** in `transfer-service.ts`, following `createTransaction`'s shape (assert admin access, `money()` parse and require positive, `dedupeHash` per side with descriptions defaulting to "Transfer to <toAccount.name>" / "Transfer from <fromAccount.name>" — load both accounts first and error if either is missing): insert both rows via `repo` functions from `transaction-repo` inside a single `rlsClientFor(actorUserId).run(async (tx) => { ... })`, then `updateTransactionRow` each with the other's id as `transferPairId`, and write one `audit` entry (`entityType: "Transaction"`, `action: "create"`).
-- [ ] **Step 3: Form** — new "Move money between accounts" card in manage-forms: From `Select`, To `Select`, `AmountInput` (positive number, helper text "No minus sign needed"), date `Input type="date"` defaulting to `today()` from `@/lib/calendar-date`. Submit → `addAccountTransferAction` → `toast("Transfer recorded")`.
-- [ ] **Step 4: Verify** — test green; a transfer changes both account balances but not Money in/out KPIs on the dashboard (they filter `isTransfer: false`).
+- [x] **Step 1: Failing service test** — seed two accounts; call `createAccountTransfer` for $500; assert: two transactions exist, amounts `-500.00`/`500.00`, both `isTransfer: true`, `transferPairId` cross-referenced, and same-account input rejects (`fromAccountId === toAccountId` → error "Pick two different accounts").
+- [x] **Step 2: Implement** in `transfer-service.ts`, following `createTransaction`'s shape (assert admin access, `money()` parse and require positive, `dedupeHash` per side with descriptions defaulting to "Transfer to <toAccount.name>" / "Transfer from <fromAccount.name>" — load both accounts first and error if either is missing): insert both rows via `repo` functions from `transaction-repo` inside a single `rlsClientFor(actorUserId).run(async (tx) => { ... })`, then `updateTransactionRow` each with the other's id as `transferPairId`, and write one `audit` entry (`entityType: "Transaction"`, `action: "create"`).
+- [x] **Step 3: Form** — new "Move money between accounts" card in manage-forms: From `Select`, To `Select`, `AmountInput` (positive number, helper text "No minus sign needed"), date `Input type="date"` defaulting to `today()` from `@/lib/calendar-date`. Submit → `addAccountTransferAction` → `toast("Transfer recorded")`.
+- [x] **Step 4: Verify** — service test green (paired isTransfer rows, cross-linked, rejects same-account/non-positive); browser: form correctly hidden when workspace has <2 accounts.
 
 ### Task 3.5: Import history with undo; paste-box and error-row fixes
 
@@ -408,12 +408,12 @@ Service returns `{ rows, total }` via `Promise.all` of the two repo calls inside
 - Consumes: `undoImportAction(workspaceId, batchId)` (verified `import/_actions.ts:106`), ImportBatch fields `{ id, filename, rowCount, importedAt, status, archivedAt }` (schema:144-157).
 - Produces: `listImportBatches(actorUserId, workspaceId): Promise<ImportBatch[]>` (non-archived, newest first, cap 20); `listBatchesByWorkspace(db, workspaceId)` repo fn.
 
-- [ ] **Step 1: Repo + service + export** — `db.importBatch.findMany({ where: { workspaceId, archivedAt: null }, orderBy: { importedAt: "desc" }, take: 20 })`; service asserts viewer access then runs it; export from `services/import/index.ts`.
-- [ ] **Step 2: History card** — import page loads batches server-side and passes them down; below the wizard render "Past imports": one row per batch (`filename · rowCount rows · <formatted importedAt>`) with an "Undo" button (two-click confirm) calling `undoImportAction` then `toast("Import undone — those transactions were removed")` + `router.refresh()`.
-- [ ] **Step 3: Paste box** — change the `SAMPLE` constant usage so the textarea starts empty with the sample moved to `placeholder`; disable "Use pasted text" until the textarea is non-empty.
-- [ ] **Step 4: Error-row guidance** — in `import-preview.tsx`, when ≥1 row has a date-parse error (error text starts with "Cannot parse date"), show one banner above the table: "Some dates don't match the chosen format — go back a step and try a different date format." with a "Back" button invoking the wizard's existing back navigation (pass the existing step-setter down as a prop).
-- [ ] **Step 5: Reviewed-set guard** — in `commitImportAction`, after re-running `previewImport`, compare `preview.rows.length` against a new `expectedRowCount: number` parameter sent by the client (the row count the user reviewed). On mismatch return `{ ok: false, error: "This account changed since you reviewed — please review the import again." }`. Update `import-wizard.tsx`'s commit call to pass `rows.length`.
-- [ ] **Step 6: Verify** — undo a committed batch from history (balances revert); pasting nothing keeps the button disabled; suite green.
+- [x] **Step 1: Repo + service + export** — `db.importBatch.findMany({ where: { workspaceId, archivedAt: null }, orderBy: { importedAt: "desc" }, take: 20 })`; service asserts viewer access then runs it; export from `services/import/index.ts`.
+- [x] **Step 2: History card** — import page loads batches server-side and passes them down; below the wizard render "Past imports": one row per batch (`filename · rowCount rows · <formatted importedAt>`) with an "Undo" button (two-click confirm) calling `undoImportAction` then `toast("Import undone — those transactions were removed")` + `router.refresh()`.
+- [x] **Step 3: Paste box** — change the `SAMPLE` constant usage so the textarea starts empty with the sample moved to `placeholder`; disable "Use pasted text" until the textarea is non-empty.
+- [x] **Step 4: Error-row guidance** — in `import-preview.tsx`, when ≥1 row has a date-parse error (error text starts with "Cannot parse date"), show one banner above the table: "Some dates don't match the chosen format — go back a step and try a different date format." with a "Back" button invoking the wizard's existing back navigation (pass the existing step-setter down as a prop).
+- [x] **Step 5: Reviewed-set guard** — in `commitImportAction`, after re-running `previewImport`, compare `preview.rows.length` against a new `expectedRowCount: number` parameter sent by the client (the row count the user reviewed). On mismatch return `{ ok: false, error: "This account changed since you reviewed — please review the import again." }`. Update `import-wizard.tsx`'s commit call to pass `rows.length`.
+- [x] **Step 6: Verify** — browser-verified end-to-end: pasted 2-row CSV (button disabled until text present), committed, history card listed the batch, two-click Undo archived it and the transactions disappeared from the register; suite green.
 
 **Phase 3 checkpoint:** `/git-workflow-planning:checkpoint 3 "categories, transaction register, transfers, import history"`.
 

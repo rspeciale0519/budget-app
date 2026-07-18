@@ -6,7 +6,8 @@ import type { Frequency } from "@prisma/client";
 import { createTransaction } from "@/services/transaction-service";
 import { createBill, markPaid, markPaidStandalone } from "@/services/bill-service";
 import { createAccount } from "@/services/account-service";
-import { tagOwnerDraw } from "@/services/transfer-service";
+import { createCategory } from "@/services/category-service";
+import { tagOwnerDraw, createAccountTransfer } from "@/services/transfer-service";
 import { createIncomeSource, deleteIncomeSource } from "@/services/income-source-service";
 
 async function requireUserId(): Promise<string> {
@@ -44,6 +45,15 @@ export async function addAccountAction(
       openingBalance: input.openingBalance,
       openingDate: input.openingDate,
     }),
+  );
+}
+
+export async function addCategoryAction(
+  workspaceId: string,
+  input: { name: string; kind: string },
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) =>
+    createCategory(userId, workspaceId, { name: input.name, kind: input.kind as never }),
   );
 }
 
@@ -111,6 +121,13 @@ export async function deleteIncomeSourceAction(
   sourceId: string,
 ): Promise<ActionResult> {
   return run(workspaceId, (userId) => deleteIncomeSource(userId, sourceId));
+}
+
+export async function addAccountTransferAction(
+  workspaceId: string,
+  input: { fromAccountId: string; toAccountId: string; amount: string; date: string },
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => createAccountTransfer(userId, workspaceId, input));
 }
 
 export async function tagOwnerDrawAction(

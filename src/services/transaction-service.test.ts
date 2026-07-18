@@ -82,7 +82,33 @@ describe("transaction-service", () => {
     }
     const page1 = await listTransactions(admin, ws2.id, { page: 1, pageSize: 2 });
     const page2 = await listTransactions(admin, ws2.id, { page: 2, pageSize: 2 });
-    expect(page1).toHaveLength(2);
-    expect(page2).toHaveLength(1);
+    expect(page1.rows).toHaveLength(2);
+    expect(page2.rows).toHaveLength(1);
+    expect(page1.total).toBe(3);
+  });
+
+  it("filters by search text, uncategorized, and account", async () => {
+    const ws3 = await prismaAdmin.workspace.create({ data: { organizationId: orgId, name: "F", type: "business", color: "#070708" } });
+    await prismaAdmin.workspaceMembership.create({ data: { workspaceId: ws3.id, userId: admin, role: "admin" } });
+    const acc3 = await prismaAdmin.account.create({ data: { workspaceId: ws3.id, name: "A3", type: "cash", institution: "x", openingBalance: "0.00", openingDate: toUtcDate(calendarDate("2026-01-01")) } });
+    const cat = await prismaAdmin.category.create({ data: { workspaceId: ws3.id, name: "Fuel", kind: "expense" } });
+
+    await createTransaction(admin, ws3.id, { accountId: acc3.id, date: "2026-06-20", amount: "-40.00", description: "COSTCO GAS", categoryId: cat.id });
+    await createTransaction(admin, ws3.id, { accountId: acc3.id, date: "2026-06-21", amount: "-15.99", description: "Netflix" });
+    await createTransaction(admin, ws3.id, { accountId: acc3.id, date: "2026-06-22", amount: "-5.00", description: "Misc" });
+
+    const bySearch = await listTransactions(admin, ws3.id, { search: "costco" });
+    expect(bySearch.total).toBe(1);
+    expect(bySearch.rows[0]!.description).toBe("COSTCO GAS");
+
+    const uncategorized = await listTransactions(admin, ws3.id, { uncategorized: true });
+    expect(uncategorized.total).toBe(2); // Netflix and Misc have no category
+    expect(uncategorized.rows.every((r) => r.categoryId === null)).toBe(true);
+
+    const byCategory = await listTransactions(admin, ws3.id, { categoryId: cat.id });
+    expect(byCategory.total).toBe(1);
+
+    const byAccount = await listTransactions(admin, ws3.id, { accountId: acc3.id });
+    expect(byAccount.total).toBe(3);
   });
 });

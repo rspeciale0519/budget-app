@@ -2,7 +2,10 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { listAccounts } from "@/services/account-service";
 import { listTransactions } from "@/services/transaction-service";
+import { listCategories } from "@/services/category-service";
 import { ManageForms } from "@/components/manage/manage-forms";
+import { CategoryManager } from "@/components/manage/category-form";
+import { TransferForm } from "@/components/manage/transfer-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty/empty-state";
 import { fromDbDate } from "@/lib/calendar-date";
@@ -20,7 +23,12 @@ export default async function ManagePage({
   if (!user) redirect("/login");
 
   const accounts = (await listAccounts(user.id, workspaceId)).map((a) => ({ id: a.id, name: a.name }));
-  const txns = await listTransactions(user.id, workspaceId, { pageSize: 20 });
+  const { rows: txns } = await listTransactions(user.id, workspaceId, { pageSize: 20 });
+  const categories = (await listCategories(user.id, workspaceId)).map((c) => ({
+    id: c.id,
+    name: c.name,
+    kind: c.kind,
+  }));
 
   return (
     <div className="space-y-4">
@@ -41,7 +49,9 @@ export default async function ManagePage({
           description="Add your first bank or credit account below to start tracking transactions, or import a CSV from your bank."
         />
       )}
+      <CategoryManager workspaceId={workspaceId} categories={categories} />
       <ManageForms workspaceId={workspaceId} accounts={accounts} />
+      <TransferForm workspaceId={workspaceId} accounts={accounts} />
       <Card>
         <CardHeader>
           <CardTitle>Recent transactions</CardTitle>

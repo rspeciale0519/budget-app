@@ -1,4 +1,4 @@
-export { previewImport, commitImport, undoImport } from "@/services/import/pipeline";
+export { previewImport, commitImport, undoImport, listImportBatches } from "@/services/import/pipeline";
 export type {
   ImportPreview,
   PreviewRow,

@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { parseCsv } from "@/services/import/parse";
 import type { ParsedCsvState } from "@/components/import/types";
 
-const SAMPLE =
+const SAMPLE_PLACEHOLDER =
   "Date,Description,Amount,Balance\n06/19/2026,Paycheck,500.00,1500.00\n06/20/2026,Groceries,-40.00,1460.00";
 
 function load(text: string, onLoaded: (p: ParsedCsvState) => void, onError: (m: string) => void) {
@@ -29,7 +29,7 @@ export function CsvDropZone({
   const inputRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
   const [pasting, setPasting] = useState(false);
-  const [pasteText, setPasteText] = useState(SAMPLE);
+  const [pasteText, setPasteText] = useState("");
   const [error, setError] = useState("");
 
   function readFile(file: File) {
@@ -93,18 +93,20 @@ export function CsvDropZone({
       {pasting && (
         <div className="space-y-2">
           <textarea
-            className="h-28 w-full rounded-control border border-rule-strong bg-sunken px-3 py-2 font-mono text-sm text-ink"
+            className="h-28 w-full rounded-control border border-rule-strong bg-sunken px-3 py-2 font-mono text-sm text-ink placeholder:text-dim"
             value={pasteText}
+            placeholder={SAMPLE_PLACEHOLDER}
             onChange={(e) => setPasteText(e.target.value)}
             aria-label="Paste CSV text"
           />
           <button
             type="button"
+            disabled={pasteText.trim() === ""}
             onClick={() => {
               onFileName("pasted.csv");
               load(pasteText, onLoaded, setError);
             }}
-            className="rounded-control bg-ink px-3 py-2 text-sm font-medium text-paper hover:opacity-85"
+            className="rounded-control bg-ink px-3 py-2 text-sm font-medium text-paper hover:opacity-85 disabled:pointer-events-none disabled:opacity-40"
           >
             Use pasted text
           </button>

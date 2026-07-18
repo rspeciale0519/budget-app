@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import type { Prisma } from "@prisma/client";
 import { rlsClientFor } from "@/lib/prisma-rls";
 import { assertWorkspaceAccess, ForbiddenError } from "@/services/authz";
 import { createTransactionSchema, updateTransactionSchema } from "@/lib/zod/entities";
@@ -118,15 +119,41 @@ export async function flagTransfer(actorUserId: string, transactionId: string, p
   });
 }
 
+export interface TransactionFilters {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  accountId?: string;
+  categoryId?: string;
+  uncategorized?: boolean;
+}
+
 export async function listTransactions(
   actorUserId: string,
   workspaceId: string,
-  opts: { page?: number; pageSize?: number } = {},
+  opts: TransactionFilters = {},
 ) {
   await assertWorkspaceAccess(actorUserId, workspaceId, "viewer");
   const page = Math.max(1, opts.page ?? 1);
   const pageSize = Math.min(200, Math.max(1, opts.pageSize ?? 50));
-  return rlsClientFor(actorUserId).run((tx) =>
-    repo.listByWorkspace(tx, workspaceId, (page - 1) * pageSize, pageSize),
-  );
+  const where: Prisma.TransactionWhereInput = {
+    ...(opts.accountId ? { accountId: opts.accountId } : {}),
+    ...(opts.categoryId ? { categoryId: opts.categoryId } : {}),
+    ...(opts.uncategorized ? { categoryId: null, isTransfer: false } : {}),
+    ...(opts.search
+      ? {
+          OR: [
+            { description: { contains: opts.search, mode: "insensitive" } },
+            { merchant: { contains: opts.search, mode: "insensitive" } },
+          ],
+        }
+      : {}),
+  };
+  return rlsClientFor(actorUserId).run(async (tx) => {
+    const [rows, total] = await Promise.all([
+      repo.listByWorkspace(tx, workspaceId, (page - 1) * pageSize, pageSize, where),
+      repo.countByWorkspace(tx, workspaceId, where),
+    ]);
+    return { rows, total };
+  });
 }

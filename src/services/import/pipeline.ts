@@ -185,6 +185,11 @@ export async function commitImport(actorUserId: string, input: CommitInput): Pro
   });
 }
 
+export async function listImportBatches(actorUserId: string, workspaceId: string): Promise<ImportBatch[]> {
+  await assertWorkspaceAccess(actorUserId, workspaceId, "viewer");
+  return rlsClientFor(actorUserId).run((tx) => repo.listBatchesByWorkspace(tx, workspaceId));
+}
+
 export async function undoImport(actorUserId: string, batchId: string): Promise<void> {
   const batch = await rlsClientFor(actorUserId).run((tx) => repo.findBatch(tx, batchId));
   if (!batch) throw new ForbiddenError("Import batch not found or access denied");

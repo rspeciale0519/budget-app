@@ -19,6 +19,7 @@ export function ImportPreview({
   onToggle,
   onCommit,
   onUndo,
+  onBack,
   batchId,
   busy,
 }: {
@@ -29,9 +30,11 @@ export function ImportPreview({
   onToggle: (i: number) => void;
   onCommit: () => void;
   onUndo: () => void;
+  onBack: () => void;
   batchId: string | null;
   busy: boolean;
 }) {
+  const dateErrors = rows.some((r) => r.errors.some((e) => e.startsWith("Cannot parse date")));
   const committable = rows.filter((r, i) => !skip.has(i) && r.errors.length === 0).length;
   const RENDER_CAP = 200;
   const shown = rows.slice(0, RENDER_CAP);
@@ -63,6 +66,18 @@ export function ImportPreview({
         )}
         <span className="text-xs text-dim">{summary.total} rows in file</span>
       </div>
+
+      {dateErrors && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-control bg-alert-tint px-3 py-2 text-sm text-alert">
+          <span>
+            Some dates don&apos;t match the chosen format — go back a step and try a different date
+            format.
+          </span>
+          <Button variant="outline" size="sm" onClick={onBack} disabled={busy}>
+            ← Back to columns
+          </Button>
+        </div>
+      )}
 
       {reconcile?.mismatch && (
         <p className="rounded-control bg-debit-tint px-3 py-2 text-sm text-debit">

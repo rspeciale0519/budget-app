@@ -2,9 +2,90 @@ import type { TransferType } from "@prisma/client";
 import { rlsClientFor } from "@/lib/prisma-rls";
 import { assertWorkspaceAccess, ForbiddenError } from "@/services/authz";
 import { dedupeHash } from "@/lib/dedupe";
-import { money, mul, type Money } from "@/lib/money";
+import { money, mul, compare, type Money } from "@/lib/money";
 import { calendarDate, fromDbDate, toUtcDate, type CalendarDate } from "@/lib/calendar-date";
 import * as repo from "@/repositories/transfer-repo";
+
+export interface AccountTransferInput {
+  fromAccountId: string;
+  toAccountId: string;
+  amount: string;
+  date: string;
+}
+
+/**
+ * Move money between two accounts in the same workspace: a paired pair of
+ * transactions (negative out, positive in) flagged `isTransfer` so neither
+ * side counts as income or spending.
+ */
+export async function createAccountTransfer(
+  actorUserId: string,
+  workspaceId: string,
+  input: AccountTransferInput,
+): Promise<{ fromTransactionId: string; toTransactionId: string }> {
+  if (input.fromAccountId === input.toAccountId) {
+    throw new Error("Pick two different accounts");
+  }
+  const amount = money(input.amount);
+  if (compare(amount, money(0)) <= 0) {
+    throw new Error("Enter a positive amount — the direction comes from the accounts");
+  }
+  await assertWorkspaceAccess(actorUserId, workspaceId, "admin");
+  const date = calendarDate(input.date);
+
+  return rlsClientFor(actorUserId).run(async (tx) => {
+    const [fromAccount, toAccount] = await Promise.all([
+      tx.account.findUnique({ where: { id: input.fromAccountId } }),
+      tx.account.findUnique({ where: { id: input.toAccountId } }),
+    ]);
+    if (!fromAccount || fromAccount.workspaceId !== workspaceId)
+      throw new ForbiddenError("From-account not found or access denied");
+    if (!toAccount || toAccount.workspaceId !== workspaceId)
+      throw new ForbiddenError("To-account not found or access denied");
+
+    const outDescription = `Transfer to ${toAccount.name}`;
+    const inDescription = `Transfer from ${fromAccount.name}`;
+    const out = await tx.transaction.create({
+      data: {
+        workspaceId,
+        accountId: input.fromAccountId,
+        date: toUtcDate(date),
+        amount: mul(amount, "-1").toFixed(2),
+        description: outDescription,
+        source: "manual",
+        isTransfer: true,
+        dedupeHash: dedupeHash({
+          accountId: input.fromAccountId,
+          date,
+          amount: mul(amount, "-1"),
+          description: outDescription,
+          runningBalance: null,
+        }),
+      },
+    });
+    const inflow = await tx.transaction.create({
+      data: {
+        workspaceId,
+        accountId: input.toAccountId,
+        date: toUtcDate(date),
+        amount: amount.toFixed(2),
+        description: inDescription,
+        source: "manual",
+        isTransfer: true,
+        transferPairId: out.id,
+        dedupeHash: dedupeHash({
+          accountId: input.toAccountId,
+          date,
+          amount,
+          description: inDescription,
+          runningBalance: null,
+        }),
+      },
+    });
+    await tx.transaction.update({ where: { id: out.id }, data: { transferPairId: inflow.id } });
+    return { fromTransactionId: out.id, toTransactionId: inflow.id };
+  });
+}
 
 export interface TagOwnerDrawInput {
   fromWorkspaceId: string;

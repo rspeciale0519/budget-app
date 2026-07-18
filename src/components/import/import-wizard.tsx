@@ -134,6 +134,7 @@ export function ImportWizard({
       parsed.text,
       toMappingConfig(mapping),
       [...skip],
+      rows.length,
     );
     setBusy(false);
     if (!result.ok) setError(result.error ?? "Import failed");
@@ -253,6 +254,7 @@ export function ImportWizard({
                 onToggle={toggle}
                 onCommit={commit}
                 onUndo={undo}
+                onBack={() => setStep("map")}
                 batchId={batchId}
                 busy={busy}
               />

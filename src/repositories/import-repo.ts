@@ -17,6 +17,14 @@ export function findBatch(db: Db, id: string) {
   return db.importBatch.findUnique({ where: { id } });
 }
 
+export function listBatchesByWorkspace(db: Db, workspaceId: string) {
+  return db.importBatch.findMany({
+    where: { workspaceId, archivedAt: null },
+    orderBy: { importedAt: "desc" },
+    take: 20,
+  });
+}
+
 export function deleteBatchTransactions(db: Db, batchId: string) {
   return db.transaction.deleteMany({ where: { importBatchId: batchId } });
 }

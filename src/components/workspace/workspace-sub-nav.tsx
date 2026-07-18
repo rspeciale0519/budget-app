@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 
 const ITEMS: [string, string][] = [
   ["Dashboard", ""],
+  ["Transactions", "/transactions"],
   ["Manage", "/manage"],
   ["Calendar", "/calendar"],
   ["Budget", "/budget"],

@@ -87,10 +87,17 @@ export async function commitImportAction(
   csvText: string,
   mapping: MappingConfig,
   skipIndices: number[],
+  expectedRowCount: number,
 ): Promise<{ ok: boolean; error?: string; batchId?: string; count?: number }> {
   try {
     const userId = await requireUserId();
     const preview = await previewImport(userId, { accountId, csvText, mapping });
+    if (preview.rows.length !== expectedRowCount) {
+      return {
+        ok: false,
+        error: "This account changed since you reviewed — please review the import again.",
+      };
+    }
     const skip = new Set(skipIndices);
     preview.rows.forEach((r, i) => {
       if (skip.has(i)) r.skip = true;

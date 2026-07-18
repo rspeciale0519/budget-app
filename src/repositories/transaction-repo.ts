@@ -17,13 +17,23 @@ export function findTransaction(db: Db, id: string) {
   return db.transaction.findUnique({ where: { id } });
 }
 
-export function listByWorkspace(db: Db, workspaceId: string, skip: number, take: number) {
+export function listByWorkspace(
+  db: Db,
+  workspaceId: string,
+  skip: number,
+  take: number,
+  where: Prisma.TransactionWhereInput = {},
+) {
   return db.transaction.findMany({
-    where: { workspaceId },
+    where: { workspaceId, ...where },
     orderBy: [{ date: "desc" }, { createdAt: "desc" }],
     skip,
     take,
   });
+}
+
+export function countByWorkspace(db: Db, workspaceId: string, where: Prisma.TransactionWhereInput = {}) {
+  return db.transaction.count({ where: { workspaceId, ...where } });
 }
 
 /** Re-open any bill this transaction was paying (referential cleanup, spec §9). */

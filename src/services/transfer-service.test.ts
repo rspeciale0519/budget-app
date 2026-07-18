@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { randomUUID } from "node:crypto";
 import { prismaAdmin } from "@/lib/prisma-admin";
 import { rlsClientFor } from "@/lib/prisma-rls";
-import { tagOwnerDraw } from "@/services/transfer-service";
+import { tagOwnerDraw, createAccountTransfer } from "@/services/transfer-service";
 import { calendarDate, toUtcDate } from "@/lib/calendar-date";
 
 const owner = randomUUID(); // member of both
@@ -82,5 +82,49 @@ describe("income bridge", () => {
     ).rejects.toThrow();
     const after = await prismaAdmin.workspaceTransfer.count({ where: { organizationId: orgId } });
     expect(after).toBe(before);
+  });
+});
+
+describe("account transfer (same workspace)", () => {
+  it("creates a cross-linked isTransfer pair", async () => {
+    const savings = await prismaAdmin.account.create({
+      data: { workspaceId: personalWs, name: "Per Sav", type: "savings", institution: "Bank", openingBalance: "0.00", openingDate: toUtcDate(calendarDate("2026-01-01")) },
+    });
+    const result = await createAccountTransfer(owner, personalWs, {
+      fromAccountId: personalAccount,
+      toAccountId: savings.id,
+      amount: "500.00",
+      date: "2026-07-01",
+    });
+    const out = await prismaAdmin.transaction.findUniqueOrThrow({ where: { id: result.fromTransactionId } });
+    const inflow = await prismaAdmin.transaction.findUniqueOrThrow({ where: { id: result.toTransactionId } });
+    expect(out.amount.toFixed(2)).toBe("-500.00");
+    expect(inflow.amount.toFixed(2)).toBe("500.00");
+    expect(out.isTransfer).toBe(true);
+    expect(inflow.isTransfer).toBe(true);
+    expect(out.transferPairId).toBe(inflow.id);
+    expect(inflow.transferPairId).toBe(out.id);
+    expect(out.description).toBe("Transfer to Per Sav");
+    expect(inflow.description).toBe("Transfer from Per Chk");
+  });
+
+  it("rejects same-account and non-positive amounts", async () => {
+    await expect(
+      createAccountTransfer(owner, personalWs, {
+        fromAccountId: personalAccount,
+        toAccountId: personalAccount,
+        amount: "10.00",
+        date: "2026-07-01",
+      }),
+    ).rejects.toThrow("Pick two different accounts");
+    const savings = await prismaAdmin.account.findFirstOrThrow({ where: { workspaceId: personalWs, name: "Per Sav" } });
+    await expect(
+      createAccountTransfer(owner, personalWs, {
+        fromAccountId: personalAccount,
+        toAccountId: savings.id,
+        amount: "-5.00",
+        date: "2026-07-01",
+      }),
+    ).rejects.toThrow("positive amount");
   });
 });
