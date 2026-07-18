@@ -4,7 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input, Select } from "@/components/ui/field";
+import { Input, Label, AmountInput, Select, FieldError } from "@/components/ui/field";
+import { useToast } from "@/components/ui/toast";
+import { today } from "@/lib/calendar-date";
+import { cn } from "@/lib/utils";
 import {
   addAccountAction,
   addTransactionAction,
@@ -17,17 +20,31 @@ interface AccountOption {
   name: string;
 }
 
+const ACCOUNT_TYPES: { value: string; label: string }[] = [
+  { value: "checking", label: "Checking" },
+  { value: "savings", label: "Savings" },
+  { value: "credit_card", label: "Credit card" },
+  { value: "loan", label: "Loan" },
+  { value: "cash", label: "Cash" },
+];
+
 function useAction() {
   const router = useRouter();
+  const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  async function submit(fn: () => Promise<ActionResult>) {
+  async function submit(fn: () => Promise<ActionResult>, onSuccess?: () => void) {
     setBusy(true);
     setError(null);
     const result = await fn();
     setBusy(false);
-    if (!result.ok) setError(result.error ?? "Failed");
-    else router.refresh();
+    if (!result.ok) {
+      setError(result.error ?? "That didn't save — check the fields and try again.");
+      return;
+    }
+    toast("Saved");
+    onSuccess?.();
+    router.refresh();
   }
   return { error, busy, submit };
 }
@@ -53,25 +70,54 @@ function AccountForm({ workspaceId }: { workspaceId: string }) {
   const [name, setName] = useState("");
   const [institution, setInstitution] = useState("");
   const [type, setType] = useState("checking");
-  const [openingBalance, setOpeningBalance] = useState("0.00");
-  const [openingDate, setOpeningDate] = useState("2026-01-01");
+  const [openingBalance, setOpeningBalance] = useState("");
+  const [openingDate, setOpeningDate] = useState<string>(today());
   return (
     <Card>
       <CardHeader>
         <CardTitle>Add account</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-        <Input placeholder="Institution" value={institution} onChange={(e) => setInstitution(e.target.value)} />
-        <Select value={type} onChange={(e) => setType(e.target.value)}>
-          {["checking", "savings", "credit_card", "loan", "cash"].map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </Select>
-        <Input placeholder="Opening balance" value={openingBalance} onChange={(e) => setOpeningBalance(e.target.value)} />
-        <Input type="date" value={openingDate} onChange={(e) => setOpeningDate(e.target.value)} />
-        {error && <p className="text-sm text-alert">{error}</p>}
-        <Button disabled={busy} onClick={() => submit(() => addAccountAction(workspaceId, { name, type, institution, openingBalance, openingDate }))} className="w-full">
+        <div className="space-y-1">
+          <Label htmlFor="acct-name">Name</Label>
+          <Input id="acct-name" placeholder="e.g. Everyday Checking" value={name} onChange={(e) => setName(e.target.value)} />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="acct-institution">Bank or institution</Label>
+          <Input id="acct-institution" placeholder="e.g. Chase" value={institution} onChange={(e) => setInstitution(e.target.value)} />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="acct-type">Type</Label>
+          <Select id="acct-type" value={type} onChange={(e) => setType(e.target.value)}>
+            {ACCOUNT_TYPES.map((t) => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </Select>
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="acct-balance">Opening balance</Label>
+          <AmountInput id="acct-balance" placeholder="0.00" value={openingBalance} onChange={(e) => setOpeningBalance(e.target.value)} />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="acct-date">As of date</Label>
+          <Input id="acct-date" type="date" value={openingDate} onChange={(e) => setOpeningDate(e.target.value)} />
+        </div>
+        {error && <FieldError>{error}</FieldError>}
+        <Button
+          disabled={busy}
+          onClick={() =>
+            submit(
+              () => addAccountAction(workspaceId, { name, type, institution, openingBalance: openingBalance || "0.00", openingDate }),
+              () => {
+                setName("");
+                setInstitution("");
+                setOpeningBalance("");
+                document.getElementById("acct-name")?.focus();
+              },
+            )
+          }
+          className="w-full"
+        >
           Add account
         </Button>
       </CardContent>
@@ -85,26 +131,72 @@ function TransactionForm({ workspaceId, accounts }: { workspaceId: string; accou
   // Fall back to the first account so a freshly-added account is selectable
   // without a manual re-pick after router.refresh().
   const effectiveAccountId = accountId || accounts[0]?.id || "";
-  const [date, setDate] = useState("2026-06-20");
-  const [amount, setAmount] = useState("-0.00");
+  const [date, setDate] = useState<string>(today());
+  const [amount, setAmount] = useState("");
+  const [direction, setDirection] = useState<"out" | "in">("out");
   const [description, setDescription] = useState("");
+
+  const toggleCls = (active: boolean) =>
+    cn(
+      "flex-1 rounded-control border px-2 py-1.5 text-xs font-semibold transition-colors",
+      active
+        ? "border-ink bg-ink text-paper"
+        : "border-rule-strong bg-surface text-muted hover:border-dim hover:text-ink",
+    );
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Add transaction</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        <Select value={effectiveAccountId} onChange={(e) => setAccountId(e.target.value)}>
-          {accounts.length === 0 ? <option value="">No accounts yet</option> : null}
-          {accounts.map((a) => (
-            <option key={a.id} value={a.id}>{a.name}</option>
-          ))}
-        </Select>
-        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        <Input placeholder="Amount (e.g. -25.50)" value={amount} onChange={(e) => setAmount(e.target.value)} />
-        <Input placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
-        {error && <p className="text-sm text-alert">{error}</p>}
-        <Button disabled={busy || !effectiveAccountId} onClick={() => submit(() => addTransactionAction(workspaceId, { accountId: effectiveAccountId, date, amount, description }))} className="w-full">
+        <div className="space-y-1">
+          <Label htmlFor="txn-account">Account</Label>
+          <Select id="txn-account" value={effectiveAccountId} onChange={(e) => setAccountId(e.target.value)}>
+            {accounts.length === 0 ? <option value="">No accounts yet</option> : null}
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>{a.name}</option>
+            ))}
+          </Select>
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="txn-date">Date</Label>
+          <Input id="txn-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        </div>
+        <div className="flex gap-1.5" role="group" aria-label="Money direction">
+          <button type="button" className={toggleCls(direction === "out")} onClick={() => setDirection("out")}>
+            Money out
+          </button>
+          <button type="button" className={toggleCls(direction === "in")} onClick={() => setDirection("in")}>
+            Money in
+          </button>
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="txn-amount">Amount</Label>
+          <AmountInput id="txn-amount" placeholder="25.50" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          <p className="text-[11px] text-muted">Just the number — the buttons above set the direction.</p>
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="txn-desc">Description</Label>
+          <Input id="txn-desc" placeholder="e.g. Groceries at Costco" value={description} onChange={(e) => setDescription(e.target.value)} />
+        </div>
+        {error && <FieldError>{error}</FieldError>}
+        <Button
+          disabled={busy || !effectiveAccountId || amount.trim() === ""}
+          onClick={() => {
+            const magnitude = amount.trim().replace(/^-/, "");
+            const signed = direction === "out" ? `-${magnitude}` : magnitude;
+            void submit(
+              () => addTransactionAction(workspaceId, { accountId: effectiveAccountId, date, amount: signed, description }),
+              () => {
+                setAmount("");
+                setDescription("");
+                document.getElementById("txn-amount")?.focus();
+              },
+            );
+          }}
+          className="w-full"
+        >
           Add transaction
         </Button>
       </CardContent>
@@ -115,19 +207,41 @@ function TransactionForm({ workspaceId, accounts }: { workspaceId: string; accou
 function BillForm({ workspaceId }: { workspaceId: string }) {
   const { error, busy, submit } = useAction();
   const [vendor, setVendor] = useState("");
-  const [amount, setAmount] = useState("0.00");
-  const [dueDate, setDueDate] = useState("2026-07-01");
+  const [amount, setAmount] = useState("");
+  const [dueDate, setDueDate] = useState<string>(today());
   return (
     <Card>
       <CardHeader>
         <CardTitle>Add bill</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        <Input placeholder="Vendor" value={vendor} onChange={(e) => setVendor(e.target.value)} />
-        <Input placeholder="Amount" value={amount} onChange={(e) => setAmount(e.target.value)} />
-        <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-        {error && <p className="text-sm text-alert">{error}</p>}
-        <Button disabled={busy} onClick={() => submit(() => addBillAction(workspaceId, { vendor, amount, dueDate }))} className="w-full">
+        <div className="space-y-1">
+          <Label htmlFor="bill-vendor">Who you pay</Label>
+          <Input id="bill-vendor" placeholder="e.g. Electric Co" value={vendor} onChange={(e) => setVendor(e.target.value)} />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="bill-amount">Amount</Label>
+          <AmountInput id="bill-amount" placeholder="120.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="bill-due">Due date</Label>
+          <Input id="bill-due" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+        </div>
+        {error && <FieldError>{error}</FieldError>}
+        <Button
+          disabled={busy || vendor.trim() === "" || amount.trim() === ""}
+          onClick={() =>
+            submit(
+              () => addBillAction(workspaceId, { vendor, amount, dueDate }),
+              () => {
+                setVendor("");
+                setAmount("");
+                document.getElementById("bill-vendor")?.focus();
+              },
+            )
+          }
+          className="w-full"
+        >
           Add bill
         </Button>
       </CardContent>

@@ -38,7 +38,7 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label={`Switch to ${next} theme`}
-      className="grid h-8 w-8 place-items-center rounded-control border border-rule bg-surface text-[15px] text-muted transition-colors hover:border-dim hover:bg-raised hover:text-ink"
+      className="grid h-9 w-9 place-items-center rounded-control border border-rule bg-surface text-[15px] text-muted transition-colors hover:border-dim hover:bg-raised hover:text-ink"
     >
       <span aria-hidden suppressHydrationWarning>
         {theme === "light" ? "☾" : "☀"}

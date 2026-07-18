@@ -4,12 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input, Select } from "@/components/ui/field";
+import { Input, Label, AmountInput, Select, FieldError } from "@/components/ui/field";
+import { today } from "@/lib/calendar-date";
 import {
   addIncomeSourceAction,
   deleteIncomeSourceAction,
 } from "@/app/(app)/w/[workspaceId]/_actions";
 import { useToast } from "@/components/ui/toast";
+import { formatDate } from "@/lib/format-date";
+import { money, format } from "@/lib/money";
 
 export interface IncomeSourceView {
   id: string;
@@ -19,7 +22,16 @@ export interface IncomeSourceView {
   nextDate: string;
 }
 
-const FREQUENCIES = ["weekly", "monthly", "quarterly", "annual"];
+const FREQUENCIES: { value: string; label: string }[] = [
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+  { value: "quarterly", label: "Quarterly" },
+  { value: "annual", label: "Yearly" },
+];
+
+function frequencyLabel(value: string): string {
+  return FREQUENCIES.find((f) => f.value === value)?.label ?? value;
+}
 
 export function IncomeSourceForm({
   workspaceId,
@@ -30,9 +42,9 @@ export function IncomeSourceForm({
 }) {
   const router = useRouter();
   const [name, setName] = useState("");
-  const [amount, setAmount] = useState("0.00");
+  const [amount, setAmount] = useState("");
   const [frequency, setFrequency] = useState("monthly");
-  const [nextDate, setNextDate] = useState("2026-07-01");
+  const [nextDate, setNextDate] = useState<string>(today());
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
@@ -75,16 +87,28 @@ export function IncomeSourceForm({
           <CardTitle>Add expected income</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          <Input placeholder="Name (e.g. Salary, Retainer)" value={name} onChange={(e) => setName(e.target.value)} />
-          <Input placeholder="Amount" value={amount} onChange={(e) => setAmount(e.target.value)} />
-          <Select value={frequency} onChange={(e) => setFrequency(e.target.value)}>
-            {FREQUENCIES.map((f) => (
-              <option key={f} value={f}>{f}</option>
-            ))}
-          </Select>
-          <Input type="date" value={nextDate} onChange={(e) => setNextDate(e.target.value)} />
-          {error && <p className="text-sm text-alert">{error}</p>}
-          <Button disabled={busy || !name} onClick={add} className="w-full">
+          <div className="space-y-1">
+            <Label htmlFor="inc-name">Name</Label>
+            <Input id="inc-name" placeholder="e.g. Salary, Retainer" value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="inc-amount">Amount</Label>
+            <AmountInput id="inc-amount" placeholder="2500.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="inc-frequency">How often</Label>
+            <Select id="inc-frequency" value={frequency} onChange={(e) => setFrequency(e.target.value)}>
+              {FREQUENCIES.map((f) => (
+                <option key={f.value} value={f.value}>{f.label}</option>
+              ))}
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="inc-next">Next payment date</Label>
+            <Input id="inc-next" type="date" value={nextDate} onChange={(e) => setNextDate(e.target.value)} />
+          </div>
+          {error && <FieldError>{error}</FieldError>}
+          <Button disabled={busy || !name || amount.trim() === ""} onClick={add} className="w-full">
             {busy ? "Adding…" : "Add income source"}
           </Button>
           <p className="text-xs text-muted">
@@ -110,13 +134,13 @@ export function IncomeSourceForm({
             sources.map((s) => (
               <div key={s.id} className="flex items-center justify-between border-b border-rule py-1.5">
                 <span className="text-ink/85">
-                  {s.name} · {s.frequency} · next {s.nextDate}
+                  {s.name} · {frequencyLabel(s.frequency)} · next {formatDate(s.nextDate)}
                 </span>
                 <span className="flex items-center gap-3">
-                  <span className="tabular text-ink">${s.amount}</span>
+                  <span className="tabular text-ink">{format(money(s.amount))}</span>
                   <Button
                     variant={confirmingId === s.id ? "danger" : "ghost"}
-                    size="sm"
+                    size="md"
                     disabled={removingId === s.id}
                     onClick={() => remove(s.id)}
                     onBlur={() => setConfirmingId(null)}

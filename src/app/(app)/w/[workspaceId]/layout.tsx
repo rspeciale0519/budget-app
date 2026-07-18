@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/supabase/server";
+import { assertWorkspaceAccess } from "@/services/authz";
 import { getWorkspace } from "@/services/workspace-service";
 import { WorkspaceSubNav } from "@/components/workspace/workspace-sub-nav";
 import { Card, CardContent } from "@/components/ui/card";
@@ -51,6 +52,9 @@ export default async function WorkspaceLayout({
   }
 
   const typeLabel = ws.type.charAt(0).toUpperCase() + ws.type.slice(1);
+  const isAdmin = await assertWorkspaceAccess(user.id, workspaceId, "admin")
+    .then(() => true)
+    .catch(() => false);
 
   return (
     <div>
@@ -62,15 +66,17 @@ export default async function WorkspaceLayout({
           {ws.name.charAt(0).toUpperCase() || "W"}
         </div>
         <div>
-          <h1 className="font-serif text-[22px] leading-tight tracking-[-0.01em] text-ink">
-            {ws.name}
-          </h1>
+          <Link href={`/w/${workspaceId}`} className="hover:underline">
+            <h1 className="font-serif text-[22px] leading-tight tracking-[-0.01em] text-ink">
+              {ws.name}
+            </h1>
+          </Link>
           <div className="text-xs font-medium uppercase tracking-[0.06em] text-dim">
             {typeLabel}
           </div>
         </div>
       </div>
-      <WorkspaceSubNav workspaceId={workspaceId} />
+      <WorkspaceSubNav workspaceId={workspaceId} showActivity={isAdmin} />
       {children}
     </div>
   );

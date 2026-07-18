@@ -20,7 +20,7 @@ export function buildCommands(ctx: PaletteCtx): Command[] {
     commands.push(
       { id: "add-expense", label: "Add expense / transaction", icon: "➕", group: "Quick actions", href: `/w/${ws}/manage` },
       { id: "log-bill", label: "Log a new bill", icon: "🧾", group: "Quick actions", href: `/w/${ws}/manage` },
-      { id: "owner-draw", label: "Record owner draw", icon: "💸", group: "Quick actions", href: `/w/${ws}/income` },
+      { id: "owner-draw", label: "Pay myself from this business", icon: "💸", group: "Quick actions", href: `/w/${ws}/income` },
       { id: "import-csv", label: "Import CSV", icon: "📥", group: "Quick actions", href: `/w/${ws}/import` },
     );
   }

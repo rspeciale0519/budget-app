@@ -188,13 +188,13 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Kpi label="Total balance" value={data.kpis.totalBalance} note={data.kpis.totalBalanceNote} />
         <Kpi
-          label="Money in · MTD"
+          label="Money in · this month"
           value={data.kpis.moneyIn}
           delta={data.kpis.moneyInDelta}
           deltaUp={data.kpis.moneyInUp}
         />
         <Kpi
-          label="Money out · MTD"
+          label="Money out · this month"
           value={data.kpis.moneyOut}
           delta={data.kpis.moneyOutDelta}
           deltaUp={data.kpis.moneyOutUp}

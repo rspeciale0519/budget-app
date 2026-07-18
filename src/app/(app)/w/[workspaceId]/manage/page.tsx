@@ -9,6 +9,7 @@ import { TransferForm } from "@/components/manage/transfer-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty/empty-state";
 import { fromDbDate } from "@/lib/calendar-date";
+import { formatDate } from "@/lib/format-date";
 import { money, format } from "@/lib/money";
 
 export const dynamic = "force-dynamic";
@@ -76,7 +77,7 @@ export default async function ManagePage({
             txns.map((t) => (
               <div key={t.id} className="flex justify-between border-b border-rule py-1">
                 <span className="text-ink/85">
-                  {fromDbDate(t.date)} · {t.description}
+                  {formatDate(fromDbDate(t.date))} · {t.description}
                 </span>
                 <span className="tabular-nums text-ink">{format(money(t.amount.toFixed(2)))}</span>
               </div>

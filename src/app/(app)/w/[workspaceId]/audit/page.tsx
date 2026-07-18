@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty/empty-state";
+import { formatDate } from "@/lib/format-date";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { getWorkspace } from "@/services/workspace-service";
 import { listAudit } from "@/services/audit-service";
@@ -44,10 +45,13 @@ export default async function AuditPage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-ink">Audit Log</h1>
+      <h1 className="text-xl font-semibold text-ink">Activity</h1>
+      <p className="text-sm text-muted">
+        A record of changes in this workspace (visible to owners and admins).
+      </p>
       <Card>
         <CardHeader>
-          <CardTitle>Recent activity (owner/admin only)</CardTitle>
+          <CardTitle>Recent activity</CardTitle>
         </CardHeader>
         <CardContent className="space-y-1 text-sm">
           {entries.length === 0 ? (
@@ -61,7 +65,7 @@ export default async function AuditPage({
                 <span className="text-ink/85">
                   {actionLabel(e.action)} · {e.entityType}
                 </span>
-                <span className="text-xs text-dim">{e.at.toISOString().slice(0, 10)}</span>
+                <span className="text-xs text-dim">{formatDate(e.at)}</span>
               </div>
             ))
           )}

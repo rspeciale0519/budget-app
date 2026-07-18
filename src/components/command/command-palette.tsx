@@ -14,6 +14,8 @@ export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const lastFocused = useRef<HTMLElement | null>(null);
 
   const currentWorkspaceId = useMemo(() => {
     const m = /^\/w\/([^/]+)/.exec(pathname ?? "");
@@ -26,23 +28,35 @@ export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
   );
 
   useEffect(() => {
+    function toggle() {
+      setQuery("");
+      setSelected(0);
+      setOpen((o) => !o);
+    }
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        setQuery("");
-        setSelected(0);
-        setOpen((o) => !o);
+        toggle();
       } else if (e.key === "Escape") {
         setOpen(false);
       }
     }
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("open-command-palette", toggle);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("open-command-palette", toggle);
+    };
   }, []);
 
-  // DOM-only side effect (no setState) — focus the input once the palette opens.
+  // Focus the input on open; put focus back where it was on close.
   useEffect(() => {
-    if (open) inputRef.current?.focus();
+    if (open) {
+      lastFocused.current = document.activeElement as HTMLElement | null;
+      inputRef.current?.focus();
+    } else {
+      lastFocused.current?.focus?.();
+    }
   }, [open]);
 
   if (!open) return null;
@@ -66,7 +80,22 @@ export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
     }
   }
 
-  const groups: Command["group"][] = ["Quick actions", "Go to workspace"];
+  const groups: Command["group"][] = ["Quick actions", "Go to workspace", "Settings"];
+
+  function trapTab(e: React.KeyboardEvent) {
+    if (e.key !== "Tab") return;
+    const focusables = panelRef.current?.querySelectorAll<HTMLElement>("input, button, [tabindex]");
+    if (!focusables || focusables.length === 0) return;
+    const first = focusables[0]!;
+    const last = focusables[focusables.length - 1]!;
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
 
   return (
     <div
@@ -74,6 +103,11 @@ export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
       onClick={() => setOpen(false)}
     >
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Command palette"
+        onKeyDown={trapTab}
         className="w-full max-w-[560px] overflow-hidden rounded-card border border-rule-strong bg-surface shadow-overlay"
         onClick={(e) => e.stopPropagation()}
       >

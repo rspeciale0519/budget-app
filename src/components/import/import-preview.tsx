@@ -46,7 +46,7 @@ export function ImportPreview({
         <p className="text-sm font-semibold text-credit">
           ✓ Imported {committable} transaction{committable === 1 ? "" : "s"}.
         </p>
-        <p className="text-xs text-muted">Batch {batchId.slice(0, 8)}… · changed your mind?</p>
+        <p className="text-xs text-muted">Changed your mind?</p>
         <Button variant="outline" onClick={onUndo} disabled={busy}>
           Undo this import
         </Button>

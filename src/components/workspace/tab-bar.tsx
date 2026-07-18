@@ -5,6 +5,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { WorkspaceTabs } from "@/components/workspace/workspace-tabs";
 import { ThemeToggle } from "@/components/chrome/theme-toggle";
 import { AvatarMenu } from "@/components/chrome/avatar-menu";
+import { SearchButton } from "@/components/chrome/search-button";
 
 export async function TabBar({ userId }: { userId: string }) {
   const workspaces = await listAccessibleWorkspaces(userId);
@@ -40,7 +41,7 @@ export async function TabBar({ userId }: { userId: string }) {
         <div className="ml-auto flex items-center gap-2">
           <Link
             href="/tiles"
-            className="flex h-8 items-center justify-center rounded-control border border-rule bg-surface px-2.5 text-sm text-ink/85 transition-colors hover:border-dim hover:bg-raised lg:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-control border border-rule bg-surface text-sm text-ink/85 transition-colors hover:border-dim hover:bg-raised lg:hidden"
             title="Tile view"
             aria-label="Tile view"
           >
@@ -48,18 +49,12 @@ export async function TabBar({ userId }: { userId: string }) {
           </Link>
           <Link
             href="/tiles"
-            className="hidden h-8 items-center gap-1.5 rounded-control border border-rule bg-surface px-3 text-xs font-semibold text-ink/85 transition-colors hover:border-dim hover:bg-raised lg:flex"
+            className="hidden h-9 items-center gap-1.5 rounded-control border border-rule bg-surface px-3 text-xs font-semibold text-ink/85 transition-colors hover:border-dim hover:bg-raised lg:flex"
             title="Tile multiple workspaces side-by-side"
           >
             ⊞ Tile view
           </Link>
-          <Link
-            href="/tiles"
-            className="hidden h-8 items-center gap-1.5 rounded-control border border-rule bg-surface px-3 text-xs font-semibold text-ink/85 transition-colors hover:border-dim hover:bg-raised lg:flex"
-            title="Saved layouts"
-          >
-            ⌄ Layouts
-          </Link>
+          <SearchButton />
           <ThemeToggle />
           <AvatarMenu initial={initial} email={user?.email ?? ""} />
         </div>

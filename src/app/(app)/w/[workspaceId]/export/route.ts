@@ -1,7 +1,15 @@
 import { getCurrentUser } from "@/lib/supabase/server";
 import { exportTransactionsCsv, exportBillsCsv } from "@/services/export-service";
+import { today } from "@/lib/calendar-date";
 
 export const dynamic = "force-dynamic";
+
+function friendlyError(status: number): Response {
+  return new Response(
+    "<p>You don't have access to this export. Go back and sign in with the right account.</p>",
+    { status, headers: { "Content-Type": "text/html; charset=utf-8" } },
+  );
+}
 
 export async function GET(
   request: Request,
@@ -9,7 +17,7 @@ export async function GET(
 ): Promise<Response> {
   const { workspaceId } = await params;
   const user = await getCurrentUser();
-  if (!user) return new Response("Unauthorized", { status: 401 });
+  if (!user) return friendlyError(401);
   const type = new URL(request.url).searchParams.get("type") ?? "transactions";
   try {
     const csv =
@@ -19,10 +27,10 @@ export async function GET(
     return new Response(csv, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="${type}-${workspaceId}.csv"`,
+        "Content-Disposition": `attachment; filename="ledger-${type}-${today()}.csv"`,
       },
     });
   } catch {
-    return new Response("Forbidden", { status: 403 });
+    return friendlyError(403);
   }
 }

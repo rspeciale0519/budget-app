@@ -532,15 +532,15 @@ Service returns `{ rows, total }` via `Promise.all` of the two repo calls inside
 
 **Files:** as listed per line below.
 
-- [ ] `src/components/dashboard/dashboard.tsx:179,185`: "Money in · MTD" → "Money in · this month"; same for Money out.
-- [ ] `src/components/manage/manage-forms.tsx:66-69`: account type `<option>` labels → "Checking", "Savings", "Credit card", "Loan", "Cash" (values stay the raw enums; open the file section and map whatever enum values are listed — label = capitalized with spaces).
-- [ ] `src/app/(app)/w/[workspaceId]/audit/page.tsx:44` + `workspace-sub-nav.tsx` label: "Audit Log"/"Audit" → "Activity"; page description line → "A record of changes in this workspace (visible to owners and admins)."
-- [ ] `src/app/(app)/all/page.tsx:33-34`: "MTD" column headers → "This month"; footnote at 61-64 → "Money you pay yourself from a business, and transfers between workspaces, are counted once — not as both income and spending."
-- [ ] `src/lib/command-palette/commands.ts:23`: "Record owner draw" → "Pay myself from this business".
-- [ ] `src/app/(app)/settings/members/page.tsx:46,59`: "Organization members" → "People"; "organization owner or admin" → "owner or admin".
-- [ ] `src/components/import/import-preview.tsx:46`: drop the batch-id line entirely (history from Task 3.5 identifies imports by filename/date).
-- [ ] `src/components/income/income-source-form.tsx`: frequency `<select>` options get human labels ("Weekly", "Every 2 weeks", "Monthly", …) mapped over the raw `Frequency` enum values.
-- [ ] Verify: `pnpm type-check && pnpm lint`; grep `MTD|Audit Log|owner draw|Organization members` under `src/` → no user-visible hits remain.
+- [x] `src/components/dashboard/dashboard.tsx:179,185`: "Money in · MTD" → "Money in · this month"; same for Money out.
+- [x] `src/components/manage/manage-forms.tsx:66-69`: account type `<option>` labels → "Checking", "Savings", "Credit card", "Loan", "Cash" (values stay the raw enums; open the file section and map whatever enum values are listed — label = capitalized with spaces).
+- [x] `src/app/(app)/w/[workspaceId]/audit/page.tsx:44` + `workspace-sub-nav.tsx` label: "Audit Log"/"Audit" → "Activity"; page description line → "A record of changes in this workspace (visible to owners and admins)."
+- [x] `src/app/(app)/all/page.tsx:33-34`: "MTD" column headers → "This month"; footnote at 61-64 → "Money you pay yourself from a business, and transfers between workspaces, are counted once — not as both income and spending."
+- [x] `src/lib/command-palette/commands.ts:23`: "Record owner draw" → "Pay myself from this business".
+- [x] `src/app/(app)/settings/members/page.tsx:46,59`: "Organization members" → "People"; "organization owner or admin" → "owner or admin".
+- [x] `src/components/import/import-preview.tsx:46`: drop the batch-id line entirely (history from Task 3.5 identifies imports by filename/date).
+- [x] `src/components/income/income-source-form.tsx`: frequency `<select>` options get human labels ("Weekly", "Every 2 weeks", "Monthly", …) mapped over the raw `Frequency` enum values.
+- [x] Verify: gates green; grep confirms only code comments/test names mention the old terms — no user-visible hits.
 
 ### Task 6.2: One date formatter
 
@@ -551,35 +551,35 @@ Service returns `{ rows, total }` via `Promise.all` of the two repo calls inside
 **Interfaces:**
 - Produces: `formatDate(d: Date | string): string` → "Jul 18, 2026" (`en-US`, UTC — dates are `@db.Date`, so always format in UTC to avoid off-by-one: `new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" })`).
 
-- [ ] **Step 1:** Test: `formatDate("2026-07-18")` and `formatDate(new Date("2026-07-18T00:00:00Z"))` both → "Jul 18, 2026".
-- [ ] **Step 2:** Implement; swap the four call sites (audit's `toISOString().slice(0,10)`, manage's ISO date cell, income's "next <iso>" → "next Jul 1, 2026").
-- [ ] **Step 3:** Income amounts through the money formatter at the same call sites: `income/page.tsx:24` and `income-source-form.tsx:94` render `format(money(s.amount))` instead of raw `.toFixed(2)` interpolation.
-- [ ] **Step 4: Verify** — tests green; income list shows "$1,200.00".
+- [x] **Step 1:** Test: `formatDate("2026-07-18")` and `formatDate(new Date("2026-07-18T00:00:00Z"))` both → "Jul 18, 2026".
+- [x] **Step 2:** Implement; swap the four call sites (audit's `toISOString().slice(0,10)`, manage's ISO date cell, income's "next <iso>" → "next Jul 1, 2026").
+- [x] **Step 3:** Income amounts through the money formatter at the same call sites: `income/page.tsx:24` and `income-source-form.tsx:94` render `format(money(s.amount))` instead of raw `.toFixed(2)` interpolation.
+- [x] **Step 4: Verify** — tests green; income list shows "$1,200.00".
 
 ### Task 6.3: Form defaults, labels, and money-in/out entry
 
 **Files:**
 - Modify: `src/components/manage/manage-forms.tsx` (all three forms), `src/components/income/income-source-form.tsx:34`
 
-- [ ] **Step 1: Dates** — replace the four hardcoded literals (`manage-forms.tsx:57,88,119`; `income-source-form.tsx:34`) with `today()` from `@/lib/calendar-date` (it returns the `YYYY-MM-DD` `CalendarDate` string these inputs need).
-- [ ] **Step 2: Amounts** — defaults `"-0.00"`/`"0.00"` → `""`; placeholders become plain examples ("25.50").
-- [ ] **Step 3: Sign toggle** — in the add-transaction form, add a two-button segmented control ("Money out" default / "Money in") stored as `direction` state; on submit, send `direction === "out" ? `-${amount}` : amount` (strip any user-typed minus first: `amount.replace(/^-/, "")`). Helper text under the field: "Just the number — the buttons above set the direction."
-- [ ] **Step 4: Labels** — wrap every input in the three manage forms and the income form with the existing `Label` component (`ui/field.tsx:26`) + `htmlFor`/`id` pairs; placeholders keep only example values.
-- [ ] **Step 5: Reset + confirm + rapid entry** — on successful add (all four forms): clear amount/description fields but **keep** account/date selections, `toast("Saved")`, and move focus back to the first cleared field (`ref.current?.focus()`) so consecutive entries are keyboard-only.
-- [ ] **Step 6: Verify** — add three transactions in a row without touching the mouse; dates default to today.
+- [x] **Step 1: Dates** — replace the four hardcoded literals (`manage-forms.tsx:57,88,119`; `income-source-form.tsx:34`) with `today()` from `@/lib/calendar-date` (it returns the `YYYY-MM-DD` `CalendarDate` string these inputs need).
+- [x] **Step 2: Amounts** — defaults `"-0.00"`/`"0.00"` → `""`; placeholders become plain examples ("25.50").
+- [x] **Step 3: Sign toggle** — in the add-transaction form, add a two-button segmented control ("Money out" default / "Money in") stored as `direction` state; on submit, send `direction === "out" ? `-${amount}` : amount` (strip any user-typed minus first: `amount.replace(/^-/, "")`). Helper text under the field: "Just the number — the buttons above set the direction."
+- [x] **Step 4: Labels** — wrap every input in the three manage forms and the income form with the existing `Label` component (`ui/field.tsx:26`) + `htmlFor`/`id` pairs; placeholders keep only example values.
+- [x] **Step 5: Reset + confirm + rapid entry** — on successful add (all four forms): clear amount/description fields but **keep** account/date selections, `toast("Saved")`, and move focus back to the first cleared field (`ref.current?.focus()`) so consecutive entries are keyboard-only.
+- [x] **Step 6: Verify** — browser-verified: added a Money-out transaction with no minus sign (saved as -$4.56), form reset with focus returned to Amount, dates default to today (2026-07-18).
 
 ### Task 6.4: Accessibility & interaction polish
 
 **Files:**
 - Modify: `src/app/globals.css:39` (and the dark-theme `--ink-dim` declaration in the same file), `src/components/command/command-palette.tsx:71-146`, `src/components/workspace/tab-bar.tsx:36-56`, `src/app/(app)/w/[workspaceId]/layout.tsx` + `src/components/workspace/workspace-sub-nav.tsx` (audit visibility)
 
-- [ ] **Step 1: Contrast** — light `--ink-dim: #9a9482` → `#6f6a5b` (measures ≈5.1:1 on `--surface #fbfaf5`). Check the dark-theme `--ink-dim` against its surface with a contrast checker and darken/lighten until ≥4.5:1 the same way. Visually sweep hint text afterward.
-- [ ] **Step 2: Command palette dialog semantics** — on the overlay: `role="dialog"`, `aria-modal="true"`, `aria-label="Command palette"`; trap Tab (on keydown, if Tab and focus would leave the palette, wrap to first/last focusable); store `document.activeElement` on open and restore focus on close.
-- [ ] **Step 3: ⌘K discoverability** — in `tab-bar.tsx`, remove the duplicate "⌄ Layouts" link (both links point to `/tiles`; "⊞ Tile view" stays and gains `aria-label`); in its place a subtle button "Search ⌘K" (outline style, `hidden lg:flex`) that dispatches the same open event the palette listens for (open `command-palette.tsx` to find its open mechanism — keyboard listener — and export a small `openCommandPalette()` helper or a custom `window` event both listen to).
-- [ ] **Step 4: Hide Activity for non-admins** — in the workspace layout, compute `const isAdmin = await assertWorkspaceAccess(user.id, workspaceId, "admin").then(() => true).catch(() => false)` and pass `showActivity={isAdmin}` into `WorkspaceSubNav`; filter the item there.
-- [ ] **Step 5: Touch targets** — income remove and transaction row action buttons: ensure ≥40px hit area (`h-9` buttons or `p-2` on ghosts); theme toggle and tile icon get `h-9 w-9`.
-- [ ] **Step 6: Workspace header links home** — in `w/[workspaceId]/layout.tsx:37-53`, wrap the workspace name heading in `<Link href={`/w/${workspaceId}`}>` so deep pages have a one-tap way back to that workspace's dashboard.
-- [ ] **Step 7: Verify** — keyboard-only session: open palette, Tab stays inside, Escape restores focus; axe/devtools contrast check passes on hints.
+- [x] **Step 1: Contrast** — light `--ink-dim: #9a9482` → `#6f6a5b` (measures ≈5.1:1 on `--surface #fbfaf5`). Check the dark-theme `--ink-dim` against its surface with a contrast checker and darken/lighten until ≥4.5:1 the same way. Visually sweep hint text afterward.
+- [x] **Step 2: Command palette dialog semantics** — on the overlay: `role="dialog"`, `aria-modal="true"`, `aria-label="Command palette"`; trap Tab (on keydown, if Tab and focus would leave the palette, wrap to first/last focusable); store `document.activeElement` on open and restore focus on close.
+- [x] **Step 3: ⌘K discoverability** — in `tab-bar.tsx`, remove the duplicate "⌄ Layouts" link (both links point to `/tiles`; "⊞ Tile view" stays and gains `aria-label`); in its place a subtle button "Search ⌘K" (outline style, `hidden lg:flex`) that dispatches the same open event the palette listens for (open `command-palette.tsx` to find its open mechanism — keyboard listener — and export a small `openCommandPalette()` helper or a custom `window` event both listen to).
+- [x] **Step 4: Hide Activity for non-admins** — in the workspace layout, compute `const isAdmin = await assertWorkspaceAccess(user.id, workspaceId, "admin").then(() => true).catch(() => false)` and pass `showActivity={isAdmin}` into `WorkspaceSubNav`; filter the item there.
+- [x] **Step 5: Touch targets** — income remove and transaction row action buttons: ensure ≥40px hit area (`h-9` buttons or `p-2` on ghosts); theme toggle and tile icon get `h-9 w-9`.
+- [x] **Step 6: Workspace header links home** — in `w/[workspaceId]/layout.tsx:37-53`, wrap the workspace name heading in `<Link href={`/w/${workspaceId}`}>` so deep pages have a one-tap way back to that workspace's dashboard.
+- [x] **Step 7: Verify** — browser-verified: palette opens via Search ⌘K with role=dialog/aria-modal, input auto-focused, Escape closes and restores focus to the trigger; Tab-trap implemented; contrast tokens now #6f6a5b (light, ≈5.1:1) / #94907e (dark, ≈4.8:1).
 
 ### Task 6.5: Per-route loading states + export filename
 
@@ -587,9 +587,9 @@ Service returns `{ rows, total }` via `Promise.all` of the two repo calls inside
 - Create: `src/app/(app)/w/[workspaceId]/{budget,manage,calendar,income,import,transactions}/loading.tsx`
 - Modify: `src/app/(app)/w/[workspaceId]/export/route.ts` (filename + error copy)
 
-- [ ] **Step 1:** A shared minimal skeleton per route: header bar + one `Card`-shaped shimmer block (copy the shimmer classes from the existing `w/[workspaceId]/loading.tsx`, minus the dashboard-specific KPI grid). Each file is ~10 lines; the existing dashboard skeleton stays for the dashboard route only.
-- [ ] **Step 2:** Export route: set `Content-Disposition` filename to `ledger-transactions-<YYYY-MM-DD>.csv` (today's date via `today()`); replace bare "Forbidden"/"Unauthorized" bodies with a one-line HTML message "You don't have access to this export. Go back and sign in with the right account." (status codes unchanged).
-- [ ] **Step 3: Verify** — navigating between tabs no longer flashes the dashboard-shaped skeleton; export downloads with the friendly name.
+- [x] **Step 1:** A shared minimal skeleton per route: header bar + one `Card`-shaped shimmer block (copy the shimmer classes from the existing `w/[workspaceId]/loading.tsx`, minus the dashboard-specific KPI grid). Each file is ~10 lines; the existing dashboard skeleton stays for the dashboard route only.
+- [x] **Step 2:** Export route: set `Content-Disposition` filename to `ledger-transactions-<YYYY-MM-DD>.csv` (today's date via `today()`); replace bare "Forbidden"/"Unauthorized" bodies with a one-line HTML message "You don't have access to this export. Go back and sign in with the right account." (status codes unchanged).
+- [x] **Step 3: Verify** — per-route loading.tsx files in place (prod nav too fast to visually catch a flash); export verified: Content-Disposition filename="ledger-transactions-2026-07-18.csv".
 
 **Phase 6 checkpoint:** `/git-workflow-planning:checkpoint 6 "language, dates, a11y, loading states"` → then `/git-workflow-planning:finish`.
 

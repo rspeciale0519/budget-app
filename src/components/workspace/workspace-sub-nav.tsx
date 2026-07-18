@@ -12,16 +12,23 @@ const ITEMS: [string, string][] = [
   ["Budget", "/budget"],
   ["Income", "/income"],
   ["Import", "/import"],
-  ["Audit", "/audit"],
+  ["Activity", "/audit"],
 ];
 
-export function WorkspaceSubNav({ workspaceId }: { workspaceId: string }) {
+export function WorkspaceSubNav({
+  workspaceId,
+  showActivity = true,
+}: {
+  workspaceId: string;
+  showActivity?: boolean;
+}) {
   const pathname = usePathname();
   const base = `/w/${workspaceId}`;
+  const items = showActivity ? ITEMS : ITEMS.filter(([, sub]) => sub !== "/audit");
 
   return (
     <nav className="mb-5 flex flex-wrap items-center gap-0.5 border-b border-rule text-[13px]">
-      {ITEMS.map(([label, sub]) => {
+      {items.map(([label, sub]) => {
         const href = `${base}${sub}`;
         // Dashboard ("") is active only on an exact match; the rest own their subtree.
         const active = sub === "" ? pathname === base : pathname.startsWith(href);

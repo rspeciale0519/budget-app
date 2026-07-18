@@ -32,8 +32,8 @@ export default async function AllWorkspacesPage() {
             <tr className="text-[11px] uppercase tracking-[0.04em] text-muted">
               <th className="px-2 py-2 text-left">Workspace</th>
               <th className="px-2 py-2 text-right">Balance</th>
-              <th className="px-2 py-2 text-right">In (MTD)</th>
-              <th className="px-2 py-2 text-right">Out (MTD)</th>
+              <th className="px-2 py-2 text-right">In (this month)</th>
+              <th className="px-2 py-2 text-right">Out (this month)</th>
               <th className="px-2 py-2 text-right">Unpaid</th>
               <th className="px-2 py-2 text-right">Net</th>
             </tr>
@@ -61,8 +61,8 @@ export default async function AllWorkspacesPage() {
         </table>
         </div>
         <p className="mt-3 text-[11.5px] text-muted">
-          ↔ Owner draws / inter-workspace transfers are recognized inside each workspace but netted
-          out of the combined In/Out total so they aren&apos;t double-counted as income.
+          ↔ Money you pay yourself from a business, and transfers between workspaces, are counted
+          once in the combined total — not as both income and spending.
         </p>
       </Card>
     </div>
