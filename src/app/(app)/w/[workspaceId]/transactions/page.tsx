@@ -8,6 +8,8 @@ import { TransactionsView } from "@/components/transactions/transactions-view";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Transactions" };
+
 const PAGE_SIZE = 50;
 
 export default async function TransactionsPage({

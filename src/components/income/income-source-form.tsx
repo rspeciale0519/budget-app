@@ -99,7 +99,13 @@ export function IncomeSourceForm({
         </CardHeader>
         <CardContent className="space-y-1 text-sm">
           {sources.length === 0 ? (
-            <p className="text-muted">None yet — safe-to-spend uses a 30-day window.</p>
+            <div className="rounded-xl border border-dashed border-rule bg-surface p-6 text-center">
+              <h3 className="text-sm font-semibold text-ink">No expected income yet</h3>
+              <p className="mx-auto mt-1 max-w-md text-sm text-muted">
+                Add your paycheck or other regular income so Safe to spend can look ahead. Until
+                then it uses a 30-day window.
+              </p>
+            </div>
           ) : (
             sources.map((s) => (
               <div key={s.id} className="flex items-center justify-between border-b border-rule py-1.5">

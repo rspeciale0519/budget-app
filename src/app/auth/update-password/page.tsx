@@ -4,6 +4,8 @@ import { UpdatePasswordForm } from "@/components/auth/update-password-form";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Update password" };
+
 export default async function UpdatePasswordPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");

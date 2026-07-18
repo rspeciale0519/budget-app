@@ -13,6 +13,8 @@ import { money, format } from "@/lib/money";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Manage" };
+
 export default async function ManagePage({
   params,
 }: {
@@ -58,7 +60,18 @@ export default async function ManagePage({
         </CardHeader>
         <CardContent className="space-y-1 text-sm">
           {txns.length === 0 ? (
-            <p className="text-muted">No transactions yet.</p>
+            <EmptyState
+              title="No transactions yet"
+              description="Add one above, or import a CSV from your bank."
+              action={
+                <a
+                  href={`/w/${workspaceId}/import`}
+                  className="inline-flex h-9 items-center justify-center rounded-control border border-rule-strong bg-surface px-3.5 text-[13px] font-medium text-ink transition-colors hover:border-dim hover:bg-raised"
+                >
+                  Import CSV
+                </a>
+              }
+            />
           ) : (
             txns.map((t) => (
               <div key={t.id} className="flex justify-between border-b border-rule py-1">

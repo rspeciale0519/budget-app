@@ -4,7 +4,7 @@ import { THEME_BOOT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Ledger",
+  title: { template: "%s — Ledger", default: "Ledger" },
   description: "Know what's owed, what's due, and what's safe to spend.",
 };
 

@@ -162,6 +162,7 @@ export async function getDashboardData(
     : `after ${items.length} unpaid bills (next 30 days) · set expected income`;
 
   return {
+    accountCount,
     matchSuggestions: matches,
     kpis: {
       totalBalance: format(cur.totalBalance),

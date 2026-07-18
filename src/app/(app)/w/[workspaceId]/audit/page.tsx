@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/empty/empty-state";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { getWorkspace } from "@/services/workspace-service";
 import { listAudit } from "@/services/audit-service";
@@ -18,6 +19,8 @@ function actionLabel(action: string): string {
 }
 
 export const dynamic = "force-dynamic";
+
+export const metadata = { title: "Activity" };
 
 export default async function AuditPage({
   params,
@@ -48,7 +51,10 @@ export default async function AuditPage({
         </CardHeader>
         <CardContent className="space-y-1 text-sm">
           {entries.length === 0 ? (
-            <p className="text-muted">No entries visible.</p>
+            <EmptyState
+              title="No activity yet"
+              description="Changes made in this workspace — new accounts, edits, imports — will be listed here."
+            />
           ) : (
             entries.map((e) => (
               <div key={e.id} className="flex justify-between border-b border-rule py-1">

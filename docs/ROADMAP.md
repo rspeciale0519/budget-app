@@ -10,7 +10,7 @@
 - [x] Phase 2 — Account & access: avatar menu + sign-out, settings pages, sign-up/forgot-password,
       member emails + grant-access UI, real workspace creation
 - [x] Phase 3 — Categories, transaction register, transfers, import history
-- [ ] Phase 4 — First-run hero, empty states, page titles
+- [x] Phase 4 — First-run hero, empty states, page titles
 - [ ] Phase 5 — Budget page: month nav, summary, inline edit, move money
 - [ ] Phase 6 — Language, dates, accessibility, loading states
 

@@ -7,6 +7,19 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ workspaceId: string }>;
+}) {
+  const { workspaceId } = await params;
+  const user = await getCurrentUser();
+  if (!user) return {};
+  const ws = await getWorkspace(user.id, workspaceId).catch(() => null);
+  if (!ws) return {};
+  return { title: { template: `%s · ${ws.name} — Ledger`, default: ws.name } };
+}
+
 export default async function WorkspaceLayout({
   children,
   params,

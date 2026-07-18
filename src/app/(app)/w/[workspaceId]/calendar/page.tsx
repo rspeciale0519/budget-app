@@ -7,6 +7,8 @@ import { BillCalendarView } from "@/components/calendar/bill-calendar-view";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Calendar" };
+
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",

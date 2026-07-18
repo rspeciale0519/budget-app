@@ -9,6 +9,8 @@ import { MemberAccessManager, type MemberView } from "@/components/members/membe
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Members" };
+
 export default async function MembersPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");

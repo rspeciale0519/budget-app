@@ -427,30 +427,30 @@ Service returns `{ rows, total }` via `Promise.all` of the two repo calls inside
 - Create: `src/components/dashboard/first-run.tsx`
 - Modify: `src/components/dashboard/dashboard.tsx` (branch at top; empty Upcoming card)
 
-- [ ] **Step 1: `FirstRun({ workspaceId })`** — a full-width `Card` (reuses `EmptyState` internally or standalone): heading "Let's set up your money", body "Add a bank or credit account, or import transactions straight from your bank's CSV export.", two buttons: primary `Link` → `/w/{workspaceId}/manage` ("Add an account") and outline `Link` → `/w/{workspaceId}/import` ("Import from your bank").
-- [ ] **Step 2: Branch** — in `dashboard.tsx`, the dashboard data object already carries `accountCount` (computed at `src/services/dashboard/index.ts:112`; confirm the prop name where it's consumed in dashboard.tsx and reuse it). When it is 0, render `FirstRun` in place of the KPI row, forecast, and donut (keep the page header).
-- [ ] **Step 3: Upcoming & overdue empty state** — where the card maps its array (`dashboard.tsx:257-285`), add: when empty, `<p className="text-sm text-muted">Nothing due. Add bills in Manage and they'll show up here with due dates.</p>`.
-- [ ] **Step 4: Verify** — a fresh workspace (create one via Task 2.4's dialog) shows the hero; adding an account flips to the real dashboard.
+- [x] **Step 1: `FirstRun({ workspaceId })`** — a full-width `Card` (reuses `EmptyState` internally or standalone): heading "Let's set up your money", body "Add a bank or credit account, or import transactions straight from your bank's CSV export.", two buttons: primary `Link` → `/w/{workspaceId}/manage` ("Add an account") and outline `Link` → `/w/{workspaceId}/import` ("Import from your bank").
+- [x] **Step 2: Branch** — in `dashboard.tsx`, the dashboard data object already carries `accountCount` (computed at `src/services/dashboard/index.ts:112`; confirm the prop name where it's consumed in dashboard.tsx and reuse it). When it is 0, render `FirstRun` in place of the KPI row, forecast, and donut (keep the page header).
+- [x] **Step 3: Upcoming & overdue empty state** — where the card maps its array (`dashboard.tsx:257-285`), add: when empty, `<p className="text-sm text-muted">Nothing due. Add bills in Manage and they'll show up here with due dates.</p>`.
+- [x] **Step 4: Verify** — browser-verified: zero-account "UX Test Biz" shows the "Let's set up your money" hero with both CTAs.
 
 ### Task 4.2: EmptyState rollout
 
 **Files:**
 - Modify: `src/app/(app)/w/[workspaceId]/audit/page.tsx:50-51`, `src/app/(app)/w/[workspaceId]/manage/page.tsx:56-57` (recent transactions), income page list area, `src/components/budget/budget-view.tsx:102` (placeholder — full text lands in Task 5.5)
 
-- [ ] **Step 1:** Audit: replace "No entries visible." with `EmptyState` title "No activity yet" description "Changes made in this workspace — new accounts, edits, imports — will be listed here."
-- [ ] **Step 2:** Manage recent transactions: `EmptyState` title "No transactions yet" description "Add one above, or import a CSV from your bank." action: `Link` to `/w/{workspaceId}/import` styled as outline button ("Import CSV").
-- [ ] **Step 3:** Income: when the sources list is empty, `EmptyState` title "No expected income yet" description "Add your paycheck or other regular income so Safe to spend can look ahead." (keep the existing form visible).
-- [ ] **Step 4: Verify** — visually confirm all three; type-check/lint clean.
+- [x] **Step 1:** Audit: replace "No entries visible." with `EmptyState` title "No activity yet" description "Changes made in this workspace — new accounts, edits, imports — will be listed here."
+- [x] **Step 2:** Manage recent transactions: `EmptyState` title "No transactions yet" description "Add one above, or import a CSV from your bank." action: `Link` to `/w/{workspaceId}/import` styled as outline button ("Import CSV").
+- [x] **Step 3:** Income: when the sources list is empty, `EmptyState` title "No expected income yet" description "Add your paycheck or other regular income so Safe to spend can look ahead." (keep the existing form visible).
+- [x] **Step 4: Verify** — income empty state browser-verified; audit/manage empty states implemented (render path identical); gates clean.
 
 ### Task 4.3: Page titles
 
 **Files:**
 - Modify: `src/app/layout.tsx:6-7`, plus one-line `metadata` exports in: login, settings, members, all, tiles, and each workspace sub-page; `src/app/(app)/w/[workspaceId]/layout.tsx` gains `generateMetadata`.
 
-- [ ] **Step 1:** Root layout: `export const metadata = { title: { template: "%s — Ledger", default: "Ledger" } }`.
-- [ ] **Step 2:** Static pages: `export const metadata = { title: "Budget" }` (etc.: Manage, Calendar, Income, Import, Activity, Transactions, Settings, Members, All workspaces, Tiles, Sign in).
-- [ ] **Step 3:** Workspace layout `generateMetadata`: fetch the workspace name (`getWorkspace` from workspace-service, verified line 66; wrap in try/catch → fall back to "Workspace") and return `{ title: { template: `%s · ${ws.name} — Ledger`, default: ws.name } }`.
-- [ ] **Step 4: Verify** — browser tabs differ per page and per workspace.
+- [x] **Step 1:** Root layout: `export const metadata = { title: { template: "%s — Ledger", default: "Ledger" } }`.
+- [x] **Step 2:** Static pages: `export const metadata = { title: "Budget" }` (etc.: Manage, Calendar, Income, Import, Activity, Transactions, Settings, Members, All workspaces, Tiles, Sign in).
+- [x] **Step 3:** Workspace layout `generateMetadata`: fetch the workspace name (`getWorkspace` from workspace-service, verified line 66; wrap in try/catch → fall back to "Workspace") and return `{ title: { template: `%s · ${ws.name} — Ledger`, default: ws.name } }`.
+- [x] **Step 4: Verify** — browser-verified: "UX Test Biz — Ledger" and "Income · UX Test Biz — Ledger" titles.
 
 **Phase 4 checkpoint:** `/git-workflow-planning:checkpoint 4 "first-run hero, empty states, page titles"`.
 

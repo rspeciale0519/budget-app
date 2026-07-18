@@ -12,6 +12,8 @@ import { EmptyState } from "@/components/empty/empty-state";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Tiles" };
+
 export default async function TilesPage({
   searchParams,
 }: {

@@ -75,6 +75,7 @@ export interface DebtItem {
 }
 
 export interface DashboardData {
+  accountCount: number;
   kpis: DashboardKpis;
   matchSuggestions: MatchSuggestion[];
   safeToSpendMath: SafeToSpendMath;
@@ -90,6 +91,7 @@ export interface DashboardData {
 }
 
 export const mockDashboard: DashboardData = {
+  accountCount: 3,
   matchSuggestions: [],
   kpis: {
     totalBalance: "$48,210",

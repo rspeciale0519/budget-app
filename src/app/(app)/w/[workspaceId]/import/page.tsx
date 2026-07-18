@@ -7,6 +7,8 @@ import { ImportHistory } from "@/components/import/import-history";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Import" };
+
 export default async function ImportPage({
   params,
 }: {

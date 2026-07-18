@@ -6,6 +6,8 @@ import { fromDbDate } from "@/lib/calendar-date";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Income" };
+
 export default async function IncomePage({
   params,
 }: {

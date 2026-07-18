@@ -9,6 +9,7 @@ import { StatusTag } from "@/components/ui/status-tag";
 import { ForecastChart, type ForecastPoint } from "@/components/dashboard/forecast-chart";
 import { markBillPaidStandaloneAction } from "@/app/(app)/w/[workspaceId]/_actions";
 import { MatchSuggestions } from "@/components/match/match-suggestions";
+import { FirstRun } from "@/components/dashboard/first-run";
 import { useToast } from "@/components/ui/toast";
 import type { DashboardData } from "@/lib/mock/dashboard";
 
@@ -165,6 +166,10 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
     largeBill: Boolean(p.largeBill),
   }));
 
+  if (data.accountCount === 0 && workspaceId) {
+    return <FirstRun workspaceId={workspaceId} />;
+  }
+
   async function payBill(billId: string) {
     if (!workspaceId) return;
     setPaying(billId);
@@ -262,6 +267,11 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
               <CardTitle note="next 30 days">Upcoming &amp; overdue</CardTitle>
             </CardHeader>
             <CardContent className="py-1.5">
+              {data.bills.length === 0 && (
+                <p className="py-2 text-sm text-muted">
+                  Nothing due. Add bills in Manage and they&apos;ll show up here with due dates.
+                </p>
+              )}
               {data.bills.map((b, i) => (
                 <div
                   key={b.vendor}

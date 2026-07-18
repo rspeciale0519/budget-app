@@ -1,3 +1,5 @@
+export const metadata = { title: "Sign in" };
+
 import { LoginForm } from "@/components/auth/login-form";
 import { LoginBackdrop } from "@/components/login/login-backdrop";
 import { FieldError } from "@/components/ui/field";

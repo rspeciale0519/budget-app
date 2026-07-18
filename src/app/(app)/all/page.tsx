@@ -8,6 +8,8 @@ import { today as todayFn } from "@/lib/calendar-date";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "All workspaces" };
+
 function Money({ value }: { value: import("@/lib/money").Money }) {
   return <span className={`tabular ${isNegative(value) ? "text-debit" : ""}`}>{format(value)}</span>;
 }

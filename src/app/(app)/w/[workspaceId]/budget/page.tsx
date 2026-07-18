@@ -7,6 +7,8 @@ import { BudgetView } from "@/components/budget/budget-view";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Budget" };
+
 export default async function BudgetPage({
   params,
 }: {
