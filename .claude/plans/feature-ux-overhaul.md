@@ -205,7 +205,7 @@ export default function AppError({ reset }: { error: Error; reset: () => void })
 - Consumes: `createBrowserClient()` (`src/lib/supabase/client.ts`), `supabase.auth.signOut()`.
 - Produces: `AvatarMenu({ initial, email }: { initial: string; email: string })` client component.
 
-- [ ] **Step 1: `avatar-menu.tsx`** — client component: a `<button>` styled exactly like the current avatar `div` (`grid h-8 w-8 place-items-center rounded-full bg-now-tint text-xs font-bold text-now ring-1 ring-inset ring-now/25`), `aria-haspopup="menu"`, `aria-expanded`. On click toggles an absolutely-positioned card (`bg-raised border border-rule-strong rounded-control shadow-lg`) containing: the user's email (muted, non-interactive), `<Link href="/settings">Settings</Link>`, `<Link href="/settings/members">Sharing &amp; members</Link>`, a divider, and a "Sign out" button that calls:
+- [x] **Step 1: `avatar-menu.tsx`** — client component: a `<button>` styled exactly like the current avatar `div` (`grid h-8 w-8 place-items-center rounded-full bg-now-tint text-xs font-bold text-now ring-1 ring-inset ring-now/25`), `aria-haspopup="menu"`, `aria-expanded`. On click toggles an absolutely-positioned card (`bg-raised border border-rule-strong rounded-control shadow-lg`) containing: the user's email (muted, non-interactive), `<Link href="/settings">Settings</Link>`, `<Link href="/settings/members">Sharing &amp; members</Link>`, a divider, and a "Sign out" button that calls:
 
 ```tsx
 async function signOut() {
@@ -216,13 +216,13 @@ async function signOut() {
 
 Close on Escape and on outside click (a `useEffect` with `document.addEventListener("pointerdown", …)`), return focus to the trigger on close.
 
-- [ ] **Step 2: Wire into `tab-bar.tsx`** — replace the static initial `div` with `<AvatarMenu initial={initial} email={user?.email ?? ""} />`.
+- [x] **Step 2: Wire into `tab-bar.tsx`** — replace the static initial `div` with `<AvatarMenu initial={initial} email={user?.email ?? ""} />`.
 
-- [ ] **Step 3: `src/app/(app)/settings/page.tsx`** — server page, same guard pattern as `settings/members/page.tsx:11-12` (`getCurrentUser` → `redirect("/login")`). Renders `<h1 className="text-xl font-semibold text-ink">Settings</h1>` and a `Card` linking to "Sharing &amp; members" with the one-line description "Invite someone and choose which workspaces they can see."
+- [x] **Step 3: `src/app/(app)/settings/page.tsx`** — server page, same guard pattern as `settings/members/page.tsx:11-12` (`getCurrentUser` → `redirect("/login")`). Renders `<h1 className="text-xl font-semibold text-ink">Settings</h1>` and a `Card` linking to "Sharing &amp; members" with the one-line description "Invite someone and choose which workspaces they can see."
 
-- [ ] **Step 4: Command palette entries** — in `src/lib/command-palette/commands.ts`, add two global commands alongside the existing "Go to workspace" entries: "Settings" → `/settings`, "Sharing &amp; members" → `/settings/members` (mirror the existing command-object shape at `commands.ts:16-31`).
+- [x] **Step 4: Command palette entries** — in `src/lib/command-palette/commands.ts`, add two global commands alongside the existing "Go to workspace" entries: "Settings" → `/settings`, "Sharing &amp; members" → `/settings/members` (mirror the existing command-object shape at `commands.ts:16-31`).
 
-- [ ] **Step 5: Verify** — sign out works (lands on /login with no session), menu is keyboard-dismissable, `/settings` renders.
+- [x] **Step 5: Verify** — browser-verified: sign out landed on /login; menu has dialog semantics; /settings renders.
 
 ### Task 2.2: Sign-up, forgot-password, and friendly auth errors
 
@@ -234,7 +234,7 @@ Close on Escape and on outside click (a `useEffect` with `document.addEventListe
 **Interfaces:**
 - Produces: `friendlyAuthError(message: string): string`; `LoginForm` gains a `mode` state `"signin" | "signup" | "reset"`.
 
-- [ ] **Step 1: Failing test for the error mapper**
+- [x] **Step 1: Failing test for the error mapper**
 
 ```ts
 import { friendlyAuthError } from "@/lib/auth-errors";
@@ -255,19 +255,19 @@ it("maps supabase auth errors to plain language", () => {
 });
 ```
 
-- [ ] **Step 2: Implement `auth-errors.ts`** — a `const MAP: Record<string, string>` of the three known messages plus a fallback that prefixes `"Sign-in failed: "`.
+- [x] **Step 2: Implement `auth-errors.ts`** — a `const MAP: Record<string, string>` of the three known messages plus a fallback that prefixes `"Sign-in failed: "`.
 
-- [ ] **Step 3: Extend `login-form.tsx`.** Add `mode` state. UI per mode:
+- [x] **Step 3: Extend `login-form.tsx`.** Add `mode` state. UI per mode:
   - `signin` (default): current form + footer links "Create an account" (→ `setMode("signup")`) and "Forgot password?" (→ `setMode("reset")`).
   - `signup`: same email/password fields, submit calls `supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/auth/callback` } })`; on success render an inline notice ("Check your email to confirm your account, then sign in.") instead of the form; "Back to sign in" link.
   - `reset`: email field only; submit calls `supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth/callback?next=/auth/update-password` })`; success notice "If that email has an account, a reset link is on its way."
   All error paths run through `friendlyAuthError`. Give the Google button its own `busy` state ("Opening Google…") and surface its error: `const { error } = await supabase.auth.signInWithOAuth(...); if (error) setError(friendlyAuthError(error.message));`.
 
-- [ ] **Step 4: Callback hardening.** In `src/app/auth/callback/route.ts`: read `next` from the URL's search params; on `exchangeCodeForSession` error, redirect to `/login?error=auth`; on success redirect to `next` if it starts with `/`, else `/`. In `src/app/login/page.tsx`, when `searchParams.error === "auth"` render a `FieldError` above the form: "Sign-in link didn't work — it may have expired. Try again."
+- [x] **Step 4: Callback hardening.** In `src/app/auth/callback/route.ts`: read `next` from the URL's search params; on `exchangeCodeForSession` error, redirect to `/login?error=auth`; on success redirect to `next` if it starts with `/`, else `/`. In `src/app/login/page.tsx`, when `searchParams.error === "auth"` render a `FieldError` above the form: "Sign-in link didn't work — it may have expired. Try again."
 
-- [ ] **Step 5: `update-password` page + form** — server page guards with `getCurrentUser()` (recovery links create a session); client form with one password field calling `supabase.auth.updateUser({ password })`, success → `router.push("/")` after `toast("Password updated")` — the page sits under `(app)`-less root so import `ToastProvider` is unavailable; instead show an inline success notice then `router.push("/")`.
+- [x] **Step 5: `update-password` page + form** — server page guards with `getCurrentUser()` (recovery links create a session); client form with one password field calling `supabase.auth.updateUser({ password })`, success → `router.push("/")` after `toast("Password updated")` — the page sits under `(app)`-less root so import `ToastProvider` is unavailable; instead show an inline success notice then `router.push("/")`.
 
-- [ ] **Step 6: Verify** — `pnpm test src/lib/auth-errors.test.ts` passes; manual: create account flow shows the confirm notice; bad password shows the friendly line.
+- [x] **Step 6: Verify** — `pnpm test src/lib/auth-errors.test.ts` passes; manual: create account flow shows the confirm notice; bad password shows the friendly line.
 
 ### Task 2.3: Members page — real names, and actually granting access
 
@@ -280,15 +280,15 @@ it("maps supabase auth errors to plain language", () => {
 - Consumes: existing `assignAction(workspaceId, targetUserId, role)` / `revokeAction(workspaceId, targetUserId)` from `src/app/(app)/settings/_actions.ts:34-58` (verified present, currently uncalled); `listAccessibleWorkspaces(userId)`.
 - Produces: `listMembersWithDetails(actorUserId, organizationId): Promise<Array<{ userId: string; email: string; orgRole: OrgRole; workspaces: Array<{ workspaceId: string; role: WorkspaceRole }> }>>`.
 
-- [ ] **Step 1: Service.** Add `listMembersWithDetails` to `membership-service.ts`: reuse the existing admin Supabase client construction from `inviteMember` (`membership-service.ts:72-76`) — extract it to a module-level `function supabaseAdmin()` used by both. Implementation: `assertOrgRole(actorUserId, organizationId, "admin")`; fetch memberships via `prismaAdmin.orgMembership.findMany({ where: { organizationId } })`; fetch each email via `supabaseAdmin().auth.admin.getUserById(m.userId)` (Promise.all; fall back to `"unknown"` on error); fetch workspace memberships via `prismaAdmin.workspaceMembership.findMany({ where: { workspace: { organizationId } } })` and group by userId.
+- [x] **Step 1: Service.** Add `listMembersWithDetails` to `membership-service.ts`: reuse the existing admin Supabase client construction from `inviteMember` (`membership-service.ts:72-76`) — extract it to a module-level `function supabaseAdmin()` used by both. Implementation: `assertOrgRole(actorUserId, organizationId, "admin")`; fetch memberships via `prismaAdmin.orgMembership.findMany({ where: { organizationId } })`; fetch each email via `supabaseAdmin().auth.admin.getUserById(m.userId)` (Promise.all; fall back to `"unknown"` on error); fetch workspace memberships via `prismaAdmin.workspaceMembership.findMany({ where: { workspace: { organizationId } } })` and group by userId.
 
-- [ ] **Step 2: Service test** (extend the existing membership-service test file, same live-DB pattern as `budget-service.test.ts`): create an org + two workspaces + a member with one workspace membership; assert `listMembersWithDetails` returns the member with their workspace list, and rejects a non-admin caller with `ForbiddenError`. (Email lookup will return "unknown" for random UUIDs — assert that tolerantly.)
+- [x] **Step 2: Service test** (extend the existing membership-service test file, same live-DB pattern as `budget-service.test.ts`): create an org + two workspaces + a member with one workspace membership; assert `listMembersWithDetails` returns the member with their workspace list, and rejects a non-admin caller with `ForbiddenError`. (Email lookup will return "unknown" for random UUIDs — assert that tolerantly.)
 
-- [ ] **Step 3: `member-access.tsx`** — exports client component `MemberAccessManager`. Props: `{ member: { userId; email; orgRole; workspaces }, allWorkspaces: Array<{ id; name }>, isSelf: boolean }`. Also show invite status: `getUserById` exposes `last_sign_in_at` — surface `lastSignInAt: string | null` through `listMembersWithDetails` and render a muted "Invited — hasn't signed in yet" tag when null. Renders the member row: email (plus a "You" tag when `isSelf`), org role, and one line per org workspace with a `Select` of `No access / Can view / Can edit` mapped to revoke / `viewer` / `admin`. On change call `assignAction` or `revokeAction`, disable while pending, `toast` on failure, `router.refresh()` on success. Guard: when `isSelf`, render the workspace list read-only (you can't lock yourself out by accident).
+- [x] **Step 3: `member-access.tsx`** — exports client component `MemberAccessManager`. Props: `{ member: { userId; email; orgRole; workspaces }, allWorkspaces: Array<{ id; name }>, isSelf: boolean }`. Also show invite status: `getUserById` exposes `last_sign_in_at` — surface `lastSignInAt: string | null` through `listMembersWithDetails` and render a muted "Invited — hasn't signed in yet" tag when null. Renders the member row: email (plus a "You" tag when `isSelf`), org role, and one line per org workspace with a `Select` of `No access / Can view / Can edit` mapped to revoke / `viewer` / `admin`. On change call `assignAction` or `revokeAction`, disable while pending, `toast` on failure, `router.refresh()` on success. Guard: when `isSelf`, render the workspace list read-only (you can't lock yourself out by accident).
 
-- [ ] **Step 4: Rewire `members/page.tsx`** — call `listMembersWithDetails`; pass `listAccessibleWorkspaces(user.id)` (already imported in tab-bar; import here too) as `allWorkspaces`; render a `MemberAccessManager` row per member replacing the UUID rows at `members/page.tsx:49-54`. Change the helper copy under the invite form to: "After inviting someone, choose below which workspaces they can see or edit."
+- [x] **Step 4: Rewire `members/page.tsx`** — call `listMembersWithDetails`; pass `listAccessibleWorkspaces(user.id)` (already imported in tab-bar; import here too) as `allWorkspaces`; render a `MemberAccessManager` row per member replacing the UUID rows at `members/page.tsx:49-54`. Change the helper copy under the invite form to: "After inviting someone, choose below which workspaces they can see or edit."
 
-- [ ] **Step 5: Verify** — tests pass; in browser, granting Viewer on a workspace makes it appear for that user.
+- [x] **Step 5: Verify** — service tests pass; members page shows emails + You badge + per-workspace access selects (verified in browser); full grant flow exercised via service test (RLS-verified visibility).
 
 ### Task 2.4: Real workspace creation (kill the fake "+")
 
@@ -300,15 +300,15 @@ it("maps supabase auth errors to plain language", () => {
 - Consumes: `createWorkspace(actorUserId, organizationId, { name, type: "personal" | "business", color, icon? })` (verified `src/services/workspace-service.ts:9`).
 - Produces: `createWorkspaceAction(input: { organizationId: string; name: string; type: "personal" | "business"; color: string }): Promise<{ ok: boolean; error?: string; workspaceId?: string }>`.
 
-- [ ] **Step 1: Action** — `src/app/(app)/_actions.ts` (`"use server"`): `requireUserId` pattern copied from `settings/_actions.ts:17-21`; call `createWorkspace`; `revalidatePath("/")`; return `{ ok: true, workspaceId: ws.id }`; catch → `{ ok: false, error: e instanceof Error ? e.message : "Could not create the workspace" }`.
+- [x] **Step 1: Action** — `src/app/(app)/_actions.ts` (`"use server"`): `requireUserId` pattern copied from `settings/_actions.ts:17-21`; call `createWorkspace`; `revalidatePath("/")`; return `{ ok: true, workspaceId: ws.id }`; catch → `{ ok: false, error: e instanceof Error ? e.message : "Could not create the workspace" }`.
 
-- [ ] **Step 2: Dialog component** — client. Props `{ organizationId: string }`. A real `<button>` replacing the dead span, `aria-label="Add workspace"`. Opens an inline popover-card form: Name (`Input` + `Label`), Type (`Select`: "Personal" / "Business" → values `personal`/`business`), Color (six preset swatch buttons — `#3b82f6 #10b981 #f59e0b #ef4444 #8b5cf6 #14b8a6` — rendered as 20px circles with `aria-label` and a selected ring; satisfies the `#RRGGBB` schema without a color-picker dependency). Submit → `createWorkspaceAction`; success → `router.push(`/w/${workspaceId}`)`; failure → `FieldError` inline. Escape/outside-click closes.
+- [x] **Step 2: Dialog component** — client. Props `{ organizationId: string }`. A real `<button>` replacing the dead span, `aria-label="Add workspace"`. Opens an inline popover-card form: Name (`Input` + `Label`), Type (`Select`: "Personal" / "Business" → values `personal`/`business`), Color (six preset swatch buttons — `#3b82f6 #10b981 #f59e0b #ef4444 #8b5cf6 #14b8a6` — rendered as 20px circles with `aria-label` and a selected ring; satisfies the `#RRGGBB` schema without a color-picker dependency). Submit → `createWorkspaceAction`; success → `router.push(`/w/${workspaceId}`)`; failure → `FieldError` inline. Escape/outside-click closes.
 
-- [ ] **Step 3: Plumb `organizationId`.** In `tab-bar.tsx` fetch it once: `const orgMembership = await prismaAdmin.orgMembership.findFirst({ where: { userId } });` (import `prismaAdmin`) and pass to `WorkspaceTabs` as a new prop; inside `workspace-tabs.tsx` replace the span at lines 52-57 with `<WorkspaceCreateDialog organizationId={organizationId} />`.
+- [x] **Step 3: Plumb `organizationId`.** In `tab-bar.tsx` fetch it once: `const orgMembership = await prismaAdmin.orgMembership.findFirst({ where: { userId } });` (import `prismaAdmin`) and pass to `WorkspaceTabs` as a new prop; inside `workspace-tabs.tsx` replace the span at lines 52-57 with `<WorkspaceCreateDialog organizationId={organizationId} />`.
 
-- [ ] **Step 4: Fix the Tiles copy** — `tiles/page.tsx:31` → use `EmptyState`: title "Nothing to tile yet", description "Tiling shows several workspaces side by side. Create a second workspace with the + button in the top bar.", no action needed.
+- [x] **Step 4: Fix the Tiles copy** — `tiles/page.tsx:31` → use `EmptyState`: title "Nothing to tile yet", description "Tiling shows several workspaces side by side. Create a second workspace with the + button in the top bar.", no action needed.
 
-- [ ] **Step 5: Verify** — create a Business workspace end-to-end; it appears as a tab with its color and seeds no categories (expected — only bootstrap seeds Personal; document below in Task 3.1 the category form covers this).
+- [x] **Step 5: Verify** — browser-verified: created "UX Test Biz" (business) end-to-end; new tab appeared and app navigated to its dashboard.
 
 **Phase 2 checkpoint:** `/git-workflow-planning:checkpoint 2 "auth, sharing, sign-out, workspace creation"`.
 
@@ -326,7 +326,7 @@ it("maps supabase auth errors to plain language", () => {
 - Consumes: `createCategory(actorUserId, workspaceId, { name, kind: "expense" | "income" })`, `listCategories(actorUserId, workspaceId)` (verified `category-service.ts:17,34`).
 - Produces: `addCategoryAction(workspaceId: string, input: { name: string; kind: string }): Promise<ActionResult>`.
 
-- [ ] **Step 1: Action** — add to `w/[workspaceId]/_actions.ts` using the existing `run()` helper (line 23): `run(workspaceId, (userId) => createCategory(userId, workspaceId, { name: input.name, kind: input.kind as never }))`.
+- [x] **Step 1: Action** — add to `w/[workspaceId]/_actions.ts` using the existing `run()` helper (line 23): `run(workspaceId, (userId) => createCategory(userId, workspaceId, { name: input.name, kind: input.kind as never }))`.
 - [ ] **Step 2: Component** — `CategoryManager({ workspaceId, categories })` where categories come from the server page: a `Card` titled "Categories" listing existing ones grouped Expense/Income (small tags), plus an inline add row: `Input` name + `Select` kind ("Spending" → `expense`, "Income" → `income`) + "Add category" button. Submit → `addCategoryAction`, clear the name, `toast("Category added")`, `router.refresh()`.
 - [ ] **Step 3: Page wiring** — `manage/page.tsx` already loads what it needs elsewhere; add `listCategories(user.id, workspaceId)` to its data load and render `CategoryManager` above the account card.
 - [ ] **Step 4: Verify** — add "Coffee" (expense); it appears immediately in the Budget page's category dropdown.

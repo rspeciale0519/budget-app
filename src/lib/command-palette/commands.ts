@@ -1,4 +1,4 @@
-export type CommandGroup = "Quick actions" | "Go to workspace";
+export type CommandGroup = "Quick actions" | "Go to workspace" | "Settings";
 
 export interface Command {
   id: string;
@@ -27,6 +27,10 @@ export function buildCommands(ctx: PaletteCtx): Command[] {
   for (const w of ctx.workspaces) {
     commands.push({ id: `go-${w.id}`, label: `Go to ${w.name}`, icon: "🗂️", group: "Go to workspace", href: `/w/${w.id}` });
   }
+  commands.push(
+    { id: "settings", label: "Settings", icon: "⚙️", group: "Settings", href: "/settings" },
+    { id: "members", label: "Sharing & members", icon: "👥", group: "Settings", href: "/settings/members" },
+  );
   return commands;
 }
 

@@ -8,6 +8,7 @@ import { defaultLayout, collectWorkspaceIds } from "@/lib/pane-tree";
 import { today as todayFn } from "@/lib/calendar-date";
 import type { PaneConfig } from "@/lib/zod/layout";
 import { TilesClient } from "@/components/tiling/tiles-client";
+import { EmptyState } from "@/components/empty/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,10 @@ export default async function TilesPage({
     return (
       <div className="space-y-4">
         <h1 className="my-[22px] text-xl font-bold text-ink">Tiles</h1>
-        <p className="text-sm text-muted">Create a workspace to start tiling.</p>
+        <EmptyState
+          title="Nothing to tile yet"
+          description="Tiling shows several workspaces side by side. Create a second workspace with the + button in the top bar."
+        />
       </div>
     );
   }

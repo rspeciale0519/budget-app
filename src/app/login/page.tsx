@@ -1,7 +1,13 @@
 import { LoginForm } from "@/components/auth/login-form";
 import { LoginBackdrop } from "@/components/login/login-backdrop";
+import { FieldError } from "@/components/ui/field";
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-16">
       <LoginBackdrop />
@@ -21,6 +27,11 @@ export default function LoginPage() {
         </div>
 
         <div className="rounded-card border border-rule-strong bg-surface/90 p-5 shadow-overlay backdrop-blur-sm">
+          {error === "auth" && (
+            <div className="mb-3">
+              <FieldError>Sign-in link didn&apos;t work — it may have expired. Try again.</FieldError>
+            </div>
+          )}
           <LoginForm />
         </div>
       </div>

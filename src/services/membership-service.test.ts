@@ -7,6 +7,7 @@ import {
   assignWorkspaceMembership,
   revokeWorkspaceMembership,
   listMembers,
+  listMembersWithDetails,
 } from "@/services/membership-service";
 import { ForbiddenError } from "@/services/authz";
 
@@ -59,5 +60,27 @@ describe("membership-service", () => {
     await expect(listMembers(teammate, org.id)).rejects.toBeInstanceOf(ForbiddenError);
     const members = await listMembers(owner, org.id);
     expect(members.some((m) => m.userId === owner && m.role === "owner")).toBe(true);
+  });
+
+  it("listMembersWithDetails returns workspace access per member and rejects non-admins", async () => {
+    const org = await bootstrapOrgForUser(owner);
+    const business = await prismaAdmin.workspace.create({
+      data: { organizationId: org.id, name: "Details Co", type: "business", color: "#10b981" },
+    });
+    await prismaAdmin.orgMembership.upsert({
+      where: { organizationId_userId: { organizationId: org.id, userId: teammate } },
+      update: { role: "member" },
+      create: { organizationId: org.id, userId: teammate, role: "member" },
+    });
+    await assignWorkspaceMembership(owner, { userId: teammate, workspaceId: business.id, role: "viewer" });
+
+    const details = await listMembersWithDetails(owner, org.id);
+    const mate = details.find((d) => d.userId === teammate);
+    expect(mate).toBeDefined();
+    // Random UUIDs have no auth user; the email lookup must degrade, not throw.
+    expect(typeof mate!.email).toBe("string");
+    expect(mate!.workspaces.some((w) => w.workspaceId === business.id && w.role === "viewer")).toBe(true);
+
+    await expect(listMembersWithDetails(teammate, org.id)).rejects.toBeInstanceOf(ForbiddenError);
   });
 });

@@ -4,6 +4,22 @@ import { prismaAdmin } from "@/lib/prisma-admin";
 import { assertOrgRole } from "@/services/authz";
 import { seedDefaultCategories } from "@/services/category-service";
 
+function supabaseAdmin() {
+  return createClient(
+    process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  );
+}
+
+export interface MemberDetails {
+  userId: string;
+  email: string;
+  orgRole: OrgRole;
+  lastSignInAt: string | null;
+  workspaces: { workspaceId: string; role: WorkspaceRole }[];
+}
+
 /**
  * Idempotent first-run: ensure the user has an org. If they already belong to
  * one, return it; otherwise create an Organization, make them owner, and give
@@ -33,6 +49,44 @@ export async function bootstrapOrgForUser(userId: string): Promise<Organization>
 export async function listMembers(actorUserId: string, organizationId: string) {
   await assertOrgRole(actorUserId, organizationId, "admin");
   return prismaAdmin.orgMembership.findMany({ where: { organizationId }, orderBy: { createdAt: "asc" } });
+}
+
+/** Members with resolved emails and per-workspace access, for the sharing UI. */
+export async function listMembersWithDetails(
+  actorUserId: string,
+  organizationId: string,
+): Promise<MemberDetails[]> {
+  await assertOrgRole(actorUserId, organizationId, "admin");
+  const memberships = await prismaAdmin.orgMembership.findMany({
+    where: { organizationId },
+    orderBy: { createdAt: "asc" },
+  });
+  const wsMemberships = await prismaAdmin.workspaceMembership.findMany({
+    where: { workspace: { organizationId } },
+  });
+  const admin = supabaseAdmin();
+  return Promise.all(
+    memberships.map(async (m) => {
+      let email = "unknown";
+      let lastSignInAt: string | null = null;
+      try {
+        const { data } = await admin.auth.admin.getUserById(m.userId);
+        email = data.user?.email ?? "unknown";
+        lastSignInAt = data.user?.last_sign_in_at ?? null;
+      } catch {
+        // Auth lookup failing shouldn't hide the membership row.
+      }
+      return {
+        userId: m.userId,
+        email,
+        orgRole: m.role,
+        lastSignInAt,
+        workspaces: wsMemberships
+          .filter((w) => w.userId === m.userId)
+          .map((w) => ({ workspaceId: w.workspaceId, role: w.role })),
+      };
+    }),
+  );
 }
 
 export async function assignWorkspaceMembership(
@@ -69,11 +123,7 @@ export async function inviteMember(
   orgRole: OrgRole = "member",
 ): Promise<string> {
   await assertOrgRole(actorUserId, organizationId, "admin");
-  const admin = createClient(
-    process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
+  const admin = supabaseAdmin();
   const { data, error } = await admin.auth.admin.inviteUserByEmail(email);
   if (error || !data.user) throw new Error(error?.message ?? "Invite failed");
   await prismaAdmin.orgMembership.upsert({

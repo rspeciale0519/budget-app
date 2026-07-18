@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { listAccessibleWorkspaces } from "@/services/authz";
+import { prismaAdmin } from "@/lib/prisma-admin";
 import { createServerClient } from "@/lib/supabase/server";
 import { WorkspaceTabs } from "@/components/workspace/workspace-tabs";
 import { ThemeToggle } from "@/components/chrome/theme-toggle";
+import { AvatarMenu } from "@/components/chrome/avatar-menu";
 
 export async function TabBar({ userId }: { userId: string }) {
   const workspaces = await listAccessibleWorkspaces(userId);
+  const orgMembership = await prismaAdmin.orgMembership.findFirst({
+    where: { userId, role: { in: ["owner", "admin"] } },
+  });
   const supabase = await createServerClient();
   const {
     data: { user },
@@ -29,6 +34,7 @@ export async function TabBar({ userId }: { userId: string }) {
             color: w.color,
             icon: w.icon,
           }))}
+          organizationId={orgMembership?.organizationId ?? null}
         />
 
         <div className="ml-auto flex items-center gap-2">
@@ -55,9 +61,7 @@ export async function TabBar({ userId }: { userId: string }) {
             ⌄ Layouts
           </Link>
           <ThemeToggle />
-          <div className="grid h-8 w-8 place-items-center rounded-full bg-now-tint text-xs font-bold text-now ring-1 ring-inset ring-now/25">
-            {initial}
-          </div>
+          <AvatarMenu initial={initial} email={user?.email ?? ""} />
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { WorkspaceCreateDialog } from "@/components/workspace/workspace-create-dialog";
 
 export interface TabWorkspace {
   id: string;
@@ -11,7 +12,13 @@ export interface TabWorkspace {
   icon: string | null;
 }
 
-export function WorkspaceTabs({ workspaces }: { workspaces: TabWorkspace[] }) {
+export function WorkspaceTabs({
+  workspaces,
+  organizationId,
+}: {
+  workspaces: TabWorkspace[];
+  organizationId: string | null;
+}) {
   const pathname = usePathname();
   const activeId = pathname.startsWith("/w/") ? pathname.split("/")[2] : null;
   const allActive = pathname.startsWith("/all");
@@ -49,12 +56,7 @@ export function WorkspaceTabs({ workspaces }: { workspaces: TabWorkspace[] }) {
         );
       })}
 
-      <span
-        className="cursor-default whitespace-nowrap rounded-control px-2 py-2 text-[15px] font-semibold text-dim"
-        title="Add workspace (coming soon)"
-      >
-        ＋
-      </span>
+      {organizationId && <WorkspaceCreateDialog organizationId={organizationId} />}
 
       <Link
         href="/all"

@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { prismaAdmin } from "@/lib/prisma-admin";
-import { listMembers } from "@/services/membership-service";
+import { listMembersWithDetails } from "@/services/membership-service";
+import { listAccessibleWorkspaces } from "@/services/authz";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InviteForm } from "@/components/members/invite-form";
+import { MemberAccessManager, type MemberView } from "@/components/members/member-access";
 
 export const dynamic = "force-dynamic";
 
@@ -14,16 +16,16 @@ export default async function MembersPage() {
   const orgMembership = await prismaAdmin.orgMembership.findFirst({ where: { userId: user.id } });
   if (!orgMembership) redirect("/");
 
-  let members: { userId: string; role: string }[] = [];
+  let members: MemberView[] = [];
   let canManage = true;
   try {
-    members = (await listMembers(user.id, orgMembership.organizationId)).map((m) => ({
-      userId: m.userId,
-      role: m.role,
-    }));
+    members = await listMembersWithDetails(user.id, orgMembership.organizationId);
   } catch {
     canManage = false;
   }
+  const workspaces = (await listAccessibleWorkspaces(user.id))
+    .filter((w) => w.organizationId === orgMembership.organizationId)
+    .map((w) => ({ id: w.id, name: w.name }));
 
   return (
     <div className="space-y-4">
@@ -37,26 +39,28 @@ export default async function MembersPage() {
             <CardContent>
               <InviteForm organizationId={orgMembership.organizationId} />
               <p className="mt-2 text-xs text-dim">
-                Invited teammates get no access until you grant them a workspace.
+                After inviting someone, choose below which workspaces they can see or edit.
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Organization members</CardTitle>
+              <CardTitle>People</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-1 text-sm">
+            <CardContent>
               {members.map((m) => (
-                <div key={m.userId} className="flex justify-between border-b border-rule py-1">
-                  <span className="font-mono text-xs text-muted">{m.userId}</span>
-                  <span className="text-ink/85">{m.role}</span>
-                </div>
+                <MemberAccessManager
+                  key={m.userId}
+                  member={m}
+                  allWorkspaces={workspaces}
+                  isSelf={m.userId === user.id}
+                />
               ))}
             </CardContent>
           </Card>
         </>
       ) : (
-        <p className="text-sm text-muted">Only an organization owner or admin can manage members.</p>
+        <p className="text-sm text-muted">Only an owner or admin can manage members.</p>
       )}
     </div>
   );
