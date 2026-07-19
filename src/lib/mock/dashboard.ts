@@ -77,6 +77,7 @@ export interface DebtItem {
 export interface DashboardData {
   accountCount: number;
   periodLabel: string;
+  overspentCount: number;
   kpis: DashboardKpis;
   matchSuggestions: MatchSuggestion[];
   safeToSpendMath: SafeToSpendMath;
@@ -94,6 +95,7 @@ export interface DashboardData {
 export const mockDashboard: DashboardData = {
   accountCount: 3,
   periodLabel: "this month",
+  overspentCount: 0,
   matchSuggestions: [],
   kpis: {
     totalBalance: "$48,210",

@@ -143,12 +143,19 @@ export interface CommitInput {
   rows: PreviewRow[];
 }
 
-export async function commitImport(actorUserId: string, input: CommitInput): Promise<ImportBatch> {
+export interface CommitResult {
+  batch: ImportBatch;
+  /** How many committed rows arrived already categorized (by a rule). */
+  categorizedCount: number;
+}
+
+export async function commitImport(actorUserId: string, input: CommitInput): Promise<CommitResult> {
   const account = await rlsClientFor(actorUserId).run((tx) => tx.account.findUnique({ where: { id: input.accountId } }));
   if (!account) throw new ForbiddenError("Account not found or access denied");
   await assertWorkspaceAccess(actorUserId, account.workspaceId, "admin");
 
   const committable = input.rows.filter((r) => !r.skip && r.errors.length === 0 && r.parsed);
+  const categorizedCount = committable.filter((r) => r.proposedCategoryId).length;
 
   return rlsClientFor(actorUserId).run(async (tx) => {
     const batch = await repo.insertBatch(tx, {
@@ -187,7 +194,7 @@ export async function commitImport(actorUserId: string, input: CommitInput): Pro
         }),
       );
     }
-    return batch;
+    return { batch, categorizedCount };
   });
 }
 

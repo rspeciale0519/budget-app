@@ -46,16 +46,21 @@ export function LayoutControls({
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const children = rootChildren(config);
   const direction = config.type === "split" ? config.direction : "row";
-  const firstWs = workspaces[0]?.id ?? "";
+  // Add the first book that isn't already on screen (falling back to the first
+  // book if every one is shown), instead of always duplicating book #1.
+  const shownIds = new Set(
+    children.flatMap((c) => (c.type === "leaf" ? [c.workspaceId] : [])),
+  );
+  const nextToAdd = workspaces.find((w) => !shownIds.has(w.id))?.id ?? workspaces[0]?.id ?? "";
 
   return (
     <Card className="space-y-3 p-3">
       <div className="flex flex-wrap items-center gap-2">
-        <span className={EYEBROW}>Panes</span>
+        <span className={EYEBROW}>Books shown</span>
         {children.map((child, i) => (
           <div key={i} className="flex items-center gap-1">
             <Select
-              aria-label={`Pane ${i + 1} book`}
+              aria-label={`Book ${i + 1}`}
               className="h-8 w-auto min-w-[8rem] text-xs"
               value={child.type === "leaf" ? child.workspaceId : ""}
               disabled={busy}
@@ -72,17 +77,17 @@ export function LayoutControls({
               size="sm"
               disabled={busy || children.length <= 1}
               onClick={() => onRemovePane(i)}
-              title="Remove pane"
+              title="Remove book"
             >
               ✕
             </Button>
           </div>
         ))}
-        <Button variant="outline" size="sm" disabled={busy || !firstWs} onClick={() => onAddPane(firstWs)}>
-          + Add pane
+        <Button variant="outline" size="sm" disabled={busy || !nextToAdd} onClick={() => onAddPane(nextToAdd)}>
+          + Add a book
         </Button>
         <Button variant="outline" size="sm" disabled={busy} onClick={onToggleDirection}>
-          {direction === "row" ? "⬍ Stack as column" : "⬌ Arrange as row"}
+          {direction === "row" ? "⬍ Stack" : "⬌ Side by side"}
         </Button>
       </div>
 
@@ -107,7 +112,7 @@ export function LayoutControls({
           Save layout
         </Button>
 
-        <span className={`ml-2 ${EYEBROW}`}>Restore</span>
+        <span className={`ml-2 ${EYEBROW}`}>Open</span>
         <Select
           aria-label="Saved layouts"
           className="h-8 w-auto min-w-[9rem] text-xs"
@@ -128,7 +133,7 @@ export function LayoutControls({
           disabled={busy || restoreId === ""}
           onClick={() => onRestore(restoreId)}
         >
-          Restore
+          Open
         </Button>
         <Button
           variant={confirmingDelete ? "danger" : "ghost"}

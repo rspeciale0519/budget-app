@@ -2,7 +2,7 @@ import { rlsClientFor } from "@/lib/prisma-rls";
 import { assertWorkspaceAccess } from "@/services/authz";
 import { monthGrid } from "@/lib/month-grid";
 import { addDays, compare, fromDbDate, toUtcDate, type CalendarDate } from "@/lib/calendar-date";
-import { money, format } from "@/lib/money";
+import { money, add, sub, format } from "@/lib/money";
 import { billDisplayStatus, type BillDisplayStatus } from "@/services/bills/bill-status";
 
 export type DayStatus = BillDisplayStatus;
@@ -22,10 +22,19 @@ export interface CalendarDay {
   events: CalendarEvent[];
 }
 
+export interface CalendarSummary {
+  /** Whether the viewed month has any bills at all. */
+  hasBills: boolean;
+  total: string;
+  paid: string;
+  unpaid: string;
+}
+
 export interface CalendarMonth {
   year: number;
   month: number;
   weeks: CalendarDay[][];
+  summary: CalendarSummary;
 }
 
 export async function billCalendar(
@@ -76,5 +85,30 @@ export async function billCalendar(
     })),
   );
 
-  return { year, month, weeks };
+  // Totals cover ONLY bills due in the viewed month — the grid also carries a few
+  // leading/trailing days of the neighboring months, which must not be summed in.
+  const summary = summarize(weeks, month);
+
+  return { year, month, weeks, summary };
+}
+
+function summarize(weeks: CalendarDay[][], month: number): CalendarSummary {
+  let total = money(0);
+  let paid = money(0);
+  let count = 0;
+  for (const day of weeks.flat()) {
+    if (Number(day.date.split("-")[1]) !== month) continue;
+    for (const e of day.events) {
+      count += 1;
+      const amt = money(e.amount.replace(/[$,]/g, ""));
+      total = add(total, amt);
+      if (e.status === "paid") paid = add(paid, amt);
+    }
+  }
+  return {
+    hasBills: count > 0,
+    total: format(total),
+    paid: format(paid),
+    unpaid: format(sub(total, paid)),
+  };
 }

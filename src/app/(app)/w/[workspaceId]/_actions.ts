@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/supabase/server";
 import type { Frequency } from "@prisma/client";
 import { createTransaction } from "@/services/transaction-service";
-import { createBill, markPaid, markPaidStandalone } from "@/services/bill-service";
+import { createBill, markPaid, markPaidStandalone, markUnpaid } from "@/services/bill-service";
 import { createAccount } from "@/services/account-service";
 import { createCategory, updateCategory, deleteCategory } from "@/services/category-service";
 import { tagOwnerDraw, createAccountTransfer } from "@/services/transfer-service";
@@ -101,6 +101,13 @@ export async function markBillPaidAction(
   payFromAccountId: string,
 ): Promise<ActionResult> {
   return run(workspaceId, (userId) => markPaid(userId, billId, { payFromAccountId }));
+}
+
+export async function markBillUnpaidAction(
+  workspaceId: string,
+  billId: string,
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => markUnpaid(userId, billId));
 }
 
 export async function confirmMatchAction(

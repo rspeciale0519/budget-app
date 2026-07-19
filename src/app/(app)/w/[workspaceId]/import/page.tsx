@@ -24,11 +24,13 @@ export default async function ImportPage({
     name: a.name,
     type: a.type,
   }));
+  const accountNameById = new Map(accounts.map((a) => [a.id, a.name]));
   const batches = (await listImportBatches(user.id, workspaceId)).map((b) => ({
     id: b.id,
     filename: b.filename,
     rowCount: b.rowCount,
     importedAt: b.importedAt.toISOString().slice(0, 10),
+    account: accountNameById.get(b.accountId) ?? "",
   }));
 
   return (

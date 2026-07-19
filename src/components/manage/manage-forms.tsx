@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label, AmountInput, Select, FieldError } from "@/components/ui/field";
@@ -49,6 +49,12 @@ function useAction() {
   return { error, busy, submit };
 }
 
+const ADD_TARGET: Record<string, string> = {
+  account: "acct-name",
+  transaction: "txn-account",
+  bill: "bill-vendor",
+};
+
 export function ManageForms({
   workspaceId,
   accounts,
@@ -56,6 +62,18 @@ export function ManageForms({
   workspaceId: string;
   accounts: AccountOption[];
 }) {
+  // Deep-links (⌘K quick actions, the first-run hero) land here with ?add=…, so
+  // scroll to and focus the matching form instead of dropping the user at the top.
+  const params = useSearchParams();
+  useEffect(() => {
+    const targetId = ADD_TARGET[params.get("add") ?? ""];
+    if (!targetId) return;
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.focus({ preventScroll: true });
+  }, [params]);
+
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
       <AccountForm workspaceId={workspaceId} />

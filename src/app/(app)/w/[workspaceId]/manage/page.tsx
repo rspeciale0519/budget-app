@@ -16,7 +16,7 @@ import { money, format } from "@/lib/money";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Manage" };
+export const metadata = { title: "Accounts & bills" };
 
 export default async function ManagePage({
   params,
@@ -38,7 +38,7 @@ export default async function ManagePage({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <PageHeading>Manage</PageHeading>
+        <PageHeading>Accounts &amp; bills</PageHeading>
         <ExportPanel workspaceId={workspaceId} />
       </div>
       {accounts.length === 0 && (

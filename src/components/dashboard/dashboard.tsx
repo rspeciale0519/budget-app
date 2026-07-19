@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusTag } from "@/components/ui/status-tag";
 import { ForecastChart, type ForecastPoint } from "@/components/dashboard/forecast-chart";
-import { markBillPaidStandaloneAction } from "@/app/(app)/w/[workspaceId]/_actions";
+import { markBillPaidStandaloneAction, markBillUnpaidAction } from "@/app/(app)/w/[workspaceId]/_actions";
 import { MatchSuggestions } from "@/components/match/match-suggestions";
 import { FirstRun } from "@/components/dashboard/first-run";
 import { useToast } from "@/components/ui/toast";
@@ -110,7 +110,7 @@ export function SafeToSpendPanel({
           How safe-to-spend is calculated
         </p>
         <div className="flex justify-between border-b border-rule py-1.5">
-          <span>Available balance</span>
+          <span>Available balance (all accounts)</span>
           <span className="tabular text-ink">{math.availableBalance}</span>
         </div>
         {math.items.length === 0 ? (
@@ -129,7 +129,7 @@ export function SafeToSpendPanel({
           ))
         )}
         <div className="flex justify-between border-b border-rule py-1.5">
-          <span>= Unpaid before next income</span>
+          <span>{math.incomeConfigured ? "= Unpaid before next income" : "= Unpaid in the next 30 days"}</span>
           <span className="tabular text-ink">{math.unpaidBeforeIncome}</span>
         </div>
         <div className="flex justify-between py-1.5 font-semibold text-ink">
@@ -174,10 +174,18 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
   async function payBill(billId: string) {
     if (!workspaceId) return;
     setPaying(billId);
+    const openCount = data.bills.length;
     const result = await markBillPaidStandaloneAction(workspaceId, billId);
     setPaying(null);
     if (result.ok) {
-      toast("Marked paid");
+      const message = openCount <= 1 ? "That was the last one — all bills paid this month" : "Paid ✓";
+      toast(message, {
+        actionLabel: "Undo",
+        onAction: async () => {
+          await markBillUnpaidAction(workspaceId, billId);
+          router.refresh();
+        },
+      });
       router.refresh();
     } else {
       toast(result.error ?? "Could not mark that bill paid — try again.", { kind: "error" });
@@ -241,6 +249,19 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
 
       {showMath && <SafeToSpendPanel math={data.safeToSpendMath} workspaceId={workspaceId} />}
 
+      {workspaceId && data.overspentCount > 0 && (
+        <Link
+          href={`/w/${workspaceId}/budget`}
+          className="flex items-center justify-between gap-2 rounded-card border border-alert/30 bg-alert-tint/40 px-4 py-2.5 text-sm transition-colors hover:bg-alert-tint/60"
+        >
+          <span className="font-medium text-alert">
+            {data.overspentCount} {data.overspentCount === 1 ? "category is" : "categories are"} over
+            budget
+          </span>
+          <span className="whitespace-nowrap text-xs font-semibold text-alert">Cover it →</span>
+        </Link>
+      )}
+
       {workspaceId && <MatchSuggestions workspaceId={workspaceId} suggestions={data.matchSuggestions} />}
 
       <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[1.5fr_1fr]">
@@ -286,7 +307,7 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
             <CardContent className="py-1.5">
               {data.bills.length === 0 && (
                 <p className="py-2 text-sm text-muted">
-                  Nothing due. Add bills in Manage and they&apos;ll show up here with due dates.
+                  Nothing due. Add bills in Accounts &amp; bills and they&apos;ll show up here with due dates.
                 </p>
               )}
               {data.bills.map((b, i) => (

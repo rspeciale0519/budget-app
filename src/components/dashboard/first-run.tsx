@@ -11,7 +11,7 @@ export function FirstRun({ workspaceId }: { workspaceId: string }) {
       </p>
       <div className="mt-5 flex flex-wrap justify-center gap-2">
         <Link
-          href={`/w/${workspaceId}/manage`}
+          href={`/w/${workspaceId}/manage?add=account`}
           className="inline-flex h-9 items-center justify-center rounded-control bg-ink px-3.5 text-[13px] font-medium text-paper hover:opacity-85"
         >
           Add an account

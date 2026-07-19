@@ -18,6 +18,7 @@ import { workspaceMetrics } from "@/services/dashboard/metrics";
 import { safeToSpend } from "@/services/dashboard/safe-to-spend";
 import { cashflowForecast } from "@/services/dashboard/forecast";
 import { categoryBreakdown } from "@/services/dashboard/category-breakdown";
+import { budgetVsActual } from "@/services/dashboard/budget-vs-actual";
 import { paidVsUnpaid } from "@/services/dashboard/paid-unpaid";
 import { listDebts, listGoals } from "@/services/dashboard/planning";
 import { upcomingAndOverdue } from "@/services/bill-service";
@@ -83,7 +84,7 @@ export async function getDashboardData(
   const { start } = periodRange(period, today);
   const prevAnchor = addDays(start, -1);
 
-  const [cur, prev, sts, forecast, categories, pvu, debts, goals, buckets, accountCount, matches] =
+  const [cur, prev, sts, forecast, categories, pvu, debts, goals, buckets, accountCount, matches, budgetRows] =
     await Promise.all([
       workspaceMetrics(userId, workspaceId, period, today),
       workspaceMetrics(userId, workspaceId, period, prevAnchor),
@@ -96,7 +97,9 @@ export async function getDashboardData(
       upcomingAndOverdue(userId, workspaceId, today),
       rlsClientFor(userId).run((tx) => tx.account.count({ where: { workspaceId } })),
       matchSuggestions(userId, workspaceId, today),
+      budgetVsActual(userId, workspaceId, today),
     ]);
+  const overspentCount = budgetRows.filter((r) => r.status === "over").length;
 
   const inDelta = deltaInfo(cur.moneyIn, prev.moneyIn, true);
   const outDelta = deltaInfo(cur.moneyOut, prev.moneyOut, false);
@@ -155,6 +158,7 @@ export async function getDashboardData(
   return {
     accountCount,
     periodLabel: periodLabel(period),
+    overspentCount,
     matchSuggestions: matches,
     kpis: {
       totalBalance: format(cur.totalBalance),

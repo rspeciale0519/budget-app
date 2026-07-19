@@ -90,7 +90,8 @@ export async function commitImportAction(
   skipIndices: number[],
   expectedRowCount: number,
   dateOverrides?: Record<number, string>,
-): Promise<{ ok: boolean; error?: string; batchId?: string; count?: number }> {
+  transferOverrides?: Record<number, boolean>,
+): Promise<{ ok: boolean; error?: string; batchId?: string; count?: number; categorizedCount?: number }> {
   try {
     const userId = await requireUserId();
     const preview = await previewImport(userId, { accountId, csvText, mapping, dateOverrides });
@@ -103,10 +104,11 @@ export async function commitImportAction(
     const skip = new Set(skipIndices);
     preview.rows.forEach((r, i) => {
       if (skip.has(i)) r.skip = true;
+      if (transferOverrides && transferOverrides[i] !== undefined) r.isTransferGuess = transferOverrides[i]!;
     });
-    const batch = await commitImport(userId, { accountId, filename, rows: preview.rows });
+    const { batch, categorizedCount } = await commitImport(userId, { accountId, filename, rows: preview.rows });
     revalidatePath(`/w/${workspaceId}`);
-    return { ok: true, batchId: batch.id, count: batch.rowCount };
+    return { ok: true, batchId: batch.id, count: batch.rowCount, categorizedCount };
   } catch (e) {
     return { ok: false, error: msg(e) };
   }

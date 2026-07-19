@@ -21,6 +21,12 @@ const ACCESS_OPTIONS = [
   { value: "admin", label: "Can edit" },
 ] as const;
 
+const ORG_ROLE_LABEL: Record<string, string> = {
+  owner: "Account owner",
+  admin: "Account admin",
+  member: "Member",
+};
+
 export function MemberAccessManager({
   member,
   allWorkspaces,
@@ -67,7 +73,7 @@ export function MemberAccessManager({
             Invited — hasn&apos;t signed in yet
           </span>
         )}
-        <span className="text-xs text-muted">{member.orgRole}</span>
+        <span className="text-xs text-muted">{ORG_ROLE_LABEL[member.orgRole] ?? member.orgRole}</span>
       </div>
       <div className="grid gap-1.5 sm:grid-cols-2">
         {allWorkspaces.map((ws) => (

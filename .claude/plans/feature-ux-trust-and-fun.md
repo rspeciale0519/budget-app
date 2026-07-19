@@ -127,52 +127,52 @@ Files: `src/lib/import/auto-detect.ts` (:60-72), `src/components/import/column-m
 
 ### Task 2.1 — "All books" rows are real doors
 Files: `src/app/(app)/all/page.tsx`.
-- [ ] Book name cell → `<Link href={/w/${r.workspaceId}}>` covering the row's primary click target;
+- [x] Book name cell → `<Link href={/w/${r.workspaceId}}>` covering the row's primary click target;
       hover state on the row.
-- [ ] Color dot before each name (same dot pattern as `workspace-tabs.tsx:49-55`).
-- [ ] "Net" column header gets `title` + footnote line: "Net = money in minus money out {periodLabel}."
-- [ ] "Unpaid bills" stat label → "Bills still to pay".
+- [x] Color dot before each name (same dot pattern as `workspace-tabs.tsx:49-55`).
+- [x] "Net" column header gets `title` + footnote line: "Net = money in minus money out {periodLabel}."
+- [x] "Unpaid bills" stat label → "Bills still to pay".
 
 ### Task 2.2 — Mark-paid undo
 Files: `src/app/(app)/w/[workspaceId]/_actions.ts`, `src/services/bill-service.ts` (:127-135,
 `markUnpaid` exists), `src/components/dashboard/dashboard.tsx` (:173-184), toast API (already
 supports `actionLabel`/`onAction`).
-- [ ] Add `markBillUnpaidAction` (authz mirrors mark-paid; audit-logged like other actions).
-- [ ] Success toast: `{ actionLabel: "Undo", onAction: … }` → reverts and refreshes.
-- [ ] Test: service round-trip paid→unpaid restores status (extend existing bill-service tests).
+- [x] Add `markBillUnpaidAction` (authz mirrors mark-paid; audit-logged like other actions).
+- [x] Success toast: `{ actionLabel: "Undo", onAction: … }` → reverts and refreshes.
+- [x] Test: service round-trip paid→unpaid restores status (extend existing bill-service tests).
 
 ### Task 2.3 — Calendar becomes a tool
 Files: `src/app/(app)/w/[workspaceId]/calendar/page.tsx`, `src/components/calendar/bill-calendar-view.tsx`,
 `src/services/dashboard/bill-calendar.ts`.
-- [ ] Summary strip above grid: "This month: $X in bills · $Y paid · $Z still to pay" (computed in
+- [x] Summary strip above grid: "This month: $X in bills · $Y paid · $Z still to pay" (computed in
       the existing service, decimal-safe, tested). CAUTION (verified): `billCalendar` fetches the
       full 6-week grid range including leading/trailing days of adjacent months
       (`bill-calendar.ts:46-53`) — the strip must sum ONLY bills whose due date is in the viewed
       month, not the whole grid. Test asserts an adjacent-month bill is excluded from the totals.
       (Note: chip popover needs no new data — `CalendarEvent` already carries `billId`,
       `bill-calendar.ts:10`.)
-- [ ] Legend row: swatch + word for Paid / Due soon / Due later / Overdue (uses Task 1.4 vocabulary).
-- [ ] Chips: add a ✓ prefix on paid, "!" on overdue (not color-only anymore); agenda chip shows
+- [x] Legend row: swatch + word for Paid / Due soon / Due later / Overdue (uses Task 1.4 vocabulary).
+- [x] Chips: add a ✓ prefix on paid, "!" on overdue (not color-only anymore); agenda chip shows
       status word + vendor, not vendor-inside-StatusTag.
-- [ ] Chip click → small popover: vendor, amount, due date, status, and "Mark paid" (wired to the
+- [x] Chip click → small popover: vendor, amount, due date, status, and "Mark paid" (wired to the
       same action as dashboard; with Task 2.2's undo toast).
-- [ ] Empty-month states (desktop grid, matching mobile agenda): zero bills exist → "No bills set
+- [x] Empty-month states (desktop grid, matching mobile agenda): zero bills exist → "No bills set
       up yet — add them in {Manage-name} or import transactions." / bills exist but none due this
       month → "Nothing due this month."
 
 ### Task 2.4 — Toasts: dismissible, patient with errors
 Files: `src/components/ui/toast.tsx`.
-- [ ] × close button on every toast; pause timer on hover/focus.
-- [ ] Errors: 8s (success stays 5s) and `role="alert"`; success region stays `aria-live="polite"`.
-- [ ] Existing toast tests extended for dismiss + duration branch.
+- [x] × close button on every toast; pause timer on hover/focus.
+- [x] Errors: 8s (success stays 5s) and `role="alert"`; success region stays `aria-live="polite"`.
+- [x] Existing toast tests extended for dismiss + duration branch.
 
 ### Task 2.5 — Command palette & search honesty
 Files: `src/components/chrome/search-button.tsx`, `src/components/command/command-palette.tsx`,
 `src/lib/command-palette/commands.ts` (+ its test).
-- [ ] Platform-detect: Windows/Linux render "Ctrl K", Mac "⌘K" (button + palette hint); palette
+- [x] Platform-detect: Windows/Linux render "Ctrl K", Mac "⌘K" (button + palette hint); palette
       input icon → neutral search glyph.
-- [ ] Button label "Search" → "Jump to…" (it navigates; it does not search data).
-- [ ] Quick actions deep-link to the actual form. VERIFIED: all add-forms (transaction, bill,
+- [x] Button label "Search" → "Jump to…" (it navigates; it does not search data).
+- [x] Quick actions deep-link to the actual form. VERIFIED: all add-forms (transaction, bill,
       account) live in `src/components/manage/manage-forms.tsx` (TransactionForm at :128-200),
       NOT on the transactions page — so ALL deep-links target the manage route:
       "Add expense / transaction" → `/w/{ws}/manage?add=transaction`; "Log a new bill" →
@@ -180,96 +180,99 @@ Files: `src/components/chrome/search-button.tsx`, `src/components/command/comman
       The manage page reads the `add` search param and auto-scrolls to + focuses the matching
       form's first field (server component passes the param down; scroll/focus in a small client
       effect). Do NOT move forms to the transactions page — out of scope.
-- [ ] Add missing commands: "New book" (admins), "All books", "Side by side (tile view)",
+- [x] Add missing commands: "New book" (admins), "All books", "Side by side (tile view)",
       "Switch theme". Update `commands.test.ts`.
 
 ### Task 2.6 — Import wizard clarity pass
 Files: `src/components/import/import-wizard.tsx`, `import-preview.tsx`, `csv-drop-zone.tsx`,
 `import-history.tsx`, `src/services/import/pipeline.ts` (transfer pill only).
-- [ ] Destination restated: "Review & import" header shows "Importing into **{account name}**";
+- [x] Destination restated: "Review & import" header shows "Importing into **{account name}**";
       success line includes it; Past imports rows show the account.
-- [ ] All-duplicates: when committable = 0 and all rows are duplicates → replace dead button with
+- [x] All-duplicates: when committable = 0 and all rows are duplicates → replace dead button with
       "Everything in this file is already in this Book — nothing new to import. ✓" + "Import
       another file". All-errors → analogous plain message.
-- [ ] File sniff: binary signature (`PK\x03\x04` → xlsx) or headers.length < 2 → "This doesn't
+- [x] File sniff: binary signature (`PK\x03\x04` → xlsx) or headers.length < 2 → "This doesn't
       look like a CSV. If it came from Excel, use File → Save As → CSV."
-- [ ] Transfer pill in preview becomes a toggle (include-style), plus one summary line: "N rows
+- [x] Transfer pill in preview becomes a toggle (include-style), plus one summary line: "N rows
       look like account transfers and won't count as spending — tap a pill to change."
-- [ ] Register: when `isTransfer`, replace the disabled category select with static "Transfer —
+- [x] Register: when `isTransfer`, replace the disabled category select with static "Transfer —
       not counted" text (tooltip-only explanation promoted to visible).
 
 ### Task 2.7 — Jargon & label batch
 Files: `workspace-sub-nav.tsx`, `layout-controls.tsx`, `layouts-dropdown.tsx`, `tab-bar.tsx`,
 `audit/page.tsx`, `workspace-create-dialog.tsx`, `w/[workspaceId]/layout.tsx`, `not-found.tsx`,
 `transfer-form.tsx`, `export-panel.tsx`, `manage/page.tsx` + copy referencing "Manage".
-- [ ] D1: "Manage" → "Accounts & bills" (nav tab, page heading/title, every copy reference —
+- [x] D1: "Manage" → "Accounts & bills" (nav tab, page heading/title, every copy reference —
       grep `"Manage"` in src to catch "Add bills in Manage…" style strings).
-- [ ] Tiling: "Panes" → "Books shown"; "+ Add pane" → "+ Add a book" AND it adds the first book
+- [x] Tiling: "Panes" → "Books shown"; "+ Add pane" → "+ Add a book" AND it adds the first book
       *not already shown* (fallback: first book); "⬍ Stack as column / ⬌ Arrange as row" →
       "Stacked / Side by side"; "Restore" → "Open".
-- [ ] Top bar: "⊞ Tile view" → "⊞ Side by side"; "Layouts" → "Saved views".
-- [ ] Audit page: empty-state "workspace" → "book" (:61); `income_bridge` label "Owner draw
+- [x] Top bar: "⊞ Tile view" → "⊞ Side by side"; "Layouts" → "Saved views".
+- [x] Audit page: empty-state "workspace" → "book" (:61); `income_bridge` label "Owner draw
       recorded" → "Paid yourself (moved money between books)".
-- [ ] Create-book dialog: helper line under Type select — "Business books get owner-pay tools —
+- [x] Create-book dialog: helper line under Type select — "Business books get owner-pay tools —
       paying yourself is tracked correctly, not counted twice."; color swatch aria-labels use
       color names not hex; ＋ trigger gets `title="New book"`.
-- [ ] Book layout avatar fallback "W" → "B"; "Back to your dashboard" → "Back to your books"
+- [x] Book layout avatar fallback "W" → "B"; "Back to your dashboard" → "Back to your books"
       (layout :47 and not-found :12).
-- [ ] TransferForm with <2 accounts: render one line "Add a second account to move money between
+- [x] TransferForm with <2 accounts: render one line "Add a second account to move money between
       them." instead of hiding entirely.
-- [ ] Export panel: "(optional)" → "Leave blank for everything"; one line naming what the CSV
+- [x] Export panel: "(optional)" → "Leave blank for everything"; one line naming what the CSV
       contains.
 
 ### Task 2.8 — Activity log says who and what
 Files: `src/app/(app)/w/[workspaceId]/audit/page.tsx`, `src/services/audit-service.ts` (read),
 membership/user lookup (existing admin client patterns).
-- [ ] Resolve `userId` → member email/name (batch, not per-row); render "‹who› ‹did what› ‹thing›".
-- [ ] Entity naming: pull a display name from the recorded `after` JSON when present (vendor,
+- [x] Resolve `userId` → member email/name (batch, not per-row); render "‹who› ‹did what› ‹thing›".
+- [x] Entity naming: pull a display name from the recorded `after` JSON when present (vendor,
       account name, category name); fall back to entityType.
-- [ ] Viewer hitting /audit by URL: replace fake-empty log with "Activity is visible to book
+- [x] Viewer hitting /audit by URL: replace fake-empty log with "Activity is visible to book
       admins." (keep nav hidden as today).
-- [ ] Test: page-level formatting helper unit-tested (who + entity-name fallbacks).
+- [x] Test: page-level formatting helper unit-tested (who + entity-name fallbacks).
 
 ### Task 2.9 — Sharing reassurance copy
 Files: `src/app/(app)/settings/members/page.tsx`, `src/components/members/invite-form.tsx`,
 `member-access.tsx`.
-- [ ] Invite success → "Invitation sent — they can't see any books until you grant access below."
-- [ ] Add under the email field: "They'll get an email with a link to set up their sign-in."
-- [ ] orgRole display humanized: "owner" → "Account owner"; "member" → hidden or "Member".
-- [ ] One-line explanation near role dropdowns: "Can view = balances, bills and transactions,
+- [x] Invite success → "Invitation sent — they can't see any books until you grant access below."
+- [x] Add under the email field: "They'll get an email with a link to set up their sign-in."
+- [x] orgRole display humanized: "owner" → "Account owner"; "member" → hidden or "Member".
+- [x] One-line explanation near role dropdowns: "Can view = balances, bills and transactions,
       read-only."
 
 ### Task 2.10 — Tiles page degrades gracefully
 Files: `src/app/(app)/tiles/page.tsx` (:31-41), `tab-bar.tsx` (admin gate check).
-- [ ] Zero books: copy fixed ("Create a book…" not "second"); non-admins get "Ask the book owner
+- [x] Zero books: copy fixed ("Create a book…" not "second"); non-admins get "Ask the book owner
       to add you to more books." instead of instructions for a + button they don't have.
-- [ ] Exactly one book: render the single pane + inline line "Side by side shines with two or
+- [x] Exactly one book: render the single pane + inline line "Side by side shines with two or
       more books — create another to compare them."
 
 ### Task 2.11 — Small dashboard/budget/income clarity items
 Files: `dashboard.tsx`, `budget-view.tsx`, `budget/page.tsx`, `budget-vs-actual.ts`,
 `income-source-form.tsx`, `income/page.tsx`, `safe-to-spend.ts` consumers, `index.ts`.
-- [ ] Dashboard overspend strip: when overspentCount > 0 → "N categories over budget → cover it"
+- [x] Dashboard overspend strip: when overspentCount > 0 → "N categories over budget → cover it"
       linking to Budget (needs overspent count added to `DashboardData`; service-tested).
-- [ ] "Left to budget" subtitle: "of $X expected income"; "Over-committed by" keeps alert tone.
-- [ ] D2: non-current months → banner + read-only Set/Move/inline edit.
-- [ ] Budget bars: tooltip/legend for amber at 85% ("Getting close — 85% used"); ARIA reports the
+- [x] "Left to budget" subtitle: "of $X expected income"; "Over-committed by" keeps alert tone.
+- [x] D2: non-current months → banner + read-only Set/Move/inline edit.
+- [x] Budget bars: tooltip/legend for amber at 85% ("Getting close — 85% used"); ARIA reports the
       TRUE percentage (cap only the visual width).
-- [ ] Safe-to-spend note "after 0 unpaid bills due before <date>" → "no bills due before <date> —
+- [x] Safe-to-spend note "after 0 unpaid bills due before <date>" → "no bills due before <date> —
       the full balance is yours"; math panel "Available balance" → "Available balance (all
       accounts)" (D3); "= Unpaid before next income" row label matches the 30-day fallback mode.
-- [ ] Income page: monthly-equivalent line "≈ $X/month across N sources" (decimal-safe conversion,
+- [x] Income page: monthly-equivalent line "≈ $X/month across N sources" (decimal-safe conversion,
       unit-tested: weekly×52/12, biweekly×26/12, quarterly/3, etc.) + "Next paydays:" preview of
       the next 3 dates from the existing projection service.
-- [ ] Debts/goals empty states link to where they're created.
-- [ ] Category dropdowns in the register: `<optgroup label="Spending">` / `"Income"`.
+- [x] Debts/goals: verified (grep) there is NO create-goal/create-debt UI or route anywhere in
+      the app — creating them is out of scope for this UX plan — so there is nowhere to link. The
+      empty states already plainly describe the state; adding a dead link would be worse, so left
+      as-is (honest documented exception, not skipped work).
+- [x] Category dropdowns in the register: `<optgroup label="Spending">` / `"Income"`.
 
 ### Task 2.12 — Login: Google in both modes
 Files: `src/components/auth/login-form.tsx` (:151-169).
-- [ ] "Continue with Google" renders in sign-up mode too (OAuth handles both identically).
+- [x] "Continue with Google" renders in sign-up mode too (OAuth handles both identically).
 
 ### Phase 2 gate
-- [ ] type-check 0 / lint 0 / tests pass; commit `Phase 2: friction removal — clickable, undoable, plain-language`.
+- [x] type-check 0 / lint 0 / tests pass; commit `Phase 2: friction removal — clickable, undoable, plain-language`.
 
 ---
 

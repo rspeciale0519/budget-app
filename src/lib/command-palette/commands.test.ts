@@ -10,7 +10,9 @@ describe("buildCommands", () => {
   it("scopes quick actions to the current workspace and lists a go-to per workspace", () => {
     const cmds = buildCommands({ workspaces, currentWorkspaceId: "A" });
     const addExpense = cmds.find((c) => c.label.startsWith("Add expense"));
-    expect(addExpense).toMatchObject({ href: "/w/A/manage", group: "Quick actions" });
+    expect(addExpense).toMatchObject({ href: "/w/A/manage?add=transaction", group: "Quick actions" });
+    const logBill = cmds.find((c) => c.label.startsWith("Log a new bill"));
+    expect(logBill).toMatchObject({ href: "/w/A/manage?add=bill" });
     const goto = cmds.filter((c) => c.group === "Go to book");
     expect(goto.map((c) => c.href)).toEqual(["/w/A", "/w/B"]);
   });
@@ -19,6 +21,20 @@ describe("buildCommands", () => {
     const cmds = buildCommands({ workspaces, currentWorkspaceId: null });
     expect(cmds.some((c) => c.group === "Quick actions")).toBe(false);
     expect(cmds.filter((c) => c.group === "Go to book")).toHaveLength(2);
+  });
+
+  it("adds View commands, including action-based theme + new-book", () => {
+    const cmds = buildCommands({ workspaces, currentWorkspaceId: "A" });
+    const view = cmds.filter((c) => c.group === "View");
+    expect(view.map((c) => c.id)).toEqual(["all-books", "tiles", "toggle-theme", "new-book"]);
+    expect(cmds.find((c) => c.id === "all-books")).toMatchObject({ href: "/all" });
+    expect(cmds.find((c) => c.id === "toggle-theme")).toMatchObject({ action: "toggle-theme" });
+    expect(cmds.find((c) => c.id === "toggle-theme")!.href).toBeUndefined();
+  });
+
+  it("omits New book when the user has no books (no org / dialog mounted)", () => {
+    const cmds = buildCommands({ workspaces: [], currentWorkspaceId: null });
+    expect(cmds.some((c) => c.id === "new-book")).toBe(false);
   });
 });
 

@@ -15,7 +15,10 @@ export interface BudgetRow {
   actual: string;
   /** Formatted magnitude of (actual − budget): "$40.00 over" or "$20.00 left". */
   delta: string;
+  /** Bar-width percent, capped at 150 so a huge overspend can't distort layout. */
   pct: number;
+  /** The true, uncapped percent — for the accessible label ("300% of budget spent"). */
+  pctTrue: number;
   status: "under" | "near" | "over";
 }
 
@@ -63,6 +66,7 @@ export async function budgetVsActual(
         const budgetCents = toCents(b.amount);
         const ratio = budgetCents === 0n ? 0 : Number(toCents(actual)) / Number(budgetCents);
         const pct = Math.round(Math.min(ratio, 1.5) * 100);
+        const pctTrue = Math.round(ratio * 100);
         const over = compare(actual, b.amount) > 0;
         const status: BudgetRow["status"] = over ? "over" : pct >= 85 ? "near" : "under";
         const diff = over ? sub(actual, b.amount) : sub(b.amount, actual);
@@ -75,6 +79,7 @@ export async function budgetVsActual(
           actual: format(actual),
           delta: format(diff),
           pct,
+          pctTrue,
           status,
         };
       })

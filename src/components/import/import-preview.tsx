@@ -16,49 +16,86 @@ export function ImportPreview({
   summary,
   reconcile,
   skip,
+  accountName,
   onToggle,
+  onToggleTransfer,
   onCommit,
   onUndo,
   onBack,
   onDateOverride,
   batchId,
+  categorizedCount,
   busy,
 }: {
   rows: SerializableRow[];
   summary: ImportSummary;
   reconcile: { computed: string; reported: string; mismatch: boolean } | null;
   skip: Set<number>;
+  accountName?: string;
   onToggle: (i: number) => void;
+  onToggleTransfer: (i: number) => void;
   onCommit: () => void;
   onUndo: () => void;
   onBack: () => void;
   onDateOverride: (i: number, date: string) => void;
   batchId: string | null;
+  categorizedCount: number;
   busy: boolean;
 }) {
   const isDateError = (e: string) => e.startsWith("Cannot parse date") || e.startsWith("Invalid calendar date");
   const dateErrors = rows.some((r) => r.errors.some(isDateError));
   const committable = rows.filter((r, i) => !skip.has(i) && r.errors.length === 0).length;
+  const transferCount = rows.filter((r) => r.isTransfer).length;
+  const allDuplicates =
+    committable === 0 && summary.total > 0 && summary.duplicateCount === summary.total;
   const RENDER_CAP = 200;
   const shown = rows.slice(0, RENDER_CAP);
   const hiddenCount = rows.length - shown.length;
 
   if (batchId) {
+    const stillNeed = committable - categorizedCount;
+    const into = accountName ? ` into ${accountName}` : "";
     return (
-      <div className="flex flex-col items-start gap-3 rounded-lg bg-credit-tint p-4">
+      <div className="flex flex-col items-start gap-2 rounded-lg bg-credit-tint p-4">
         <p className="text-sm font-semibold text-credit">
-          ✓ Imported {committable} transaction{committable === 1 ? "" : "s"}.
+          ✓ {committable} transaction{committable === 1 ? "" : "s"} imported{into}.
         </p>
-        <p className="text-xs text-muted">Changed your mind?</p>
-        <Button variant="outline" onClick={onUndo} disabled={busy}>
+        {categorizedCount > 0 && stillNeed > 0 ? (
+          <p className="text-xs text-ink/85">
+            Your rules categorized {categorizedCount} automatically — {stillNeed} still need a home.
+          </p>
+        ) : categorizedCount > 0 && stillNeed === 0 ? (
+          <p className="text-xs text-ink/85">Your rules categorized all of them. Nothing to do. ✓</p>
+        ) : null}
+        <button
+          type="button"
+          onClick={onUndo}
+          disabled={busy}
+          className="text-xs font-medium text-muted underline hover:text-ink disabled:opacity-50"
+        >
           Undo this import
-        </Button>
+        </button>
+      </div>
+    );
+  }
+
+  if (allDuplicates) {
+    return (
+      <div className="space-y-3">
+        <p className="rounded-lg bg-credit-tint p-4 text-sm font-semibold text-credit">
+          Everything in this file is already in this book — nothing new to import. ✓
+        </p>
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
+      {accountName && (
+        <p className="text-xs text-muted">
+          Importing into <span className="font-semibold text-ink">{accountName}</span>.
+        </p>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         <Chip n={summary.newCount} label="new" tone="bg-credit-tint text-credit" />
         {summary.duplicateCount > 0 && (
@@ -69,6 +106,13 @@ export function ImportPreview({
         )}
         <span className="text-xs text-dim">{summary.total} rows in file</span>
       </div>
+
+      {transferCount > 0 && (
+        <p className="text-xs text-muted">
+          {transferCount} row{transferCount === 1 ? "" : "s"} look like account transfers and won&apos;t
+          count as spending — tap a “↔ transfer” tag to change it.
+        </p>
+      )}
 
       {dateErrors && (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-control bg-alert-tint px-3 py-2 text-sm text-alert">
@@ -133,9 +177,18 @@ export function ImportPreview({
                       </span>
                     )}
                     {r.isTransfer && (
-                      <span className="rounded bg-now-tint px-1.5 py-0.5 text-[10px] font-medium text-now">
-                        transfer
-                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onToggleTransfer(i);
+                        }}
+                        title="Not a transfer? Tap to count it as normal spending/income"
+                        className="rounded bg-now-tint px-1.5 py-0.5 text-[10px] font-medium text-now hover:bg-now hover:text-paper"
+                      >
+                        ↔ transfer ✕
+                      </button>
                     )}
                     {r.isDuplicate && (
                       <span className="rounded bg-debit-tint px-1.5 py-0.5 text-[10px] font-medium text-debit">

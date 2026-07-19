@@ -25,7 +25,18 @@ export function TransferForm({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  if (accounts.length < 2) return null;
+  if (accounts.length < 2) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Move money between accounts</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted">Add a second account to move money between them.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   async function submit() {
     setBusy(true);

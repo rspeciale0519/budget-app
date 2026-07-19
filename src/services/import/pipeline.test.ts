@@ -68,8 +68,9 @@ describe("CSV import pipeline", () => {
 
   it("commits non-skipped rows atomically, then undo removes them", async () => {
     const preview = await previewImport(admin, { accountId, csvText: csv, mapping });
-    const batch = await commitImport(admin, { accountId, filename: "june.csv", rows: preview.rows });
+    const { batch, categorizedCount } = await commitImport(admin, { accountId, filename: "june.csv", rows: preview.rows });
     expect(batch.rowCount).toBe(2);
+    expect(categorizedCount).toBeGreaterThanOrEqual(0);
 
     const afterCommit = await prismaAdmin.transaction.findMany({ where: { importBatchId: batch.id } });
     expect(afterCommit).toHaveLength(2);
@@ -118,7 +119,7 @@ describe("CSV import pipeline", () => {
     expect(fixedRent.skip).toBe(false);
     expect(fixedRent.dedupeHash).not.toBeNull();
 
-    const batch = await commitImport(admin, { accountId, filename: "fixed.csv", rows: fixed.rows });
+    const { batch } = await commitImport(admin, { accountId, filename: "fixed.csv", rows: fixed.rows });
     expect(batch.rowCount).toBe(2);
     const committed = await prismaAdmin.transaction.findMany({ where: { importBatchId: batch.id } });
     const rentTxn = committed.find((t) => t.description === "Rent");

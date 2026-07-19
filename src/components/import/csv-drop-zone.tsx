@@ -8,9 +8,18 @@ const SAMPLE_PLACEHOLDER =
   "Date,Description,Amount,Balance\n06/19/2026,Paycheck,500.00,1500.00\n06/20/2026,Groceries,-40.00,1460.00";
 
 function load(text: string, onLoaded: (p: ParsedCsvState) => void, onError: (m: string) => void) {
+  // xlsx/docx are ZIP files ("PK\x03\x04"); a stray replacement char means binary.
+  if (text.startsWith("PK") || text.charCodeAt(0) === 0xfffd) {
+    onError("This looks like an Excel file, not a CSV. In Excel, use File → Save As → CSV, then upload that file.");
+    return;
+  }
   const { headers, rows } = parseCsv(text);
-  if (headers.length === 0 || rows.length === 0) {
-    onError("That file has no header row or no data rows. Check it's a CSV with a header line.");
+  if (headers.length < 2) {
+    onError("This doesn't look like a CSV. If it came from Excel, use File → Save As → CSV.");
+    return;
+  }
+  if (rows.length === 0) {
+    onError("That file has a header row but no data rows. Check it's a CSV exported from your bank.");
     return;
   }
   onError("");

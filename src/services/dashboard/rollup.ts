@@ -8,6 +8,7 @@ import { workspaceMetrics } from "@/services/dashboard/metrics";
 export interface RollupRow {
   workspaceId: string;
   name: string;
+  color: string;
   balance: Money;
   in: Money;
   out: Money;
@@ -17,7 +18,7 @@ export interface RollupRow {
 
 export interface Rollup {
   rows: RollupRow[];
-  combined: Omit<RollupRow, "workspaceId" | "name">;
+  combined: Omit<RollupRow, "workspaceId" | "name" | "color">;
 }
 
 export async function rollup(
@@ -44,6 +45,7 @@ export async function rollup(
     rows.push({
       workspaceId: ws.id,
       name: ws.name,
+      color: ws.color,
       balance: metrics.totalBalance,
       in: metrics.moneyIn,
       out: metrics.moneyOut,

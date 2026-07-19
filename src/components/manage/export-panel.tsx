@@ -16,21 +16,26 @@ export function ExportPanel({ workspaceId }: { workspaceId: string }) {
   }
 
   return (
-    <div className="flex flex-wrap items-end gap-2 text-sm">
-      <div className="space-y-1">
-        <Label htmlFor="export-from">From (optional)</Label>
-        <Input id="export-from" type="date" className="h-8 text-xs" value={from} onChange={(e) => setFrom(e.target.value)} />
+    <div className="space-y-1.5">
+      <div className="flex flex-wrap items-end gap-2 text-sm">
+        <div className="space-y-1">
+          <Label htmlFor="export-from">From</Label>
+          <Input id="export-from" type="date" className="h-8 text-xs" value={from} onChange={(e) => setFrom(e.target.value)} />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="export-to">To</Label>
+          <Input id="export-to" type="date" className="h-8 text-xs" value={to} onChange={(e) => setTo(e.target.value)} />
+        </div>
+        <a href={href("transactions")} className="rounded-control border border-rule px-3 py-1.5 hover:bg-raised">
+          Export transactions
+        </a>
+        <a href={href("bills")} className="rounded-control border border-rule px-3 py-1.5 hover:bg-raised">
+          Export bills
+        </a>
       </div>
-      <div className="space-y-1">
-        <Label htmlFor="export-to">To (optional)</Label>
-        <Input id="export-to" type="date" className="h-8 text-xs" value={to} onChange={(e) => setTo(e.target.value)} />
-      </div>
-      <a href={href("transactions")} className="rounded-control border border-rule px-3 py-1.5 hover:bg-raised">
-        Export transactions
-      </a>
-      <a href={href("bills")} className="rounded-control border border-rule px-3 py-1.5 hover:bg-raised">
-        Export bills
-      </a>
+      <p className="text-[11px] text-dim">
+        Leave the dates blank for everything. Downloads a CSV with every column.
+      </p>
     </div>
   );
 }

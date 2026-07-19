@@ -48,7 +48,7 @@ export default async function CalendarPage({
           </Link>
         </div>
       </div>
-      <BillCalendarView month={data} />
+      <BillCalendarView month={data} workspaceId={workspaceId} />
     </div>
   );
 }

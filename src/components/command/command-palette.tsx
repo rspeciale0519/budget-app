@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { applyTheme } from "@/lib/theme";
 import { buildCommands, filterCommands, type Command } from "@/lib/command-palette/commands";
 
 type Workspace = { id: string; name: string; color: string };
@@ -64,7 +65,16 @@ export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
   function go(cmd: Command | undefined) {
     if (!cmd) return;
     setOpen(false);
-    router.push(cmd.href);
+    if (cmd.action === "toggle-theme") {
+      const cur = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+      applyTheme(cur === "light" ? "dark" : "light");
+      return;
+    }
+    if (cmd.action === "new-book") {
+      window.dispatchEvent(new Event("open-create-book"));
+      return;
+    }
+    if (cmd.href) router.push(cmd.href);
   }
 
   function onInputKey(e: React.KeyboardEvent) {
@@ -80,7 +90,7 @@ export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
     }
   }
 
-  const groups: Command["group"][] = ["Quick actions", "Go to book", "Settings"];
+  const groups: Command["group"][] = ["Quick actions", "Go to book", "View", "Settings"];
 
   function trapTab(e: React.KeyboardEvent) {
     if (e.key !== "Tab") return;
@@ -113,13 +123,13 @@ export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
       >
         <div className="flex items-center gap-3 border-b border-rule px-4 py-3.5 text-[15px] text-ink">
           <span aria-hidden className="text-dim">
-            ⌘
+            ⌕
           </span>
           <input
             ref={inputRef}
             aria-label="Command palette"
             className="w-full bg-transparent outline-none placeholder:text-dim"
-            placeholder="Type a command or search…"
+            placeholder="Jump to a book or action…"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -133,7 +143,9 @@ export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
         </div>
         <div className="max-h-[50vh] overflow-auto py-1.5">
           {filtered.length === 0 ? (
-            <p className="px-4 py-4 text-sm text-muted">No matching commands</p>
+            <p className="px-4 py-4 text-sm text-muted">
+              Nothing matched. Try a book name, or “import”, “bill”, “settings”.
+            </p>
           ) : (
             groups.map((group) => {
               const items = filtered.filter((c) => c.group === group);

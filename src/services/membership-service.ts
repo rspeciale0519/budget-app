@@ -89,6 +89,24 @@ export async function listMembersWithDetails(
   );
 }
 
+/** Resolve a set of user ids to emails (best-effort) for read-only display, e.g.
+ * naming the actor in the activity feed. Missing lookups become "A teammate". */
+export async function resolveMemberEmails(userIds: string[]): Promise<Record<string, string>> {
+  const admin = supabaseAdmin();
+  const out: Record<string, string> = {};
+  await Promise.all(
+    [...new Set(userIds)].map(async (id) => {
+      try {
+        const { data } = await admin.auth.admin.getUserById(id);
+        out[id] = data.user?.email ?? "A teammate";
+      } catch {
+        out[id] = "A teammate";
+      }
+    }),
+  );
+  return out;
+}
+
 export async function assignWorkspaceMembership(
   actorUserId: string,
   input: { userId: string; workspaceId: string; role: WorkspaceRole },

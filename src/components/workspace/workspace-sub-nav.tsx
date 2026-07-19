@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 export const WORKSPACE_SECTIONS: [string, string][] = [
   ["Dashboard", ""],
   ["Transactions", "/transactions"],
-  ["Manage", "/manage"],
+  ["Accounts & bills", "/manage"],
   ["Calendar", "/calendar"],
   ["Budget", "/budget"],
   ["Income", "/income"],

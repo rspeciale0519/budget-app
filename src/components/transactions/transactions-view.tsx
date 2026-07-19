@@ -131,7 +131,7 @@ export function TransactionsView({
             : "Nothing matches"}
           description={
             total === 0 && !filters.q && !filters.account && !filters.category && !uncategorizedActive
-              ? "Add one from the Manage page, or import a CSV from your bank."
+              ? "Add one from the Accounts & bills page, or import a CSV from your bank."
               : "Try a different search or clear the filters."
           }
           action={

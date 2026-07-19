@@ -130,7 +130,16 @@ export async function markUnpaid(actorUserId: string, billId: string) {
     if (bill.paidTransactionId) {
       await tx.transaction.updateMany({ where: { id: bill.paidTransactionId }, data: { billId: null } });
     }
-    return repo.updateBillRow(tx, bill.id, { status: "unpaid", paidTransactionId: null });
+    const updated = await repo.updateBillRow(tx, bill.id, { status: "unpaid", paidTransactionId: null });
+    await audit(tx, {
+      userId: actorUserId,
+      workspaceId: bill.workspaceId,
+      action: "mark_unpaid",
+      entityType: "Bill",
+      entityId: bill.id,
+      after: { status: "unpaid" },
+    });
+    return updated;
   });
 }
 

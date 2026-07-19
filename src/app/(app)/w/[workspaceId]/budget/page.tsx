@@ -35,6 +35,8 @@ export default async function BudgetPage({
   const { ym } = await searchParams;
   const today = todayFn();
   const { year, month } = parseYm(ym, today);
+  const [todayYear, todayMonth] = today.split("-").map(Number);
+  const isCurrentMonth = year === todayYear && month === todayMonth;
   const monthDate = calendarDate(`${year}-${String(month).padStart(2, "0")}-01`);
   const { start, end } = periodRange("month", monthDate);
 
@@ -82,7 +84,13 @@ export default async function BudgetPage({
           </Link>
         </div>
       </div>
-      <BudgetView workspaceId={workspaceId} rows={rows} categories={expense} summary={summary} />
+      <BudgetView
+        workspaceId={workspaceId}
+        rows={rows}
+        categories={expense}
+        summary={summary}
+        readOnly={!isCurrentMonth}
+      />
     </div>
   );
 }

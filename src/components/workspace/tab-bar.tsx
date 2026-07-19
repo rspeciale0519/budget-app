@@ -49,17 +49,17 @@ export async function TabBar({ userId }: { userId: string }) {
           <Link
             href="/tiles"
             className="flex h-9 w-9 items-center justify-center rounded-control border border-rule bg-surface text-sm text-ink/85 transition-colors hover:border-dim hover:bg-raised lg:hidden"
-            title="Tile view"
-            aria-label="Tile view"
+            title="Side by side"
+            aria-label="Side by side"
           >
             ⊞
           </Link>
           <Link
             href="/tiles"
             className="hidden h-9 items-center gap-1.5 rounded-control border border-rule bg-surface px-3 text-xs font-semibold text-ink/85 transition-colors hover:border-dim hover:bg-raised lg:flex"
-            title="Tile multiple books side-by-side"
+            title="See multiple books side by side"
           >
-            ⊞ Tile view
+            ⊞ Side by side
           </Link>
           <LayoutsDropdown layouts={layouts} />
           <SearchButton />

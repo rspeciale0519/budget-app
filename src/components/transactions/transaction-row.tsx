@@ -79,25 +79,54 @@ export function TransactionRow({
           )}
         </td>
         <td className="px-3 py-2">
-          <Select
-            aria-label={`Category for ${row.description}`}
-            className="h-8 w-auto min-w-[9rem] text-xs"
-            value={row.categoryId ?? ""}
-            disabled={busy || row.isTransfer}
-            onChange={(e) =>
-              act(
-                () => setTransactionCategoryAction(workspaceId, row.id, e.target.value || null),
-                e.target.value ? "Category updated" : "Category cleared",
-              )
-            }
-          >
-            <option value="">Uncategorized</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </Select>
+          {row.isTransfer ? (
+            <span
+              className="text-xs text-muted"
+              title="Transfers are left out of income and spending totals"
+            >
+              Transfer — not counted
+            </span>
+          ) : (
+            <Select
+              aria-label={`Category for ${row.description}`}
+              className="h-8 w-auto min-w-[9rem] text-xs"
+              value={row.categoryId ?? ""}
+              disabled={busy}
+              onChange={(e) =>
+                act(
+                  () => setTransactionCategoryAction(workspaceId, row.id, e.target.value || null),
+                  e.target.value ? "Category updated" : "Category cleared",
+                )
+              }
+            >
+              <option value="">Uncategorized</option>
+              <optgroup label="Spending">
+                {categories
+                  .filter((c) => c.kind === "expense")
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+              </optgroup>
+              <optgroup label="Income">
+                {categories
+                  .filter((c) => c.kind === "income")
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+              </optgroup>
+              {categories
+                .filter((c) => c.kind !== "expense" && c.kind !== "income")
+                .map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+            </Select>
+          )}
         </td>
         <td className={`whitespace-nowrap px-3 py-2 text-right tabular ${income ? "text-credit" : "text-ink"}`}>
           {format(money(row.amount))}

@@ -1,11 +1,22 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { renderToString } from "react-dom/server";
 import { BillCalendarView } from "@/components/calendar/bill-calendar-view";
-import type { CalendarMonth } from "@/services/dashboard/bill-calendar";
+import { ToastProvider } from "@/components/ui/toast";
+import type { CalendarMonth, CalendarSummary } from "@/services/dashboard/bill-calendar";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: () => {}, push: () => {} }) }));
+
+const summary: CalendarSummary = {
+  hasBills: true,
+  total: "$1,250.00",
+  paid: "$50.00",
+  unpaid: "$1,200.00",
+};
 
 const fixture: CalendarMonth = {
   year: 2026,
   month: 7,
+  summary,
   weeks: [
     [
       { date: "2026-06-28", inMonth: false, isToday: false, events: [] },
@@ -27,10 +38,10 @@ const fixture: CalendarMonth = {
   ],
 };
 
-// An in-month bill on "today" — exercises the mobile agenda path.
 const agendaFixture: CalendarMonth = {
   year: 2026,
   month: 7,
+  summary,
   weeks: Array.from({ length: 6 }, (_, r) =>
     Array.from({ length: 7 }, (_, c) => {
       const today = r === 0 && c === 0;
@@ -46,17 +57,36 @@ const agendaFixture: CalendarMonth = {
   ),
 };
 
+function render(month: CalendarMonth) {
+  return renderToString(
+    <ToastProvider>
+      <BillCalendarView month={month} workspaceId="w1" />
+    </ToastProvider>,
+  );
+}
+
 describe("BillCalendarView", () => {
-  it("renders weekday headers and event chips (grid)", () => {
-    const html = renderToString(<BillCalendarView month={fixture} />);
+  it("renders the month summary, a legend, and event chips (grid)", () => {
+    const html = render(fixture);
     expect(html).toContain("Su");
-    expect(html).toContain("Sa");
     expect(html).toContain("Late Co");
+    expect(html).toContain("$1,200.00"); // still-to-pay from the summary
+    expect(html).toContain("Due later"); // legend label
   });
 
   it("renders an agenda row for an in-month bill, marking today", () => {
-    const html = renderToString(<BillCalendarView month={agendaFixture} />);
+    const html = render(agendaFixture);
     expect(html).toContain("Rent Co");
-    expect(html).toContain("· Today"); // agenda-only label (the grid uses a styled circle)
+    expect(html).toContain("· Today");
+  });
+
+  it("shows the empty-month message when there are no bills", () => {
+    const empty: CalendarMonth = {
+      ...fixture,
+      summary: { hasBills: false, total: "$0.00", paid: "$0.00", unpaid: "$0.00" },
+      weeks: fixture.weeks.map((w) => w.map((d) => ({ ...d, events: [] }))),
+    };
+    const html = render(empty);
+    expect(html).toContain("No bills this month");
   });
 });

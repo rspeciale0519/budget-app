@@ -15,6 +15,7 @@ const saas: BudgetRow = {
   actual: "$5,000.00",
   delta: "$1,000.00",
   pct: 125,
+  pctTrue: 125,
   status: "over",
 };
 const postage: BudgetRow = {
@@ -26,6 +27,7 @@ const postage: BudgetRow = {
   actual: "$6,100.00",
   delta: "$400.00",
   pct: 94,
+  pctTrue: 94,
   status: "near",
 };
 const cats = [

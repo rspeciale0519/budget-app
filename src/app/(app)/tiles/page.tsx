@@ -13,7 +13,7 @@ import { PageHeading } from "@/components/ui/page-heading";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Tiles" };
+export const metadata = { title: "Side by side" };
 
 export default async function TilesPage({
   searchParams,
@@ -27,14 +27,19 @@ export default async function TilesPage({
 
   const workspaces = await listAccessibleWorkspaces(user.id);
   const layouts = await listLayouts(user.id, membership.organizationId);
+  const isAdmin = ["owner", "admin"].includes(membership.role);
 
   if (workspaces.length === 0) {
     return (
       <div className="space-y-4">
-        <PageHeading>Tiles</PageHeading>
+        <PageHeading>Side by side</PageHeading>
         <EmptyState
-          title="Nothing to tile yet"
-          description="Tiling shows several books side by side. Create a second book with the + button in the top bar."
+          title="Nothing to show yet"
+          description={
+            isAdmin
+              ? "Side by side shows several books at once. Create a book with the + button in the top bar."
+              : "Side by side shows several books at once. Ask the book owner to add you to more books."
+          }
         />
       </div>
     );
@@ -57,11 +62,18 @@ export default async function TilesPage({
   );
 
   return (
-    <TilesClient
-      workspaces={workspaces.map((w) => ({ id: w.id, name: w.name, color: w.color }))}
-      layouts={layouts}
-      initialConfig={initialConfig}
-      initialSummaries={initialSummaries}
-    />
+    <div className="space-y-4">
+      {workspaces.length === 1 && (
+        <p className="rounded-control border border-rule bg-raised/40 px-3 py-2 text-sm text-muted">
+          Side by side shines with two or more books — create another to compare them.
+        </p>
+      )}
+      <TilesClient
+        workspaces={workspaces.map((w) => ({ id: w.id, name: w.name, color: w.color }))}
+        layouts={layouts}
+        initialConfig={initialConfig}
+        initialSummaries={initialSummaries}
+      />
+    </div>
   );
 }

@@ -132,6 +132,7 @@ function SummaryStrip({ workspaceId, summary }: { workspaceId: string; summary: 
           <div className={`tabular font-semibold ${summary.overCommitted ? "text-alert" : "text-credit"}`}>
             {summary.unbudgeted}
           </div>
+          <div className="text-[11px] text-muted">of {summary.expectedIncome} expected income</div>
         </div>
       )}
       {summary.overspentCount > 0 && (
@@ -148,10 +149,12 @@ function BudgetRowItem({
   workspaceId,
   row,
   others,
+  readOnly,
 }: {
   workspaceId: string;
   row: BudgetRow;
   others: { categoryId: string; name: string }[];
+  readOnly: boolean;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -189,7 +192,7 @@ function BudgetRowItem({
         <span className="flex items-baseline gap-3">
           <span className="font-semibold text-ink">{row.name}</span>
           {statusText}
-          {row.status === "over" && others.length > 0 && (
+          {!readOnly && row.status === "over" && others.length > 0 && (
             <button
               type="button"
               className="text-xs font-semibold text-now hover:underline"
@@ -226,6 +229,10 @@ function BudgetRowItem({
                 Save
               </Button>
             </form>
+          ) : readOnly ? (
+            <span className="tabular px-1.5 py-0.5 text-sm text-ink">
+              {row.actual} of {row.budget}
+            </span>
           ) : (
             <button
               type="button"
@@ -236,38 +243,43 @@ function BudgetRowItem({
               {row.actual} of {row.budget}
             </button>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={busy}
-            onClick={() => setMoving((v) => !v)}
-          >
-            Move
-          </Button>
-          <Button
-            variant={confirmingRemove ? "danger" : "ghost"}
-            size="sm"
-            disabled={busy}
-            onBlur={() => setConfirmingRemove(false)}
-            onClick={() => {
-              if (!confirmingRemove) {
-                setConfirmingRemove(true);
-                return;
-              }
-              setConfirmingRemove(false);
-              void act(() => deleteBudgetAction(workspaceId, row.budgetId), "Budget removed");
-            }}
-          >
-            {confirmingRemove ? "Remove?" : "Remove"}
-          </Button>
+          {!readOnly && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={busy}
+                onClick={() => setMoving((v) => !v)}
+              >
+                Move
+              </Button>
+              <Button
+                variant={confirmingRemove ? "danger" : "ghost"}
+                size="sm"
+                disabled={busy}
+                onBlur={() => setConfirmingRemove(false)}
+                onClick={() => {
+                  if (!confirmingRemove) {
+                    setConfirmingRemove(true);
+                    return;
+                  }
+                  setConfirmingRemove(false);
+                  void act(() => deleteBudgetAction(workspaceId, row.budgetId), "Budget removed");
+                }}
+              >
+                {confirmingRemove ? "Remove?" : "Remove"}
+              </Button>
+            </>
+          )}
         </span>
       </div>
       <div
         role="progressbar"
-        aria-valuenow={row.pct}
+        aria-valuenow={row.pctTrue}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label={`${row.name}: ${row.pct}% of budget spent`}
+        aria-label={`${row.name}: ${row.pctTrue}% of budget spent`}
+        title={row.status === "near" ? "Getting close — 85% or more of this budget is used" : undefined}
         className="h-2 overflow-hidden rounded-full bg-raised"
       >
         <div
@@ -321,16 +333,24 @@ export function BudgetView({
   rows,
   categories,
   summary,
+  readOnly = false,
 }: {
   workspaceId: string;
   rows: BudgetRow[];
   categories: CategoryOption[];
   summary: BudgetSummary;
+  readOnly?: boolean;
 }) {
   return (
     <div className="space-y-4">
+      {readOnly && (
+        <Card className="p-3 text-sm text-muted">
+          You&apos;re viewing a past month. Budget amounts are always your current ones — shown here
+          against that month&apos;s spending. Switch to this month to make changes.
+        </Card>
+      )}
       <SummaryStrip workspaceId={workspaceId} summary={summary} />
-      <SetBudgetForm workspaceId={workspaceId} categories={categories} />
+      {!readOnly && <SetBudgetForm workspaceId={workspaceId} categories={categories} />}
 
       <Card className="space-y-5 p-5">
         {rows.length === 0 ? (
@@ -344,6 +364,7 @@ export function BudgetView({
               key={r.categoryId}
               workspaceId={workspaceId}
               row={r}
+              readOnly={readOnly}
               others={rows
                 .filter((o) => o.categoryId !== r.categoryId)
                 .map((o) => ({ categoryId: o.categoryId, name: o.name }))}

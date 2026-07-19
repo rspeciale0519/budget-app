@@ -10,7 +10,7 @@ export default function NotFound() {
           href="/"
           className="inline-flex h-9 items-center justify-center rounded-control border border-rule-strong bg-surface px-3.5 text-[13px] font-medium text-ink transition-colors hover:border-dim hover:bg-raised"
         >
-          Back to your dashboard
+          Back to your books
         </Link>
       </div>
     </div>

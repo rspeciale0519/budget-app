@@ -28,18 +28,28 @@ export function InviteForm({ organizationId }: { organizationId: string }) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Input
-        type="email"
-        placeholder="teammate@example.com"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="grow"
-      />
-      <Button disabled={busy || !email} onClick={invite}>
-        {busy ? "Inviting…" : "Invite"}
-      </Button>
-      {done && <span className="text-sm text-credit">Invitation sent.</span>}
+    <div className="space-y-1.5">
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          type="email"
+          placeholder="teammate@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="grow"
+        />
+        <Button disabled={busy || !email} onClick={invite}>
+          {busy ? "Inviting…" : "Invite"}
+        </Button>
+      </div>
+      {done ? (
+        <p className="text-sm text-credit">
+          Invitation sent — they can&apos;t see any books until you grant access below.
+        </p>
+      ) : (
+        <p className="text-[11px] text-dim">
+          They&apos;ll get an email with a link to set up their sign-in.
+        </p>
+      )}
       {error && <span className="text-sm text-alert">{error}</span>}
     </div>
   );

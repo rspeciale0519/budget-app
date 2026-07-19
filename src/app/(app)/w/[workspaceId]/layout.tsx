@@ -44,7 +44,7 @@ export default async function WorkspaceLayout({
               href="/"
               className="inline-flex h-9 items-center justify-center rounded-control border border-rule-strong bg-surface px-3.5 text-[13px] font-medium text-ink transition-colors hover:border-dim hover:bg-raised"
             >
-              Back to your dashboard
+              Back to your books
             </Link>
           </CardContent>
         </Card>
@@ -64,7 +64,7 @@ export default async function WorkspaceLayout({
           className="grid h-9 w-9 place-items-center rounded-control text-[15px] font-bold text-white shadow-lift"
           style={{ background: ws.color }}
         >
-          {ws.name.charAt(0).toUpperCase() || "W"}
+          {ws.name.charAt(0).toUpperCase() || "B"}
         </div>
         <div>
           <Link href={`/w/${workspaceId}`} className="hover:underline">

@@ -87,9 +87,12 @@ export function ImportWizard({
   >(null);
   const [skip, setSkip] = useState<Set<number>>(new Set());
   const [dateOverrides, setDateOverrides] = useState<Record<number, string>>({});
+  const [transferOverrides, setTransferOverrides] = useState<Record<number, boolean>>({});
   const [batchId, setBatchId] = useState<string | null>(null);
+  const [categorizedCount, setCategorizedCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const accountName = accounts.find((a) => a.id === accountId)?.name;
 
   function handleLoaded(p: ParsedCsvState) {
     const cols = guessColumns(p.headers);
@@ -138,6 +141,7 @@ export function ImportWizard({
     setSummary(result.summary);
     setReconcile(result.reconcile);
     setSkip(new Set(result.rows.flatMap((r, i) => (r.skip ? [i] : []))));
+    setTransferOverrides({});
     return true;
   }
 
@@ -165,13 +169,21 @@ export function ImportWizard({
       [...skip],
       rows.length,
       dateOverrides,
+      transferOverrides,
     );
     setBusy(false);
     if (!result.ok) setError(result.error ?? "Import failed");
     else {
       setBatchId(result.batchId ?? null);
+      setCategorizedCount(result.categorizedCount ?? 0);
       router.refresh();
     }
+  }
+
+  function toggleTransfer(i: number) {
+    const nextVal = !(rows[i]?.isTransfer ?? false);
+    setRows((prev) => prev.map((r, j) => (j === i ? { ...r, isTransfer: nextVal } : r)));
+    setTransferOverrides((prev) => ({ ...prev, [i]: nextVal }));
   }
 
   async function undo() {
@@ -214,7 +226,7 @@ export function ImportWizard({
             href={`/w/${workspaceId}/manage`}
             className="inline-block rounded-control bg-ink px-3 py-2 font-medium text-paper hover:opacity-85"
           >
-            Go to Manage → add an account
+            Go to Accounts & bills → add an account
           </Link>
         </CardContent>
       </Card>
@@ -287,12 +299,15 @@ export function ImportWizard({
                 summary={summary}
                 reconcile={reconcile}
                 skip={skip}
+                accountName={accountName}
                 onToggle={toggle}
+                onToggleTransfer={toggleTransfer}
                 onCommit={commit}
                 onUndo={undo}
                 onBack={() => setStep("map")}
                 onDateOverride={applyDateOverride}
                 batchId={batchId}
+                categorizedCount={categorizedCount}
                 busy={busy}
               />
               {batchId && (

@@ -51,6 +51,11 @@ export default async function MembersPage() {
               <CardTitle>People</CardTitle>
             </CardHeader>
             <CardContent>
+              <p className="mb-2 text-xs text-dim">
+                <b className="font-semibold text-muted">Can view</b> = balances, bills and
+                transactions, read-only. <b className="font-semibold text-muted">Can edit</b> = add
+                and change them too.
+              </p>
               {members.map((m) => (
                 <MemberAccessManager
                   key={m.userId}

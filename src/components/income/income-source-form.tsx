@@ -13,6 +13,7 @@ import {
 import { useToast } from "@/components/ui/toast";
 import { formatDate } from "@/lib/format-date";
 import { money, format } from "@/lib/money";
+import { totalMonthlyIncome } from "@/lib/income-frequency";
 
 export interface IncomeSourceView {
   id: string;
@@ -36,9 +37,11 @@ function frequencyLabel(value: string): string {
 export function IncomeSourceForm({
   workspaceId,
   sources,
+  nextPaydays = [],
 }: {
   workspaceId: string;
   sources: IncomeSourceView[];
+  nextPaydays?: string[];
 }) {
   const router = useRouter();
   const [name, setName] = useState("");
@@ -122,6 +125,20 @@ export function IncomeSourceForm({
           <CardTitle>Expected income sources</CardTitle>
         </CardHeader>
         <CardContent className="space-y-1 text-sm">
+          {sources.length > 0 && (
+            <p className="mb-1 border-b border-rule pb-2 text-xs text-muted">
+              ≈{" "}
+              <b className="font-semibold text-ink">
+                {format(
+                  totalMonthlyIncome(
+                    sources.map((s) => ({ amount: money(s.amount), frequency: s.frequency })),
+                  ),
+                )}
+              </b>{" "}
+              per month across {sources.length} source{sources.length === 1 ? "" : "s"}.
+              {nextPaydays.length > 0 && <> Next: {nextPaydays.join(" · ")}.</>}
+            </p>
+          )}
           {sources.length === 0 ? (
             <div className="rounded-xl border border-dashed border-rule bg-surface p-6 text-center">
               <h3 className="text-sm font-semibold text-ink">No expected income yet</h3>

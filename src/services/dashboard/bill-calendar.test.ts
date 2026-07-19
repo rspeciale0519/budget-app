@@ -50,6 +50,13 @@ describe("billCalendar", () => {
     expect(find("2026-07-01").isToday).toBe(true);
     expect(find("2026-06-30").inMonth).toBe(false);
     expect(find("2026-07-20").inMonth).toBe(true);
+
+    // The month total covers only July bills (Soon $75 + Later $90); the June 30
+    // "Late Co" bill sits on the grid but must NOT be summed in.
+    expect(m.summary.hasBills).toBe(true);
+    expect(m.summary.total).toBe("$165.00");
+    expect(m.summary.paid).toBe("$0.00");
+    expect(m.summary.unpaid).toBe("$165.00");
   });
 
   it("denies a non-member", async () => {
