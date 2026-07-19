@@ -19,7 +19,11 @@ export default async function ImportPage({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const accounts = (await listAccounts(user.id, workspaceId)).map((a) => ({ id: a.id, name: a.name }));
+  const accounts = (await listAccounts(user.id, workspaceId)).map((a) => ({
+    id: a.id,
+    name: a.name,
+    type: a.type,
+  }));
   const batches = (await listImportBatches(user.id, workspaceId)).map((b) => ({
     id: b.id,
     filename: b.filename,

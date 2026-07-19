@@ -34,7 +34,7 @@ export function PaneCard({ summary }: { summary: PaneSummary }) {
                 <span className="text-ink/85">
                   {b.vendor}{" "}
                   <span className={`text-[10px] font-semibold ${statusInk(b.status)}`}>
-                    {b.status}
+                    {b.statusLabel}
                   </span>
                 </span>
                 <span className="tabular text-ink">{b.amount}</span>

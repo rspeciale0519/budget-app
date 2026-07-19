@@ -1,11 +1,11 @@
-import type { Bill } from "@prisma/client";
 import { assertWorkspaceAccess, ForbiddenError } from "@/services/authz";
 import { getWorkspace } from "@/services/workspace-service";
 import { workspaceMetrics } from "@/services/dashboard/metrics";
 import { safeToSpend } from "@/services/dashboard/safe-to-spend";
 import { upcomingAndOverdue } from "@/services/bill-service";
 import { money, format } from "@/lib/money";
-import { compare, fromDbDate, type CalendarDate } from "@/lib/calendar-date";
+import { fromDbDate, type CalendarDate } from "@/lib/calendar-date";
+import { billDisplayStatus, type BillDisplayStatus } from "@/services/bills/bill-status";
 
 export interface PaneSummary {
   workspaceId: string;
@@ -13,13 +13,7 @@ export interface PaneSummary {
   color: string;
   balance: string;
   safeToSpend: string;
-  topBills: { vendor: string; amount: string; status: "overdue" | "soon" | "scheduled" }[];
-}
-
-function statusOf(b: Bill, today: CalendarDate): "overdue" | "soon" | "scheduled" {
-  if (compare(fromDbDate(b.dueDate), today) < 0) return "overdue";
-  if (b.status === "scheduled") return "scheduled";
-  return "soon";
+  topBills: { vendor: string; amount: string; status: BillDisplayStatus; statusLabel: string }[];
 }
 
 export async function paneSummary(
@@ -35,11 +29,15 @@ export async function paneSummary(
   const sts = await safeToSpend(userId, workspaceId, today);
   const buckets = await upcomingAndOverdue(userId, workspaceId, today);
 
-  const topBills = [...buckets.overdue, ...buckets.next7].slice(0, 3).map((b) => ({
-    vendor: b.vendor,
-    amount: format(money(b.amount.toFixed(2))),
-    status: statusOf(b, today),
-  }));
+  const topBills = [...buckets.overdue, ...buckets.next7].slice(0, 3).map((b) => {
+    const display = billDisplayStatus(b.status, fromDbDate(b.dueDate), today);
+    return {
+      vendor: b.vendor,
+      amount: format(money(b.amount.toFixed(2))),
+      status: display.key,
+      statusLabel: display.label,
+    };
+  });
 
   return {
     workspaceId,

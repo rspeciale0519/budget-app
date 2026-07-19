@@ -6,7 +6,12 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/field";
-import { guessColumns, guessDateFormat, guessSignRule } from "@/lib/import/auto-detect";
+import {
+  guessColumns,
+  guessSignRule,
+  analyzeDateFormat,
+  suggestsCreditCardInvert,
+} from "@/lib/import/auto-detect";
 import {
   EMPTY_MAPPING,
   isMappingComplete,
@@ -66,7 +71,7 @@ export function ImportWizard({
   accounts,
 }: {
   workspaceId: string;
-  accounts: { id: string; name: string }[];
+  accounts: { id: string; name: string; type: string }[];
 }) {
   const router = useRouter();
   const [step, setStep] = useState<Step>("upload");
@@ -89,6 +94,9 @@ export function ImportWizard({
   function handleLoaded(p: ParsedCsvState) {
     const cols = guessColumns(p.headers);
     const dateSamples = cols.date ? p.rows.slice(0, 8).map((r) => r[cols.date!] ?? "") : [];
+    const amountSamples = cols.amount ? p.rows.slice(0, 20).map((r) => r[cols.amount!] ?? "") : [];
+    const accountType = accounts.find((a) => a.id === accountId)?.type;
+    const invert = suggestsCreditCardInvert(accountType, cols, amountSamples);
     setParsed(p);
     setMapping({
       ...EMPTY_MAPPING,
@@ -99,8 +107,8 @@ export function ImportWizard({
       debit: cols.debit ?? "",
       credit: cols.credit ?? "",
       runningBalance: cols.runningBalance ?? "",
-      signRule: guessSignRule(cols),
-      dateFormat: guessDateFormat(dateSamples),
+      signRule: invert ? "invert" : guessSignRule(cols),
+      dateFormat: analyzeDateFormat(dateSamples).format,
     });
     setError(null);
     setStep("map");
@@ -253,7 +261,12 @@ export function ImportWizard({
                 We pre-filled these from <span className="font-medium">{fileName}</span> ·{" "}
                 {parsed.rows.length} rows. Adjust anything that looks wrong.
               </p>
-              <ColumnMapper parsed={parsed} value={mapping} onChange={setMapping} />
+              <ColumnMapper
+                parsed={parsed}
+                value={mapping}
+                onChange={setMapping}
+                accountType={accounts.find((a) => a.id === accountId)?.type}
+              />
               {error && <p className="text-sm text-alert">{error}</p>}
               <Button disabled={busy || !isMappingComplete(mapping)} onClick={preview}>
                 {busy ? "Checking…" : "Preview import"}

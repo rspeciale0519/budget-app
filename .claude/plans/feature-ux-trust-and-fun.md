@@ -54,70 +54,70 @@ import preview >200-row expansion, quoted-newline CSV parsing rewrite.
 ### Task 1.1 — Negative Safe-to-spend gets an honest alert state
 Files: `src/components/dashboard/dashboard.tsx` (tile ~:205-224, math panel ~:130-140),
 `src/services/dashboard/safe-to-spend.ts` (read-only — result already computed).
-- [ ] Read both files fully first.
-- [ ] Tile: when the result is negative, swap `border-credit/30 bg-credit-tint/40` → alert
+- [x] Read both files fully first.
+- [x] Tile: when the result is negative, swap `border-credit/30 bg-credit-tint/40` → alert
       border/tint and `text-credit` → `text-alert`; label stays "Safe to spend"; add a one-line
       note under the value: "Short by $X — N bills due before <date>" linking focus to the
       expandable math panel.
-- [ ] Math panel result row: same conditional color; never green when negative.
-- [ ] Component test: render with negative result → asserts alert classes present, credit classes
+- [x] Math panel result row: same conditional color; never green when negative.
+- [x] Component test: render with negative result → asserts alert classes present, credit classes
       absent, "Short by" text present. Positive case unchanged.
 
 ### Task 1.2 — Forecast tells the truth (legend + full resolution)
 Files: `src/services/dashboard/index.ts` (~:118-126), `src/components/dashboard/dashboard.tsx`
 (legend ~:242-249), `src/components/dashboard/forecast-chart.tsx`.
-- [ ] Remove the `i % 4` down-sampling — pass all daily points (canvas handles 31 points; verify
+- [x] Remove the `i % 4` down-sampling — pass all daily points (canvas handles 31 points; verify
       hover/tooltip still performs).
-- [ ] Rename the marked point honestly: `largeBill` field → `lowest` (or equivalent); legend text
+- [x] Rename the marked point honestly: `largeBill` field → `lowest` (or equivalent); legend text
       "Large bill due" → "Lowest point". (Real large-bill markers are NOT added — payday ticks
       come in Phase 4; keep this task purely corrective.)
-- [ ] Verify caption "Lowest: $X on <date>" now exactly matches a hoverable point and the dot's
+- [x] Verify caption "Lowest: $X on <date>" now exactly matches a hoverable point and the dot's
       position (same source of truth).
-- [ ] Update/extend existing forecast tests for the new field name and unsampled length.
+- [x] Update/extend existing forecast tests for the new field name and unsampled length.
 
 ### Task 1.3 — KPI labels follow the period toggle
 Files: `src/app/(app)/w/[workspaceId]/page.tsx` (toggle ~:27-42), `src/services/dashboard/index.ts`,
 `src/components/dashboard/dashboard.tsx` (:191, :197, :256, :307).
-- [ ] Thread the active period into `DashboardData` (e.g. `periodLabel: "this week" | "this month"
+- [x] Thread the active period into `DashboardData` (e.g. `periodLabel: "this week" | "this month"
       | "this quarter" | "this year"`).
-- [ ] Interpolate: "Money in · {periodLabel}", "Money out · {periodLabel}", spending-by-category
+- [x] Interpolate: "Money in · {periodLabel}", "Money out · {periodLabel}", spending-by-category
       note, paid-vs-unpaid note.
-- [ ] Test: build data with period=year → labels contain "this year".
+- [x] Test: build data with period=year → labels contain "this year".
 
 ### Task 1.4 — One bill-status vocabulary: "Due later", never "scheduled"
 Files: `src/services/dashboard/bill-calendar.ts` (:29-34), `src/services/dashboard/index.ts`
 (:65-77), `src/services/dashboard/pane-summary.ts` (:19-23), `src/components/ui/status-tag.tsx`,
 `src/components/tiling/pane-card.tsx` (:36-38), consumers of status labels.
-- [ ] Create ONE shared derivation, e.g. `src/services/bills/bill-status.ts` →
+- [x] Create ONE shared derivation, e.g. `src/services/bills/bill-status.ts` →
       `billDisplayStatus(bill, today): { key: "overdue" | "today" | "soon" | "later" | "paid",
       label: string }` with labels: "Overdue", "Due today", "Tomorrow" / "in N days", "Due later",
       "Paid". Unit-test the boundaries (yesterday/today/tomorrow/7 days/8 days).
-- [ ] Replace all three divergent derivations with it (dashboard `statusLabel` "N days"/"0 days"
+- [x] Replace all three divergent derivations with it (dashboard `statusLabel` "N days"/"0 days"
       included — fixes the bare-number chips too).
-- [ ] `status-tag.tsx`: add/rename variants so "later" renders neutral, "today" amber-emphasis.
+- [x] `status-tag.tsx`: add/rename variants so "later" renders neutral, "today" amber-emphasis.
       The word "scheduled" no longer appears anywhere user-visible (DB enum value untouched).
-- [ ] `pane-card.tsx`: use StatusTag (capitalized labels), not raw lowercase status words.
-- [ ] Grep gate: `rg -i "scheduled" src/components src/app` → only code-identifier hits remain.
+- [x] `pane-card.tsx`: use StatusTag (capitalized labels), not raw lowercase status words.
+- [x] Grep gate: `rg -i "scheduled" src/components src/app` → only code-identifier hits remain.
 
 ### Task 1.5 — Credit-card imports suggest the right sign
 Files: `src/lib/import/auto-detect.ts` (:75-78), `src/components/import/import-wizard.tsx`
 (account selection ~:73, :236-245), `src/components/import/column-mapper.tsx`.
-- [ ] Pass the selected account's `type` into detection/mapping. If type is credit card AND >90%
+- [x] Pass the selected account's `type` into detection/mapping. If type is credit card AND >90%
       of parsed sample amounts are positive → preselect the invert option and show one plain line:
       "This looks like a credit-card export — charges will count as spending."
-- [ ] User can still override; the note disappears if they change the sign rule.
-- [ ] Unit test on `guessSignRule` (or wrapper): credit-card + all-positive sample → invert
+- [x] User can still override; the note disappears if they change the sign rule.
+- [x] Unit test on `guessSignRule` (or wrapper): credit-card + all-positive sample → invert
       suggested; checking-account + mixed signs → unchanged behavior.
 
 ### Task 1.6 — Ambiguous date formats warn instead of silently guessing US
 Files: `src/lib/import/auto-detect.ts` (:60-72), `src/components/import/column-mapper.tsx`.
-- [ ] Detection returns `{ format, ambiguous: boolean }` (ambiguous = every sample day-value ≤ 12).
-- [ ] When ambiguous, render under the Date format select: "We can't tell if 03/04 means March 4
+- [x] Detection returns `{ format, ambiguous: boolean }` (ambiguous = every sample day-value ≤ 12).
+- [x] When ambiguous, render under the Date format select: "We can't tell if 03/04 means March 4
       or April 3 — double-check this." (uses an actual value from the file if cheap).
-- [ ] Unit test: all-ambiguous samples → flag true; any day >12 → false.
+- [x] Unit test: all-ambiguous samples → flag true; any day >12 → false.
 
 ### Phase 1 gate
-- [ ] type-check 0 / lint 0 / tests pass; commit `Phase 1: trust fixes — honest numbers, colors, labels`.
+- [x] type-check 0 / lint 0 / tests pass; commit `Phase 1: trust fixes — honest numbers, colors, labels`.
 
 ---
 

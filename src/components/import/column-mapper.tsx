@@ -1,7 +1,7 @@
 "use client";
 
 import type { SignRule } from "@prisma/client";
-import type { DateFormat } from "@/lib/import/auto-detect";
+import { analyzeDateFormat, type DateFormat } from "@/lib/import/auto-detect";
 import type { DraftMapping, ParsedCsvState } from "@/components/import/types";
 import { Select } from "@/components/ui/field";
 
@@ -61,15 +61,24 @@ export function ColumnMapper({
   parsed,
   value,
   onChange,
+  accountType,
 }: {
   parsed: ParsedCsvState;
   value: DraftMapping;
   onChange: (next: DraftMapping) => void;
+  accountType?: string;
 }) {
   const set = (patch: Partial<DraftMapping>) => onChange({ ...value, ...patch });
   const headers = parsed.headers;
   const first = parsed.rows[0] ?? {};
   const cellOf = (h: string) => (h ? (first[h] ?? "") : "—");
+
+  // Live hints, recomputed from the currently-selected columns so they stay true
+  // even after the user changes a mapping.
+  const dateSamples = value.date ? parsed.rows.slice(0, 8).map((r) => r[value.date] ?? "") : [];
+  const dateAmbiguous = analyzeDateFormat(dateSamples).ambiguous && value.dateFormat !== "YYYY-MM-DD";
+  const sampleDate = dateSamples.find((s) => s.trim()) ?? "03/04";
+  const showCreditCardHint = accountType === "credit_card" && value.signRule === "invert";
 
   return (
     <div className="space-y-5">
@@ -112,6 +121,11 @@ export function ColumnMapper({
             </span>
           </label>
         ))}
+        {showCreditCardHint && (
+          <p className="rounded-control bg-now-tint px-3 py-2 text-[11px] text-ink">
+            This looks like a credit-card export — charges will count as spending, not income.
+          </p>
+        )}
       </fieldset>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -166,6 +180,11 @@ export function ColumnMapper({
           <option value="DD/MM/YYYY">DD/MM/YYYY (UK/EU)</option>
           <option value="YYYY-MM-DD">YYYY-MM-DD (ISO)</option>
         </Select>
+        {dateAmbiguous && (
+          <span className="block text-[11px] text-debit">
+            We can&apos;t tell if {sampleDate} means the month or the day first — double-check this.
+          </span>
+        )}
       </label>
 
       <div className="rounded-control bg-raised px-3 py-2 text-xs text-muted">

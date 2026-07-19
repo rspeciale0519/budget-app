@@ -3,14 +3,16 @@ import { assertWorkspaceAccess } from "@/services/authz";
 import { monthGrid } from "@/lib/month-grid";
 import { addDays, compare, fromDbDate, toUtcDate, type CalendarDate } from "@/lib/calendar-date";
 import { money, format } from "@/lib/money";
+import { billDisplayStatus, type BillDisplayStatus } from "@/services/bills/bill-status";
 
-export type DayStatus = "overdue" | "soon" | "scheduled" | "paid";
+export type DayStatus = BillDisplayStatus;
 
 export interface CalendarEvent {
   billId: string;
   vendor: string;
   amount: string;
   status: DayStatus;
+  statusLabel: string;
 }
 
 export interface CalendarDay {
@@ -24,13 +26,6 @@ export interface CalendarMonth {
   year: number;
   month: number;
   weeks: CalendarDay[][];
-}
-
-function statusOf(billStatus: string, due: CalendarDate, today: CalendarDate): DayStatus {
-  if (billStatus === "paid") return "paid";
-  if (compare(due, today) < 0) return "overdue";
-  if (compare(due, addDays(today, 7)) <= 0) return "soon";
-  return "scheduled";
 }
 
 export async function billCalendar(
@@ -57,11 +52,13 @@ export async function billCalendar(
     const map = new Map<string, CalendarEvent[]>();
     for (const b of bills) {
       const due = fromDbDate(b.dueDate);
+      const display = billDisplayStatus(b.status, due, today);
       const event: CalendarEvent = {
         billId: b.id,
         vendor: b.vendor,
         amount: format(money(b.amount.toFixed(2))),
-        status: statusOf(b.status, due, today),
+        status: display.key,
+        statusLabel: display.label,
       };
       const list = map.get(due) ?? [];
       list.push(event);

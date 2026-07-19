@@ -4,6 +4,7 @@ import { prismaAdmin } from "@/lib/prisma-admin";
 import { getDashboardData } from "@/services/dashboard/index";
 import { workspaceMetrics } from "@/services/dashboard/metrics";
 import { safeToSpend } from "@/services/dashboard/safe-to-spend";
+import { cashflowForecast } from "@/services/dashboard/forecast";
 import { format } from "@/lib/money";
 import { calendarDate, toUtcDate } from "@/lib/calendar-date";
 import { mockDashboard } from "@/lib/mock/dashboard";
@@ -46,6 +47,16 @@ describe("getDashboardData", () => {
     expect(data.categories[0]?.name).toBe("Groceries");
     expect(data.debts[0]?.name).toBe("Visa");
     expect(data.goals[0]?.pct).toBe(24);
+  });
+
+  it("labels the active period and returns every forecast day (unsampled)", async () => {
+    const yearData = await getDashboardData(admin, workspaceId, "year", today);
+    expect(yearData.periodLabel).toBe("this year");
+    const monthData = await getDashboardData(admin, workspaceId, "month", today);
+    expect(monthData.periodLabel).toBe("this month");
+    const fc = await cashflowForecast(admin, workspaceId, today, 30);
+    expect(monthData.forecast.length).toBe(fc.points.length);
+    expect(monthData.forecast.length).toBeGreaterThan(20);
   });
 
   it("assigns a stable category color across calls", async () => {

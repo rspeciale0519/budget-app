@@ -102,6 +102,7 @@ export function SafeToSpendPanel({
   math: DashboardData["safeToSpendMath"];
   workspaceId?: string;
 }) {
+  const resultNegative = math.result.trim().startsWith("-");
   return (
     <Card>
       <CardContent className="text-sm text-ink/85">
@@ -133,7 +134,7 @@ export function SafeToSpendPanel({
         </div>
         <div className="flex justify-between py-1.5 font-semibold text-ink">
           <span>= Safe to spend</span>
-          <span className="tabular text-credit">{math.result}</span>
+          <span className={`tabular ${resultNegative ? "text-alert" : "text-credit"}`}>{math.result}</span>
         </div>
         {!math.incomeConfigured && (
           <p className="mt-3 text-xs text-muted">
@@ -163,8 +164,8 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
     label: p.date,
     value: num(p.balance),
     display: p.balance,
-    largeBill: Boolean(p.largeBill),
   }));
+  const stsNeg = data.kpis.safeToSpendNegative;
 
   if (data.accountCount === 0 && workspaceId) {
     return <FirstRun workspaceId={workspaceId} />;
@@ -188,25 +189,35 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Kpi label="Total balance" value={data.kpis.totalBalance} note={data.kpis.totalBalanceNote} />
         <Kpi
-          label="Money in · this month"
+          label={`Money in · ${data.periodLabel}`}
           value={data.kpis.moneyIn}
           delta={data.kpis.moneyInDelta}
           deltaUp={data.kpis.moneyInUp}
         />
         <Kpi
-          label="Money out · this month"
+          label={`Money out · ${data.periodLabel}`}
           value={data.kpis.moneyOut}
           delta={data.kpis.moneyOutDelta}
           deltaUp={data.kpis.moneyOutUp}
         />
-        {/* The one figure the whole app exists to answer, so it gets the accent. */}
+        {/* The one figure the whole app exists to answer, so it gets the accent.
+            When it goes negative it flips to the alert tone — the app's most
+            important warning must never wear the success color. */}
         <button
           type="button"
           onClick={() => setShowMath((v) => !v)}
           aria-expanded={showMath}
-          className="group relative overflow-hidden rounded-card border border-credit/30 bg-credit-tint/40 p-4 text-left transition-colors hover:border-credit/50 hover:bg-credit-tint/70"
+          className={`group relative overflow-hidden rounded-card border p-4 text-left transition-colors ${
+            stsNeg
+              ? "border-alert/40 bg-alert-tint/50 hover:border-alert/60 hover:bg-alert-tint/70"
+              : "border-credit/30 bg-credit-tint/40 hover:border-credit/50 hover:bg-credit-tint/70"
+          }`}
         >
-          <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.07em] text-credit">
+          <div
+            className={`flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.07em] ${
+              stsNeg ? "text-alert" : "text-credit"
+            }`}
+          >
             <span>Safe to spend</span>
             <span
               className={`text-[10px] transition-transform duration-200 ${showMath ? "rotate-180" : ""}`}
@@ -215,10 +226,16 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
               ▾
             </span>
           </div>
-          <div className="tabular mt-2 text-[26px] font-semibold leading-none text-credit">
+          <div
+            className={`tabular mt-2 text-[26px] font-semibold leading-none ${
+              stsNeg ? "text-alert" : "text-credit"
+            }`}
+          >
             {data.kpis.safeToSpend}
           </div>
-          <div className="mt-2 text-xs text-muted">{data.kpis.safeToSpendNote}</div>
+          <div className={`mt-2 text-xs ${stsNeg ? "text-alert/80" : "text-muted"}`}>
+            {data.kpis.safeToSpendNote}
+          </div>
         </button>
       </div>
 
@@ -240,8 +257,8 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
                   Projected balance
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <i className="inline-block h-2 w-2 rounded-full bg-alert" />
-                  Large bill due
+                  <i className="inline-block h-2 w-2 rounded-full bg-ink/70" />
+                  Lowest point
                 </span>
                 <span className="ml-auto">
                   Lowest: <b className="tabular text-ink">{data.lowestPoint.balance}</b> on{" "}
@@ -253,7 +270,7 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
 
           <Card>
             <CardHeader>
-              <CardTitle note="this month">Spending by category</CardTitle>
+              <CardTitle note={data.periodLabel}>Spending by category</CardTitle>
             </CardHeader>
             <CardContent>
               <CategoryDonut data={data} />
@@ -304,7 +321,7 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
 
           <Card>
             <CardHeader>
-              <CardTitle note="this month">Paid vs. unpaid</CardTitle>
+              <CardTitle note={data.periodLabel}>Paid vs. unpaid</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="mb-3 flex h-3 overflow-hidden rounded-full bg-raised">

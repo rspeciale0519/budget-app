@@ -56,23 +56,63 @@ export function guessColumns(headers: string[]): DetectedMapping {
   return detected;
 }
 
-/** Infer the date format from sample cell values; defaults to US MM/DD/YYYY. */
-export function guessDateFormat(samples: string[]): DateFormat {
+export interface DateFormatGuess {
+  format: DateFormat;
+  /** True when every sample was a slash/dot date whose halves are both ≤ 12,
+   *  so MM/DD vs DD/MM genuinely can't be told apart from the data. */
+  ambiguous: boolean;
+}
+
+/** Infer the date format from sample cell values, flagging genuine ambiguity. */
+export function analyzeDateFormat(samples: string[]): DateFormatGuess {
+  let sawSample = false;
   for (const raw of samples) {
     const v = (raw ?? "").trim();
     if (!v) continue;
-    if (/^\d{4}-\d{1,2}-\d{1,2}/.test(v)) return "YYYY-MM-DD";
+    sawSample = true;
+    if (/^\d{4}-\d{1,2}-\d{1,2}/.test(v)) return { format: "YYYY-MM-DD", ambiguous: false };
     const parts = v.split(/[/.\-]/);
     const a = Number(parts[0]);
     const b = Number(parts[1]);
-    if (Number.isFinite(a) && a > 12 && a <= 31) return "DD/MM/YYYY";
-    if (Number.isFinite(b) && b > 12 && b <= 31) return "MM/DD/YYYY";
+    if (Number.isFinite(a) && a > 12 && a <= 31) return { format: "DD/MM/YYYY", ambiguous: false };
+    if (Number.isFinite(b) && b > 12 && b <= 31) return { format: "MM/DD/YYYY", ambiguous: false };
   }
-  return "MM/DD/YYYY";
+  // Undecidable: default to US, but say so if we actually saw ambiguous samples.
+  return { format: "MM/DD/YYYY", ambiguous: sawSample };
+}
+
+/** Infer the date format from sample cell values; defaults to US MM/DD/YYYY. */
+export function guessDateFormat(samples: string[]): DateFormat {
+  return analyzeDateFormat(samples).format;
 }
 
 /** Pick the sign rule that matches the detected columns. */
 export function guessSignRule(detected: DetectedMapping): SignRule {
   if (detected.debit && detected.credit) return "separate_debit_credit";
   return "single_signed";
+}
+
+/** Fraction of parsed, non-zero numeric samples that are positive (blanks ignored). */
+function positiveFraction(samples: string[]): number {
+  const nums = samples
+    .map((s) => Number((s ?? "").replace(/[$,\s]/g, "")))
+    .filter((n) => Number.isFinite(n) && n !== 0);
+  if (nums.length === 0) return 0;
+  return nums.filter((n) => n > 0).length / nums.length;
+}
+
+/**
+ * Credit-card exports usually show charges as positive numbers, which the default
+ * "one signed amount" rule books as income — silently turning every purchase into
+ * a deposit. When the destination account is a credit card and almost every amount
+ * is positive, the invert rule is almost certainly what's wanted.
+ */
+export function suggestsCreditCardInvert(
+  accountType: string | undefined,
+  detected: DetectedMapping,
+  amountSamples: string[],
+): boolean {
+  if (accountType !== "credit_card") return false;
+  if (detected.debit && detected.credit) return false; // two columns → sign is explicit
+  return positiveFraction(amountSamples) >= 0.9;
 }

@@ -9,6 +9,18 @@ export function parsePeriod(value: string | undefined): Period {
   return PERIODS.includes(value as Period) ? (value as Period) : "month";
 }
 
+const PERIOD_LABEL: Record<Period, string> = {
+  week: "this week",
+  month: "this month",
+  quarter: "this quarter",
+  year: "this year",
+};
+
+/** Human phrase for the active period, e.g. "this month" — for KPI captions. */
+export function periodLabel(period: Period): string {
+  return PERIOD_LABEL[period];
+}
+
 function monthOf(d: CalendarDate): { year: number; month: number } {
   const parts = d.split("-");
   return { year: Number(parts[0]), month: Number(parts[1]) };

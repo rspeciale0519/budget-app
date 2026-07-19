@@ -14,6 +14,7 @@ export interface DashboardKpis {
   moneyOutUp: boolean;
   safeToSpend: string;
   safeToSpendNote: string;
+  safeToSpendNegative: boolean;
 }
 
 export interface SafeToSpendItem {
@@ -33,7 +34,6 @@ export interface SafeToSpendMath {
 export interface ForecastPoint {
   date: string;
   balance: string;
-  largeBill?: boolean;
 }
 
 export interface CategorySlice {
@@ -48,7 +48,7 @@ export interface BillItem {
   vendor: string;
   amount: string;
   dueLabel: string;
-  status: "overdue" | "soon" | "scheduled" | "paid";
+  status: "overdue" | "today" | "soon" | "later" | "paid";
   statusLabel: string;
   icon: string;
 }
@@ -76,6 +76,7 @@ export interface DebtItem {
 
 export interface DashboardData {
   accountCount: number;
+  periodLabel: string;
   kpis: DashboardKpis;
   matchSuggestions: MatchSuggestion[];
   safeToSpendMath: SafeToSpendMath;
@@ -92,6 +93,7 @@ export interface DashboardData {
 
 export const mockDashboard: DashboardData = {
   accountCount: 3,
+  periodLabel: "this month",
   matchSuggestions: [],
   kpis: {
     totalBalance: "$48,210",
@@ -104,6 +106,7 @@ export const mockDashboard: DashboardData = {
     moneyOutUp: false,
     safeToSpend: "$9,140",
     safeToSpendNote: "after 6 unpaid bills due before next deposit",
+    safeToSpendNegative: false,
   },
   safeToSpendMath: {
     availableBalance: "$48,210",
@@ -120,9 +123,9 @@ export const mockDashboard: DashboardData = {
     { date: "Jun 17", balance: "$12,100" },
     { date: "Jun 21", balance: "$9,800" },
     { date: "Jun 24", balance: "$8,400" },
-    { date: "Jun 28", balance: "$6,420", largeBill: true },
+    { date: "Jun 28", balance: "$6,420" },
     { date: "Jul 01", balance: "$7,900" },
-    { date: "Jul 05", balance: "$6,900", largeBill: true },
+    { date: "Jul 05", balance: "$6,900" },
     { date: "Jul 09", balance: "$8,300" },
     { date: "Jul 14", balance: "$9,140" },
   ],
@@ -137,9 +140,9 @@ export const mockDashboard: DashboardData = {
   categoriesTotal: "$27.9k",
   bills: [
     { id: "mock-1", vendor: "Electric — Duke Energy", amount: "$640", dueLabel: "Due Jun 17 · 3 days ago", status: "overdue", statusLabel: "Overdue", icon: "⚡" },
-    { id: "mock-2", vendor: "Office Rent", amount: "$4,200", dueLabel: "Due Jun 28", status: "soon", statusLabel: "5 days", icon: "🏢" },
-    { id: "mock-3", vendor: "Payroll run", amount: "$8,400", dueLabel: "Due Jun 30 · recurring", status: "scheduled", statusLabel: "Scheduled", icon: "👥" },
-    { id: "mock-4", vendor: "USPS postage account", amount: "$2,150", dueLabel: "Due Jul 03", status: "soon", statusLabel: "9 days", icon: "🖨️" },
+    { id: "mock-2", vendor: "Office Rent", amount: "$4,200", dueLabel: "Due Jun 28", status: "soon", statusLabel: "in 5 days", icon: "🏢" },
+    { id: "mock-3", vendor: "Payroll run", amount: "$8,400", dueLabel: "Due Jun 30 · recurring", status: "later", statusLabel: "Due later", icon: "👥" },
+    { id: "mock-4", vendor: "USPS postage account", amount: "$2,150", dueLabel: "Due Jul 03", status: "later", statusLabel: "Due later", icon: "🖨️" },
   ],
   paidVsUnpaid: { paid: "$18,300", unpaid: "$11,390", paidPct: 62 },
   goals: [

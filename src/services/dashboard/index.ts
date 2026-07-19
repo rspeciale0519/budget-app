@@ -10,9 +10,10 @@ import type {
 import { rlsClientFor } from "@/lib/prisma-rls";
 import { assertWorkspaceAccess } from "@/services/authz";
 import { categoryColor, paletteAt } from "@/lib/chart-palette";
-import { format, money, sum, toCents, type Money } from "@/lib/money";
-import { addDays, compare, fromDbDate, type CalendarDate } from "@/lib/calendar-date";
-import { periodRange, type Period } from "@/services/dashboard/period";
+import { format, isNegative, money, sum, toCents, type Money } from "@/lib/money";
+import { addDays, compare, diffDays, fromDbDate, type CalendarDate } from "@/lib/calendar-date";
+import { periodRange, periodLabel, type Period } from "@/services/dashboard/period";
+import { billDisplayStatus } from "@/services/bills/bill-status";
 import { workspaceMetrics } from "@/services/dashboard/metrics";
 import { safeToSpend } from "@/services/dashboard/safe-to-spend";
 import { cashflowForecast } from "@/services/dashboard/forecast";
@@ -27,11 +28,6 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 function shortLabel(d: CalendarDate): string {
   const p = d.split("-");
   return `${MONTHS[Number(p[1]) - 1]} ${p[2]}`;
-}
-
-function daysBetween(a: CalendarDate, b: CalendarDate): number {
-  const ms = new Date(`${b}T00:00:00Z`).getTime() - new Date(`${a}T00:00:00Z`).getTime();
-  return Math.round(ms / 86_400_000);
 }
 
 function iconFor(vendor: string): string {
@@ -57,21 +53,10 @@ function deltaInfo(current: Money, previous: Money, isIncome: boolean): { delta:
 
 function mapBill(b: Bill, today: CalendarDate): BillItem {
   const due = fromDbDate(b.dueDate);
-  let status: BillItem["status"];
-  let statusLabel: string;
-  if (compare(due, today) < 0) {
-    status = "overdue";
-    statusLabel = "Overdue";
-  } else if (b.status === "scheduled") {
-    status = "scheduled";
-    statusLabel = "Scheduled";
-  } else {
-    status = "soon";
-    statusLabel = `${daysBetween(today, due)} days`;
-  }
+  const display = billDisplayStatus(b.status, due, today);
   const suffix =
     compare(due, today) < 0
-      ? ` · ${daysBetween(due, today)} days ago`
+      ? ` · ${Math.abs(diffDays(today, due))} days ago`
       : b.recurringScheduleId
         ? " · recurring"
         : "";
@@ -80,8 +65,8 @@ function mapBill(b: Bill, today: CalendarDate): BillItem {
     vendor: b.vendor,
     amount: format(money(b.amount.toFixed(2))),
     dueLabel: `Due ${shortLabel(due)}${suffix}`,
-    status,
-    statusLabel,
+    status: display.key,
+    statusLabel: display.label,
     icon: iconFor(b.vendor),
   };
 }
@@ -116,12 +101,11 @@ export async function getDashboardData(
   const inDelta = deltaInfo(cur.moneyIn, prev.moneyIn, true);
   const outDelta = deltaInfo(cur.moneyOut, prev.moneyOut, false);
 
-  const points = forecast.points;
-  const sampled = points.filter((_, i) => i % 4 === 0 || i === points.length - 1);
-  const forecastOut: ForecastPoint[] = sampled.map((p) => ({
+  // Every daily point — no down-sampling, so the "Lowest: $X on <date>" caption
+  // always names a point the reader can actually hover to.
+  const forecastOut: ForecastPoint[] = forecast.points.map((p) => ({
     date: shortLabel(p.date),
     balance: format(p.balance),
-    largeBill: p.date === forecast.lowest.date,
   }));
 
   const categoriesOut: CategorySlice[] = categories.map((c) => ({
@@ -157,12 +141,20 @@ export async function getDashboardData(
     aprMin: `${d.apr} · min ${format(d.minimum)}`,
   }));
 
-  const safeNote = sts.incomeConfigured
-    ? `after ${items.length} unpaid bills due before ${shortLabel(sts.horizonDate)}`
-    : `after ${items.length} unpaid bills (next 30 days) · set expected income`;
+  const billWord = items.length === 1 ? "bill" : "bills";
+  const safeNegative = isNegative(sts.result);
+  const horizonLabel = shortLabel(sts.horizonDate);
+  const safeNote = safeNegative
+    ? `Short by ${format(money(sts.result.abs()))} — ${items.length} ${billWord} due before ${horizonLabel}`
+    : sts.incomeConfigured
+      ? items.length === 0
+        ? `no bills due before ${horizonLabel} — the full balance is yours`
+        : `after ${items.length} unpaid ${billWord} due before ${horizonLabel}`
+      : `after ${items.length} unpaid ${billWord} (next 30 days) · set expected income`;
 
   return {
     accountCount,
+    periodLabel: periodLabel(period),
     matchSuggestions: matches,
     kpis: {
       totalBalance: format(cur.totalBalance),
@@ -175,6 +167,7 @@ export async function getDashboardData(
       moneyOutUp: outDelta.up,
       safeToSpend: format(sts.result),
       safeToSpendNote: safeNote,
+      safeToSpendNegative: safeNegative,
     },
     safeToSpendMath: {
       availableBalance: format(sts.availableBalance),

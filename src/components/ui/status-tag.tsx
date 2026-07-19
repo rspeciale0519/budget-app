@@ -1,25 +1,31 @@
 import { cn } from "@/lib/utils";
+import type { BillDisplayStatus } from "@/services/bills/bill-status";
 
-export type BillStatus = "overdue" | "soon" | "scheduled" | "paid";
+/** The color vocabulary mirrors the shared bill-status keys 1:1. */
+export type BillStatus = BillDisplayStatus;
 
 /*
   One map, three call sites. The dashboard, the bill calendar and the tiling pane
-  each carried their own copy of this, and they had already drifted apart.
+  each carried their own copy of this, and they had already drifted apart — the
+  derivation now lives in services/bills/bill-status.ts and they all read it.
 
-  Note what red is spent on: only `overdue`. "Due soon" is warm, not alarming —
-  a bill you haven't paid yet is the normal state of a bill, not an error.
+  Note what red is spent on: only `overdue`. "Due today" and "due soon" are warm
+  amber, not alarming — an unpaid bill that isn't late yet is the normal state of
+  a bill, not an error. "Due later" is calm and neutral.
 */
 const CHIP: Record<BillStatus, string> = {
   overdue: "bg-alert-tint text-alert ring-alert/25",
+  today: "bg-debit-tint text-debit ring-debit/25",
   soon: "bg-debit-tint text-debit ring-debit/25",
-  scheduled: "bg-scheduled-tint text-scheduled ring-scheduled/25",
+  later: "bg-scheduled-tint text-scheduled ring-scheduled/25",
   paid: "bg-credit-tint text-credit ring-credit/25",
 };
 
 const INK: Record<BillStatus, string> = {
   overdue: "text-alert",
+  today: "text-debit",
   soon: "text-debit",
-  scheduled: "text-scheduled",
+  later: "text-scheduled",
   paid: "text-credit",
 };
 

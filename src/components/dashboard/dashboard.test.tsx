@@ -32,6 +32,36 @@ describe("Dashboard", () => {
     expect(html).toContain("Unpaid");
   });
 
+  it("shows a negative safe-to-spend in the alert tone, never celebratory green", () => {
+    const negData = {
+      ...mockDashboard,
+      kpis: {
+        ...mockDashboard.kpis,
+        safeToSpend: "-$412.00",
+        safeToSpendNote: "Short by $412.00 — 2 bills due before Jul 30",
+        safeToSpendNegative: true,
+      },
+    };
+    const html = renderToString(
+      <ToastProvider>
+        <Dashboard data={negData} />
+      </ToastProvider>,
+    );
+    expect(html).toContain("Short by $412.00");
+    expect(html).toContain("-$412.00");
+    expect(html).toContain("border-alert/40");
+  });
+
+  it("shows a healthy safe-to-spend in the credit tone (no alert tile)", () => {
+    const html = renderToString(
+      <ToastProvider>
+        <Dashboard data={mockDashboard} />
+      </ToastProvider>,
+    );
+    expect(html).toContain("border-credit/30");
+    expect(html).not.toContain("border-alert/40");
+  });
+
   it("drill-down lists the real unpaid bills and an income hint when unset", () => {
     const math = {
       availableBalance: "$5,000.00",

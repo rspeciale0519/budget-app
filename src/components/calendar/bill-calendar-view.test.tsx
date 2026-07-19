@@ -10,7 +10,7 @@ const fixture: CalendarMonth = {
     [
       { date: "2026-06-28", inMonth: false, isToday: false, events: [] },
       { date: "2026-06-29", inMonth: false, isToday: false, events: [] },
-      { date: "2026-06-30", inMonth: false, isToday: false, events: [{ billId: "b1", vendor: "Late Co", amount: "$50.00", status: "overdue" }] },
+      { date: "2026-06-30", inMonth: false, isToday: false, events: [{ billId: "b1", vendor: "Late Co", amount: "$50.00", status: "overdue", statusLabel: "Overdue" }] },
       { date: "2026-07-01", inMonth: true, isToday: true, events: [] },
       { date: "2026-07-02", inMonth: true, isToday: false, events: [] },
       { date: "2026-07-03", inMonth: true, isToday: false, events: [] },
@@ -39,7 +39,7 @@ const agendaFixture: CalendarMonth = {
         inMonth: true,
         isToday: today,
         events: today
-          ? [{ billId: "x", vendor: "Rent Co", amount: "$1,200.00", status: "soon" as const }]
+          ? [{ billId: "x", vendor: "Rent Co", amount: "$1,200.00", status: "soon" as const, statusLabel: "in 3 days" }]
           : [],
       };
     }),

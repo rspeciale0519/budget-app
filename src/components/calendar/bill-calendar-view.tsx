@@ -9,8 +9,9 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 // directly rather than the inline StatusTag pill the agenda uses.
 const CELL_CHIP: Record<DayStatus, string> = {
   overdue: "bg-alert-tint text-alert",
+  today: "bg-debit-tint text-debit",
   soon: "bg-debit-tint text-debit",
-  scheduled: "bg-scheduled-tint text-scheduled",
+  later: "bg-scheduled-tint text-scheduled",
   paid: "bg-credit-tint text-credit",
 };
 

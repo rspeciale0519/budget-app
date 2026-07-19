@@ -51,6 +51,11 @@ export function compare(a: CalendarDate, b: CalendarDate): -1 | 0 | 1 {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
+/** Whole days from a to b (b − a); negative when b is before a. */
+export function diffDays(a: CalendarDate, b: CalendarDate): number {
+  return Math.round((toUtcDate(b).getTime() - toUtcDate(a).getTime()) / 86_400_000);
+}
+
 export function isBefore(a: CalendarDate, b: CalendarDate): boolean {
   return compare(a, b) < 0;
 }

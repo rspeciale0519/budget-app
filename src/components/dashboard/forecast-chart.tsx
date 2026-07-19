@@ -6,7 +6,6 @@ export interface ForecastPoint {
   label: string;
   value: number;
   display: string;
-  largeBill?: boolean;
 }
 
 interface Geometry {
@@ -90,7 +89,6 @@ export function ForecastChart({
 
     const credit = readColor(wrap, "--credit", "#5eead4");
     const now = readColor(wrap, "--now", "#7da2ff");
-    const alert = readColor(wrap, "--alert", "#f4526a");
     const rule = readColor(wrap, "--rule", "#1e2634");
     const ink = readColor(wrap, "--ink", "#eaeef6");
     const muted = readColor(wrap, "--ink-muted", "#8792a8");
@@ -164,25 +162,16 @@ export function ForecastChart({
     ctx.textBaseline = "alphabetic";
     ctx.fillText("NOW", nowX + 4, PAD.top - 8);
 
-    // Large-bill markers — the days something big is due.
-    points.forEach((p, i) => {
-      if (!p.largeBill || g.x(i) > revealX) return;
-      const px = g.x(i);
-      const py = g.y(p.value);
-      ctx.beginPath();
-      ctx.arc(px, py, 6, 0, Math.PI * 2);
-      ctx.fillStyle = hexA(alert, 0.18);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(px, py, 3, 0, Math.PI * 2);
-      ctx.fillStyle = alert;
-      ctx.fill();
-    });
-
-    // The trough — the moment the account is thinnest. The number that matters.
+    // The trough — the moment the account is thinnest, and the only marked point.
+    // Drawn in neutral ink (not alert red): a low balance is a fact to notice, not
+    // an error. It's the same point the "Lowest: $X on <date>" caption names.
     if (progress >= 1) {
       const lx = g.x(lowestIndex);
       const ly = g.y(points[lowestIndex]!.value);
+      ctx.beginPath();
+      ctx.arc(lx, ly, 6, 0, Math.PI * 2);
+      ctx.fillStyle = hexA(ink, 0.16);
+      ctx.fill();
       ctx.beginPath();
       ctx.arc(lx, ly, 3.5, 0, Math.PI * 2);
       ctx.fillStyle = ink;

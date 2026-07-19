@@ -43,9 +43,9 @@ describe("billCalendar", () => {
     const days = m.weeks.flat();
     const find = (d: string) => days.find((x) => x.date === d)!;
 
-    expect(find("2026-06-30").events[0]).toMatchObject({ vendor: "Late Co", status: "overdue" });
-    expect(find("2026-07-05").events[0]).toMatchObject({ vendor: "Soon Co", status: "soon" });
-    expect(find("2026-07-20").events[0]).toMatchObject({ vendor: "Later Co", status: "scheduled", amount: "$90.00" });
+    expect(find("2026-06-30").events[0]).toMatchObject({ vendor: "Late Co", status: "overdue", statusLabel: "Overdue" });
+    expect(find("2026-07-05").events[0]).toMatchObject({ vendor: "Soon Co", status: "soon", statusLabel: "in 4 days" });
+    expect(find("2026-07-20").events[0]).toMatchObject({ vendor: "Later Co", status: "later", statusLabel: "Due later", amount: "$90.00" });
 
     expect(find("2026-07-01").isToday).toBe(true);
     expect(find("2026-06-30").inMonth).toBe(false);
