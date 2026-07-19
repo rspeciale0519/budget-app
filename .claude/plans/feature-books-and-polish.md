@@ -108,8 +108,8 @@
 
 ## Task 4: Gates, browser verification, merge
 
-- [ ] **Step 1:** `pnpm type-check && pnpm lint && pnpm test` — all exit 0.
-- [ ] **Step 2:** `pnpm build`, serve on a free port ≥ 3008, then with chrome-devtools (desktop 1440×900 AND mobile 430×932, plus a dark-mode spot check):
+- [x] **Step 1:** `pnpm type-check && pnpm lint && pnpm test` — all exit 0.
+- [x] **Step 2:** `pnpm build`, serve on a free port ≥ 3008, then with chrome-devtools (desktop 1440×900 AND mobile 430×932, plus a dark-mode spot check):
   - Sweep every page for the rename: no visible "workspace" anywhere (login → dashboard → transactions → manage → calendar → budget → income → import → activity → tiles → all → settings → members; also open the ＋ create dialog, the ⌘K palette, and trigger the no-access card via a bogus `/w/xyz` URL).
   - Headings render uniformly on every page (and confirm the tiles/all spacing didn't collapse per Task 1 Step 2).
   - `/all` shows the four combined KPI cards matching the table's Combined row exactly.
