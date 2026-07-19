@@ -9,6 +9,13 @@ import { startAllocationScene } from "./allocation-scene";
  * the form stays perfectly legible over whatever is moving. Both are decorative,
  * so both are `aria-hidden`, and if the canvas can't start the veil alone leaves
  * a calm, valid page.
+ *
+ * The veil's ellipse is sized in `vw`, not `%`/`vh`. Percent-of-height sizing
+ * looked right on a landscape-ish desktop window, but on a tall phone viewport
+ * the same percentage of a much taller box produced a vertical radius nearly as
+ * big as the whole screen — blanketing the animation everywhere instead of just
+ * clearing a pocket behind the heading/card. `vw` keeps the pocket tied to the
+ * content's actual (roughly width-driven) footprint on any aspect ratio.
  */
 export function LoginBackdrop() {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -32,7 +39,7 @@ export function LoginBackdrop() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(46% 48% at 50% 46%, color-mix(in oklab, var(--paper) 82%, transparent), transparent 74%)",
+            "radial-gradient(46vw 30vw at 50% 46%, color-mix(in oklab, var(--paper) 82%, transparent), transparent 74%)",
         }}
       />
     </>

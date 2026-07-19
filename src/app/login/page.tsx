@@ -11,7 +11,7 @@ export default async function LoginPage({
 }) {
   const { error } = await searchParams;
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-16">
+    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden px-6 py-16">
       <LoginBackdrop />
 
       <div className="relative w-full max-w-[340px]">
