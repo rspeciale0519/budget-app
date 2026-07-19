@@ -202,10 +202,10 @@ function CategoryChip({
   }
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-rule bg-surface py-0.5 pl-2.5 pr-1 text-xs text-ink/85">
+    <span className="inline-flex items-center gap-0.5 rounded-full border border-rule bg-surface py-0.5 pl-2.5 pr-0.5 text-xs text-ink/85">
       <button
         type="button"
-        className="hover:underline"
+        className="py-1 hover:underline"
         title="Click to rename"
         onClick={() => setEditing(true)}
       >
@@ -213,7 +213,7 @@ function CategoryChip({
       </button>
       <button
         type="button"
-        className={confirmingDelete ? "font-semibold text-alert" : "text-dim hover:text-alert"}
+        className={`grid h-6 min-w-6 shrink-0 place-items-center rounded-full px-1 ${confirmingDelete ? "font-semibold text-alert" : "text-dim hover:text-alert"}`}
         title={confirmingDelete ? "Click again to confirm delete" : "Delete category"}
         disabled={busy}
         onClick={remove}
