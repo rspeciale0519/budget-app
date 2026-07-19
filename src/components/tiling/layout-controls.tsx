@@ -55,7 +55,7 @@ export function LayoutControls({
         {children.map((child, i) => (
           <div key={i} className="flex items-center gap-1">
             <Select
-              aria-label={`Pane ${i + 1} workspace`}
+              aria-label={`Pane ${i + 1} book`}
               className="h-8 w-auto min-w-[8rem] text-xs"
               value={child.type === "leaf" ? child.workspaceId : ""}
               disabled={busy}

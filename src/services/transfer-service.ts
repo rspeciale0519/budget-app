@@ -116,7 +116,7 @@ export async function tagOwnerDraw(
   input: TagOwnerDrawInput,
 ): Promise<TagOwnerDrawResult> {
   if (input.fromWorkspaceId === input.toWorkspaceId) {
-    throw new Error("from and to workspaces must differ");
+    throw new Error("from and to books must differ");
   }
   const hasSource =
     Boolean(input.fromTransactionId) ||
@@ -131,7 +131,7 @@ export async function tagOwnerDraw(
 
   return rlsClientFor(actorUserId).run(async (tx) => {
     const org = await repo.findWorkspaceOrg(tx, input.fromWorkspaceId);
-    if (!org) throw new ForbiddenError("Workspace not found or access denied");
+    if (!org) throw new ForbiddenError("Book not found or access denied");
 
     let fromTransactionId: string;
     let incomeAmount: Money;

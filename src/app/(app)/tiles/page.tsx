@@ -9,6 +9,7 @@ import { today as todayFn } from "@/lib/calendar-date";
 import type { PaneConfig } from "@/lib/zod/layout";
 import { TilesClient } from "@/components/tiling/tiles-client";
 import { EmptyState } from "@/components/empty/empty-state";
+import { PageHeading } from "@/components/ui/page-heading";
 
 export const dynamic = "force-dynamic";
 
@@ -30,10 +31,10 @@ export default async function TilesPage({
   if (workspaces.length === 0) {
     return (
       <div className="space-y-4">
-        <h1 className="my-[22px] text-xl font-bold text-ink">Tiles</h1>
+        <PageHeading>Tiles</PageHeading>
         <EmptyState
           title="Nothing to tile yet"
-          description="Tiling shows several workspaces side by side. Create a second workspace with the + button in the top bar."
+          description="Tiling shows several books side by side. Create a second book with the + button in the top bar."
         />
       </div>
     );

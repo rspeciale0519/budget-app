@@ -4,6 +4,7 @@ import { listAccounts } from "@/services/account-service";
 import { listImportBatches } from "@/services/import";
 import { ImportWizard } from "@/components/import/import-wizard";
 import { ImportHistory } from "@/components/import/import-history";
+import { PageHeading } from "@/components/ui/page-heading";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export default async function ImportPage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-ink">CSV Import</h1>
+      <PageHeading>Import CSV</PageHeading>
       <ImportWizard workspaceId={workspaceId} accounts={accounts} />
       <ImportHistory workspaceId={workspaceId} batches={batches} />
     </div>

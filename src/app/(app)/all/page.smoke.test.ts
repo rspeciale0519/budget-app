@@ -29,5 +29,9 @@ describe("/all roll-up page data path", () => {
     expect(data.rows.map((r) => r.name).sort()).toEqual(["Business", "Personal"]);
     expect(data.combined).toBeDefined();
     expect(typeof data.combined.net.toFixed).toBe("function"); // a Money value
+    // The "All books" KPI cards read exactly these four combined fields.
+    for (const field of ["balance", "in", "out", "unpaid"] as const) {
+      expect(typeof data.combined[field].toFixed).toBe("function");
+    }
   });
 });

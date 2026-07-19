@@ -201,7 +201,7 @@ export function ImportWizard({
       <Card>
         <CardContent className="space-y-2 py-6 text-sm text-muted">
           <p className="font-medium text-ink">Add an account first.</p>
-          <p>CSV transactions are imported into an account, and this workspace has none yet.</p>
+          <p>CSV transactions are imported into an account, and this book has none yet.</p>
           <Link
             href={`/w/${workspaceId}/manage`}
             className="inline-block rounded-control bg-ink px-3 py-2 font-medium text-paper hover:opacity-85"

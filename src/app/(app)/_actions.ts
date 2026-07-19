@@ -26,6 +26,6 @@ export async function createWorkspaceAction(input: {
     revalidatePath("/");
     return { ok: true, workspaceId: ws.id };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Could not create the workspace" };
+    return { ok: false, error: e instanceof Error ? e.message : "Could not create the book" };
   }
 }

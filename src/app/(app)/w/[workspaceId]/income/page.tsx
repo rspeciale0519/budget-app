@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { listIncomeSources } from "@/services/income-source-service";
 import { IncomeSourceForm, type IncomeSourceView } from "@/components/income/income-source-form";
+import { PageHeading } from "@/components/ui/page-heading";
 import { fromDbDate } from "@/lib/calendar-date";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +28,7 @@ export default async function IncomePage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-ink">Expected Income</h1>
+      <PageHeading>Expected income</PageHeading>
       <IncomeSourceForm workspaceId={workspaceId} sources={sources} />
     </div>
   );

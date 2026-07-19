@@ -29,7 +29,7 @@ export async function paneSummary(
 ): Promise<PaneSummary> {
   await assertWorkspaceAccess(userId, workspaceId, "viewer");
   const ws = await getWorkspace(userId, workspaceId);
-  if (!ws) throw new ForbiddenError("Workspace not found or access denied");
+  if (!ws) throw new ForbiddenError("Book not found or access denied");
 
   const metrics = await workspaceMetrics(userId, workspaceId, "month", today);
   const sts = await safeToSpend(userId, workspaceId, today);

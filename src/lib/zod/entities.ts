@@ -118,7 +118,7 @@ export const tagOwnerDrawSchema = z
     fromTransactionId: z.string().optional(),
   })
   .refine((v) => v.fromWorkspaceId !== v.toWorkspaceId, {
-    message: "from and to workspaces must differ",
+    message: "from and to books must differ",
   })
   .refine((v) => Boolean(v.fromTransactionId) || (Boolean(v.amount) && Boolean(v.date)), {
     message: "Provide fromTransactionId, or both amount and date",

@@ -39,7 +39,7 @@ export default async function WorkspaceLayout({
       <div className="py-16">
         <Card>
           <CardContent className="space-y-4 py-10 text-center text-sm text-muted">
-            <p>You don&apos;t have access to this workspace.</p>
+            <p>You don&apos;t have access to this book.</p>
             <Link
               href="/"
               className="inline-flex h-9 items-center justify-center rounded-control border border-rule-strong bg-surface px-3.5 text-[13px] font-medium text-ink transition-colors hover:border-dim hover:bg-raised"

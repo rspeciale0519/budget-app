@@ -12,6 +12,7 @@ import { MONTHS, parseYm, shiftMonth } from "@/lib/month-nav";
 import { money, add, sub, format, isNegative, sum } from "@/lib/money";
 import { BudgetView, type BudgetSummary } from "@/components/budget/budget-view";
 import { MonthYearPicker } from "@/components/chrome/month-year-picker";
+import { PageHeading } from "@/components/ui/page-heading";
 
 export const dynamic = "force-dynamic";
 
@@ -63,9 +64,7 @@ export default async function BudgetPage({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h1 className="text-xl font-bold text-ink">
-            Budget — {MONTHS[month - 1] ?? ""} {year}
-          </h1>
+          <PageHeading>Budget — {MONTHS[month - 1] ?? ""} {year}</PageHeading>
           <p className="text-sm text-muted">
             Give each category a monthly limit, then watch spending fill the bar.
           </p>

@@ -80,7 +80,7 @@ export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
     }
   }
 
-  const groups: Command["group"][] = ["Quick actions", "Go to workspace", "Settings"];
+  const groups: Command["group"][] = ["Quick actions", "Go to book", "Settings"];
 
   function trapTab(e: React.KeyboardEvent) {
     if (e.key !== "Tab") return;

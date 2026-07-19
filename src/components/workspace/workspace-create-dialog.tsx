@@ -50,7 +50,7 @@ export function WorkspaceCreateDialog({ organizationId }: { organizationId: stri
       router.push(`/w/${res.workspaceId}`);
       router.refresh();
     } else {
-      setError(res.error ?? "Could not create the workspace — try again.");
+      setError(res.error ?? "Could not create the book — try again.");
     }
   }
 
@@ -59,7 +59,7 @@ export function WorkspaceCreateDialog({ organizationId }: { organizationId: stri
       <button
         ref={triggerRef}
         type="button"
-        aria-label="Add workspace"
+        aria-label="Add book"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className="whitespace-nowrap rounded-control px-2 py-2 text-[15px] font-semibold text-dim transition-colors hover:bg-raised hover:text-ink"
@@ -116,7 +116,7 @@ export function WorkspaceCreateDialog({ organizationId }: { organizationId: stri
             </div>
             {error && <FieldError>{error}</FieldError>}
             <Button type="submit" disabled={busy || name.trim() === ""} className="w-full">
-              {busy ? "Creating…" : "Create workspace"}
+              {busy ? "Creating…" : "Create book"}
             </Button>
           </form>
         </div>

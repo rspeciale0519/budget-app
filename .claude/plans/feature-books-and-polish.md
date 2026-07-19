@@ -31,12 +31,12 @@
 
 **Explicitly excluded call sites (intentional, don't "fix"):** the login `<h1>` (52px brand mark), `error.tsx`/`not-found.tsx` (standalone `text-lg` pages), `update-password` (centered auth layout), and the workspace layout's serif name header (`w/[workspaceId]/layout.tsx:71` — that's an identity header, not a page title; it keeps its serif style and breadcrumb).
 
-- [ ] **Step 1:** Create the component (≈10 lines, pattern above).
-- [ ] **Step 2:** Swap the 12 call sites. Normalization that happens as a side effect:
+- [x] **Step 1:** Create the component (≈10 lines, pattern above).
+- [x] **Step 2:** Swap the 12 call sites. Normalization that happens as a side effect:
   - `all`, `tiles` page, `budget`: `font-bold` → standard semibold; `all`/`tiles` drop the ad-hoc `my-[22px]` (their parent stacks already space with `space-y-4`; keep `my-[22px]` via `className` ONLY on `tiles-client.tsx` and `tiles/page.tsx` if removing it visibly collapses the gap — check in the browser pass).
   - `calendar` ("July 2026") and `tiles-client` ("Tiles"): serif → standard. The serif look stays exclusive to the workspace identity header.
   - Casing to sentence case while touching them: "CSV Import" → "Import CSV", "Expected Income" → "Expected income". (The "All Workspaces" heading is renamed in Task 2, but do the component swap here.)
-- [ ] **Step 3:** `pnpm type-check` clean; visual check of each page comes in the final browser pass.
+- [x] **Step 3:** `pnpm type-check` clean; visual check of each page comes in the final browser pass.
 
 ---
 
@@ -44,7 +44,7 @@
 
 **Files:** listed per string below — this inventory came from grepping the live code; treat it as exhaustive, then prove it with the verification grep in Step 4.
 
-- [ ] **Step 1: Component/page copy** — exact replacements:
+- [x] **Step 1: Component/page copy** — exact replacements:
 
 | File:line | Old | New |
 |---|---|---|
@@ -65,20 +65,20 @@
 | `src/app/(app)/w/[workspaceId]/audit/page.tsx` description | `A record of changes in this workspace…` | `A record of changes in this book…` |
 | `src/components/tiling/layout-controls.tsx:58` | `` aria-label={`Pane ${i + 1} workspace`} `` | `` aria-label={`Pane ${i + 1} book`} `` |
 
-- [ ] **Step 2: Command palette group** — the union value doubles as the rendered group label:
+- [x] **Step 2: Command palette group** — the union value doubles as the rendered group label:
   - `src/lib/command-palette/commands.ts:1`: `"Go to workspace"` → `"Go to book"` (in the `CommandGroup` union), and the same string in the `commands.push` group field (line 28).
   - `src/components/command/command-palette.tsx:83`: update the `groups` array literal to match.
   - `src/lib/command-palette/commands.test.ts:14,21`: update the two `c.group === "Go to workspace"` assertions.
   - Check `src/components/command/command-palette.test.tsx` for any copy assertion and update if present.
 
-- [ ] **Step 3: Service error strings that surface in toasts** (display strings only — the functions keep their names):
+- [x] **Step 3: Service error strings that surface in toasts** (display strings only — the functions keep their names):
   - `src/services/authz.ts:25`: `"No access to this workspace"` → `"No access to this book"`
   - `src/services/dashboard/pane-summary.ts:32`: `"Workspace not found or access denied"` → `"Book not found or access denied"`
   - `src/services/membership-service.ts` (two `"Workspace not found"` throws in assign/revoke): → `"Book not found"`
   - `src/services/transfer-service.ts` (tagOwnerDraw): `"from and to workspaces must differ"` → `"from and to books must differ"` — **check first** whether `src/lib/zod/zod.test.ts` or `transfer-service.test.ts` asserts this message text (the zod schema at `src/lib/zod/entities.ts` has the same refine message; keep schema + service messages identical to each other) and update any assertions.
   - Run the affected service tests after: `pnpm vitest run src/services/authz.test.ts src/services/membership-service.test.ts src/services/transfer-service.test.ts src/lib/zod/zod.test.ts src/services/dashboard/pane-summary.test.ts`
 
-- [ ] **Step 4: Prove exhaustiveness** — run and inspect:
+- [x] **Step 4: Prove exhaustiveness** — run and inspect:
   `grep -rn -iE "workspace" src --include="*.tsx" | grep -vE "workspaceId|Workspace[A-Z]|workspace-|[a-z]Workspace|import |from \"|href|/w/"` — every remaining hit must be a code identifier, comment, or test fixture, never rendered copy. Do the same over `src/lib` and `src/services` for thrown message strings. Fix stragglers.
 
 **Not renamed (by design):** file/folder names (`components/workspace/…`), component names (`WorkspaceTabs`…), props (`workspaceId`, `allWorkspaces`), route segments, DB models, `metadata` templates that only interpolate the book's own name, and code comments (update a comment only when already editing that line).
@@ -93,16 +93,16 @@
 **Interfaces:**
 - Consumes: `rollup(userId, organizationId, "month", today)` — already returns `{ rows, combined }` where `combined` has `balance/in/out/unpaid/net` as `Money` (verified; the page already destructures this data for the table's Combined row). No service changes.
 
-- [ ] **Step 1: KPI row.** In `all/page.tsx`, above the existing table, render a responsive card grid (`grid grid-cols-2 gap-4 lg:grid-cols-4`) of four stat cards from `data.combined`, following the dashboard's KPI card look (uppercase 11px label, 26px tabular value):
+- [x] **Step 1: KPI row.** In `all/page.tsx`, above the existing table, render a responsive card grid (`grid grid-cols-2 gap-4 lg:grid-cols-4`) of four stat cards from `data.combined`, following the dashboard's KPI card look (uppercase 11px label, 26px tabular value):
   - "Total balance" → `format(data.combined.balance)`
   - "Money in · this month" → `format(data.combined.in)`
   - "Money out · this month" → `format(data.combined.out)`
   - "Unpaid bills" → `format(data.combined.unpaid)` — with `text-alert` on the value only when non-zero
   Keep the table below (it keeps its per-book rows and Combined footer). Build the card locally in this file (a ~10-line `Stat` helper) — the dashboard's `Kpi` is module-private and has delta props we don't need.
-- [ ] **Step 2: Landing logic.** In `src/app/page.tsx:17-18`, replace the unconditional first-book redirect:
+- [x] **Step 2: Landing logic.** In `src/app/page.tsx:17-18`, replace the unconditional first-book redirect:
   - `workspaces.length > 1` → `redirect("/all")` (multi-book owners land on the whole picture)
   - exactly one → `redirect(/w/{first.id})` (a single-book user's book IS the whole picture; `/all` would just be a one-row table)
-- [ ] **Step 3:** Extend `src/app/(app)/all/page.smoke.test.ts` with one assertion if cheap (the rollup `combined` math is already covered there — only add if the test file structure makes it a 3-line addition; otherwise the browser pass covers the page).
+- [x] **Step 3:** Extend `src/app/(app)/all/page.smoke.test.ts` with one assertion if cheap (the rollup `combined` math is already covered there — only add if the test file structure makes it a 3-line addition; otherwise the browser pass covers the page).
 
 ---
 

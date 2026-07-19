@@ -57,7 +57,7 @@ export async function TabBar({ userId }: { userId: string }) {
           <Link
             href="/tiles"
             className="hidden h-9 items-center gap-1.5 rounded-control border border-rule bg-surface px-3 text-xs font-semibold text-ink/85 transition-colors hover:border-dim hover:bg-raised lg:flex"
-            title="Tile multiple workspaces side-by-side"
+            title="Tile multiple books side-by-side"
           >
             ⊞ Tile view
           </Link>

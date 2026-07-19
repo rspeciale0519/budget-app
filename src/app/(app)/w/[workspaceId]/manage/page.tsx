@@ -9,6 +9,7 @@ import { TransferForm } from "@/components/manage/transfer-form";
 import { ExportPanel } from "@/components/manage/export-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty/empty-state";
+import { PageHeading } from "@/components/ui/page-heading";
 import { fromDbDate } from "@/lib/calendar-date";
 import { formatDate } from "@/lib/format-date";
 import { money, format } from "@/lib/money";
@@ -37,7 +38,7 @@ export default async function ManagePage({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <h1 className="text-xl font-semibold text-ink">Manage</h1>
+        <PageHeading>Manage</PageHeading>
         <ExportPanel workspaceId={workspaceId} />
       </div>
       {accounts.length === 0 && (

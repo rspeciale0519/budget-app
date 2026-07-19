@@ -22,10 +22,10 @@ export async function assertWorkspaceAccess(
   const membership = await prismaAdmin.workspaceMembership.findUnique({
     where: { workspaceId_userId: { workspaceId, userId } },
   });
-  if (!membership) throw new ForbiddenError("No access to this workspace");
+  if (!membership) throw new ForbiddenError("No access to this book");
   // admin ⊇ viewer; viewer satisfies only viewer.
   if (need === "admin" && membership.role !== "admin") {
-    throw new ForbiddenError("Admin role required for this workspace");
+    throw new ForbiddenError("Admin role required for this book");
   }
 }
 

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/field";
 import { EmptyState } from "@/components/empty/empty-state";
+import { PageHeading } from "@/components/ui/page-heading";
 import { TransactionRow, type TransactionRowData } from "@/components/transactions/transaction-row";
 import { cn } from "@/lib/utils";
 
@@ -61,7 +62,7 @@ export function TransactionsView({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold text-ink">Transactions</h1>
+        <PageHeading>Transactions</PageHeading>
         {uncategorizedCount > 0 && (
           <button
             type="button"

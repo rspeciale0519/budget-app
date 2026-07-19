@@ -94,7 +94,7 @@ export async function assignWorkspaceMembership(
   input: { userId: string; workspaceId: string; role: WorkspaceRole },
 ) {
   const ws = await prismaAdmin.workspace.findUnique({ where: { id: input.workspaceId } });
-  if (!ws) throw new Error("Workspace not found");
+  if (!ws) throw new Error("Book not found");
   await assertOrgRole(actorUserId, ws.organizationId, "admin");
   return prismaAdmin.workspaceMembership.upsert({
     where: { workspaceId_userId: { workspaceId: input.workspaceId, userId: input.userId } },
@@ -108,7 +108,7 @@ export async function revokeWorkspaceMembership(
   input: { userId: string; workspaceId: string },
 ) {
   const ws = await prismaAdmin.workspace.findUnique({ where: { id: input.workspaceId } });
-  if (!ws) throw new Error("Workspace not found");
+  if (!ws) throw new Error("Book not found");
   await assertOrgRole(actorUserId, ws.organizationId, "admin");
   await prismaAdmin.workspaceMembership.deleteMany({
     where: { workspaceId: input.workspaceId, userId: input.userId },

@@ -6,6 +6,7 @@ import { listAccessibleWorkspaces } from "@/services/authz";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InviteForm } from "@/components/members/invite-form";
 import { MemberAccessManager, type MemberView } from "@/components/members/member-access";
+import { PageHeading } from "@/components/ui/page-heading";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,7 @@ export default async function MembersPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-ink">Members</h1>
+      <PageHeading>Members</PageHeading>
       {canManage ? (
         <>
           <Card>
@@ -41,7 +42,7 @@ export default async function MembersPage() {
             <CardContent>
               <InviteForm organizationId={orgMembership.organizationId} />
               <p className="mt-2 text-xs text-dim">
-                After inviting someone, choose below which workspaces they can see or edit.
+                After inviting someone, choose below which books they can see or edit.
               </p>
             </CardContent>
           </Card>

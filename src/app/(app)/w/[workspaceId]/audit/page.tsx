@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty/empty-state";
+import { PageHeading } from "@/components/ui/page-heading";
 import { formatDate } from "@/lib/format-date";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { getWorkspace } from "@/services/workspace-service";
@@ -45,9 +46,9 @@ export default async function AuditPage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-ink">Activity</h1>
+      <PageHeading>Activity</PageHeading>
       <p className="text-sm text-muted">
-        A record of changes in this workspace (visible to owners and admins).
+        A record of changes in this book (visible to owners and admins).
       </p>
       <Card>
         <CardHeader>

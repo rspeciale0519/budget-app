@@ -9,6 +9,7 @@ import {
   saveLayoutAction,
   deleteLayoutAction,
 } from "@/app/(app)/tiles/_actions";
+import { PageHeading } from "@/components/ui/page-heading";
 import type { PaneConfig } from "@/lib/zod/layout";
 import type { PaneSummary } from "@/services/dashboard/pane-summary";
 import type { SavedLayout } from "@/services/layout-service";
@@ -83,7 +84,7 @@ export function TilesClient({ workspaces, layouts, initialConfig, initialSummari
 
   return (
     <div className="space-y-4">
-      <h1 className="my-[22px] font-serif text-2xl text-ink">Tiles</h1>
+      <PageHeading>Tiles</PageHeading>
       <LayoutControls
         workspaces={workspaces}
         layouts={saved}

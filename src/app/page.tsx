@@ -14,6 +14,9 @@ export default async function Home() {
     await bootstrapOrgForUser(user.id);
     workspaces = await listAccessibleWorkspaces(user.id);
   }
+  // With more than one book, land on the combined "All books" overview; a
+  // single-book user's book already IS the whole picture, so go straight to it.
+  if (workspaces.length > 1) redirect("/all");
   const first = workspaces[0];
   redirect(first ? `/w/${first.id}` : "/all");
 }

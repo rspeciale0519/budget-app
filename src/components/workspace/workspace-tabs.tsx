@@ -76,7 +76,7 @@ export function WorkspaceTabs({
           allActive ? "bg-raised text-ink" : "text-muted hover:bg-raised/60 hover:text-ink",
         )}
       >
-        ▦ All Workspaces
+        ▦ All books
       </Link>
     </div>
   );
