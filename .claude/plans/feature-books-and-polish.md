@@ -115,7 +115,7 @@
   - `/all` shows the four combined KPI cards matching the table's Combined row exactly.
   - Landing: with the seeded multi-book user, `/` lands on `/all`. (Single-book case is covered by reading the redirect logic — creating and deleting a one-book user isn't worth the DB churn.)
   - Zero console errors throughout.
-- [ ] **Step 3:** Commit on the branch; merge to `main` (fast-forward expected), re-run the three gates on `main`, push `origin main`, delete the branch, update project memory.
+- [x] **Step 3:** Commit on the branch; merge to `main` (fast-forward expected), re-run the three gates on `main`, push `origin main`, delete the branch, update project memory.
 
 ---
 
