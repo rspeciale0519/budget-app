@@ -11,6 +11,7 @@ import { today as todayFn, calendarDate } from "@/lib/calendar-date";
 import { MONTHS, parseYm, shiftMonth } from "@/lib/month-nav";
 import { money, add, sub, format, isNegative, sum } from "@/lib/money";
 import { BudgetView, type BudgetSummary } from "@/components/budget/budget-view";
+import { MonthYearPicker } from "@/components/chrome/month-year-picker";
 
 export const dynamic = "force-dynamic";
 
@@ -69,7 +70,8 @@ export default async function BudgetPage({
             Give each category a monthly limit, then watch spending fill the bar.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <MonthYearPicker basePath={`/w/${workspaceId}/budget`} year={year} month={month} />
           <Link href={`/w/${workspaceId}/budget?ym=${shiftMonth(year, month, -1)}`} className={navCls}>
             ← Prev
           </Link>

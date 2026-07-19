@@ -1,17 +1,23 @@
 import Link from "next/link";
 import { listAccessibleWorkspaces } from "@/services/authz";
+import { listLayouts } from "@/services/layout-service";
 import { prismaAdmin } from "@/lib/prisma-admin";
 import { createServerClient } from "@/lib/supabase/server";
 import { WorkspaceTabs } from "@/components/workspace/workspace-tabs";
 import { ThemeToggle } from "@/components/chrome/theme-toggle";
 import { AvatarMenu } from "@/components/chrome/avatar-menu";
 import { SearchButton } from "@/components/chrome/search-button";
+import { LayoutsDropdown } from "@/components/chrome/layouts-dropdown";
 
 export async function TabBar({ userId }: { userId: string }) {
   const workspaces = await listAccessibleWorkspaces(userId);
   const orgMembership = await prismaAdmin.orgMembership.findFirst({
-    where: { userId, role: { in: ["owner", "admin"] } },
+    where: { userId },
   });
+  const layouts = orgMembership
+    ? await listLayouts(userId, orgMembership.organizationId).catch(() => [])
+    : [];
+  const isOrgAdmin = orgMembership && ["owner", "admin"].includes(orgMembership.role);
   const supabase = await createServerClient();
   const {
     data: { user },
@@ -34,8 +40,9 @@ export async function TabBar({ userId }: { userId: string }) {
             name: w.name,
             color: w.color,
             icon: w.icon,
+            type: w.type,
           }))}
-          organizationId={orgMembership?.organizationId ?? null}
+          organizationId={isOrgAdmin ? orgMembership!.organizationId : null}
         />
 
         <div className="ml-auto flex items-center gap-2">
@@ -54,6 +61,7 @@ export async function TabBar({ userId }: { userId: string }) {
           >
             ⊞ Tile view
           </Link>
+          <LayoutsDropdown layouts={layouts} />
           <SearchButton />
           <ThemeToggle />
           <AvatarMenu initial={initial} email={user?.email ?? ""} />

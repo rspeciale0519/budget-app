@@ -1,8 +1,8 @@
 import type { z } from "zod";
 import type { Db } from "@/repositories/db";
 import { rlsClientFor } from "@/lib/prisma-rls";
-import { assertWorkspaceAccess } from "@/services/authz";
-import { createCategorySchema } from "@/lib/zod/entities";
+import { assertWorkspaceAccess, ForbiddenError } from "@/services/authz";
+import { createCategorySchema, updateCategorySchema } from "@/lib/zod/entities";
 import { DEFAULT_CATEGORIES } from "@/lib/default-categories";
 import * as repo from "@/repositories/category-repo";
 
@@ -34,4 +34,26 @@ export async function createCategory(
 export async function listCategories(actorUserId: string, workspaceId: string) {
   await assertWorkspaceAccess(actorUserId, workspaceId, "viewer");
   return rlsClientFor(actorUserId).run((tx) => repo.listCategoriesByWorkspace(tx, workspaceId));
+}
+
+export async function updateCategory(
+  actorUserId: string,
+  categoryId: string,
+  input: z.input<typeof updateCategorySchema>,
+) {
+  const existing = await rlsClientFor(actorUserId).run((tx) => repo.findCategory(tx, categoryId));
+  if (!existing) throw new ForbiddenError("Category not found or access denied");
+  await assertWorkspaceAccess(actorUserId, existing.workspaceId, "admin");
+  const data = updateCategorySchema.parse(input);
+  return rlsClientFor(actorUserId).run((tx) => repo.updateCategoryRow(tx, categoryId, { name: data.name }));
+}
+
+/** Deleting a category is safe without a migration: transactions reference it
+ * with onDelete: SetNull, so their history stays intact and just becomes
+ * uncategorized — there's no "archived" state to build. */
+export async function deleteCategory(actorUserId: string, categoryId: string): Promise<void> {
+  const existing = await rlsClientFor(actorUserId).run((tx) => repo.findCategory(tx, categoryId));
+  if (!existing) throw new ForbiddenError("Category not found or access denied");
+  await assertWorkspaceAccess(actorUserId, existing.workspaceId, "admin");
+  await rlsClientFor(actorUserId).run((tx) => repo.deleteCategoryRow(tx, categoryId));
 }

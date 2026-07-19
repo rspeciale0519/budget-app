@@ -13,6 +13,18 @@ export function listCategoriesByWorkspace(db: Db, workspaceId: string) {
   return db.category.findMany({ where: { workspaceId }, orderBy: { name: "asc" } });
 }
 
+export function updateCategoryRow(db: Db, id: string, data: Prisma.CategoryUncheckedUpdateInput) {
+  return db.category.update({ where: { id }, data });
+}
+
+export function deleteCategoryRow(db: Db, id: string) {
+  return db.category.delete({ where: { id } });
+}
+
+export function findCategory(db: Db, id: string) {
+  return db.category.findUnique({ where: { id } });
+}
+
 export function insertCategoryRule(db: Db, data: Prisma.CategoryRuleUncheckedCreateInput) {
   return db.categoryRule.create({ data });
 }

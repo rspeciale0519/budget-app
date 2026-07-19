@@ -20,6 +20,7 @@ export function ImportPreview({
   onCommit,
   onUndo,
   onBack,
+  onDateOverride,
   batchId,
   busy,
 }: {
@@ -31,10 +32,12 @@ export function ImportPreview({
   onCommit: () => void;
   onUndo: () => void;
   onBack: () => void;
+  onDateOverride: (i: number, date: string) => void;
   batchId: string | null;
   busy: boolean;
 }) {
-  const dateErrors = rows.some((r) => r.errors.some((e) => e.startsWith("Cannot parse date")));
+  const isDateError = (e: string) => e.startsWith("Cannot parse date") || e.startsWith("Invalid calendar date");
+  const dateErrors = rows.some((r) => r.errors.some(isDateError));
   const committable = rows.filter((r, i) => !skip.has(i) && r.errors.length === 0).length;
   const RENDER_CAP = 200;
   const shown = rows.slice(0, RENDER_CAP);
@@ -70,8 +73,8 @@ export function ImportPreview({
       {dateErrors && (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-control bg-alert-tint px-3 py-2 text-sm text-alert">
           <span>
-            Some dates don&apos;t match the chosen format — go back a step and try a different date
-            format.
+            Some dates don&apos;t match the chosen format — pick the correct date right on each row
+            below, or go back and try a different date format for all of them.
           </span>
           <Button variant="outline" size="sm" onClick={onBack} disabled={busy}>
             ← Back to columns
@@ -93,6 +96,7 @@ export function ImportPreview({
       <div className="max-h-[26rem] divide-y divide-rule overflow-y-auto rounded-control border border-rule">
         {shown.map((r, i) => {
           const negative = r.amount.startsWith("-");
+          const dateError = r.errors.some(isDateError);
           return (
             <label
               key={i}
@@ -107,7 +111,19 @@ export function ImportPreview({
                 />
                 <span className="min-w-0">
                   <span className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-dim">{r.date || "??"}</span>
+                    {dateError ? (
+                      <input
+                        type="date"
+                        aria-label={`Fix date for row ${i + 1}`}
+                        className="rounded border border-alert/50 bg-alert-tint px-1 py-0.5 text-xs text-ink"
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => {
+                          if (e.target.value) onDateOverride(i, e.target.value);
+                        }}
+                      />
+                    ) : (
+                      <span className="text-dim">{r.date || "??"}</span>
+                    )}
                     <span className="truncate font-medium text-ink">
                       {r.description}
                     </span>

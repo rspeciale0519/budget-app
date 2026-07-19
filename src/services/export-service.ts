@@ -1,7 +1,12 @@
 import { rlsClientFor } from "@/lib/prisma-rls";
 import { assertWorkspaceAccess, assertOrgRole, listAccessibleWorkspaces } from "@/services/authz";
 import { money, add } from "@/lib/money";
-import { fromDbDate } from "@/lib/calendar-date";
+import { fromDbDate, toUtcDate, type CalendarDate } from "@/lib/calendar-date";
+
+export interface DateRange {
+  from?: CalendarDate;
+  to?: CalendarDate;
+}
 
 function csvEscape(value: string): string {
   return /[",\n\r]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
@@ -20,10 +25,27 @@ function toRow(cells: string[]): string {
   return cells.map(csvEscape).join(",");
 }
 
-export async function exportTransactionsCsv(actorUserId: string, workspaceId: string): Promise<string> {
+export async function exportTransactionsCsv(
+  actorUserId: string,
+  workspaceId: string,
+  range: DateRange = {},
+): Promise<string> {
   await assertWorkspaceAccess(actorUserId, workspaceId, "viewer");
   const txns = await rlsClientFor(actorUserId).run((tx) =>
-    tx.transaction.findMany({ where: { workspaceId }, orderBy: [{ date: "asc" }, { createdAt: "asc" }] }),
+    tx.transaction.findMany({
+      where: {
+        workspaceId,
+        ...(range.from || range.to
+          ? {
+              date: {
+                ...(range.from ? { gte: toUtcDate(range.from) } : {}),
+                ...(range.to ? { lte: toUtcDate(range.to) } : {}),
+              },
+            }
+          : {}),
+      },
+      orderBy: [{ date: "asc" }, { createdAt: "asc" }],
+    }),
   );
   const header = ["date", "description", "merchant", "amount", "categoryId", "isTransfer", "source"];
   const lines = [
@@ -43,10 +65,27 @@ export async function exportTransactionsCsv(actorUserId: string, workspaceId: st
   return lines.join("\n");
 }
 
-export async function exportBillsCsv(actorUserId: string, workspaceId: string): Promise<string> {
+export async function exportBillsCsv(
+  actorUserId: string,
+  workspaceId: string,
+  range: DateRange = {},
+): Promise<string> {
   await assertWorkspaceAccess(actorUserId, workspaceId, "viewer");
   const bills = await rlsClientFor(actorUserId).run((tx) =>
-    tx.bill.findMany({ where: { workspaceId }, orderBy: { dueDate: "asc" } }),
+    tx.bill.findMany({
+      where: {
+        workspaceId,
+        ...(range.from || range.to
+          ? {
+              dueDate: {
+                ...(range.from ? { gte: toUtcDate(range.from) } : {}),
+                ...(range.to ? { lte: toUtcDate(range.to) } : {}),
+              },
+            }
+          : {}),
+      },
+      orderBy: { dueDate: "asc" },
+    }),
   );
   const header = ["vendor", "amount", "dueDate", "status", "type"];
   const lines = [

@@ -5,7 +5,7 @@ import { matchRules } from "@/services/category-rule-service";
 import { listRulesByWorkspace } from "@/repositories/category-repo";
 import { dedupeHash } from "@/lib/dedupe";
 import { money, add, sum, compare, type Money } from "@/lib/money";
-import { toUtcDate, type CalendarDate } from "@/lib/calendar-date";
+import { calendarDate, toUtcDate, type CalendarDate } from "@/lib/calendar-date";
 import { parseCsv, parseImportDate } from "@/services/import/parse";
 import { applySignRule } from "@/services/import/sign-rule";
 import type { MappingConfig } from "@/services/import/types";
@@ -46,6 +46,8 @@ export interface PreviewInput {
   accountId: string;
   csvText: string;
   mapping: MappingConfig;
+  /** Row index → a user-corrected ISO date, for rows the mapped format couldn't parse. */
+  dateOverrides?: Record<number, string>;
 }
 
 function cell(row: Record<string, string>, header: string | undefined): string | undefined {
@@ -67,7 +69,8 @@ export async function previewImport(actorUserId: string, input: PreviewInput): P
     const rules = await listRulesByWorkspace(tx, account.workspaceId);
 
     const previewRows: PreviewRow[] = [];
-    for (const raw of rows) {
+    for (let i = 0; i < rows.length; i++) {
+      const raw = rows[i]!;
       const errors: string[] = [];
       let parsed: ParsedRow | null = null;
       let hash: string | null = null;
@@ -75,7 +78,10 @@ export async function previewImport(actorUserId: string, input: PreviewInput): P
       let proposedCategoryId: string | null = null;
 
       try {
-        const date = parseImportDate(cell(raw, columnMap.date) ?? "", dateFormat);
+        const override = input.dateOverrides?.[i];
+        const date = override
+          ? calendarDate(override)
+          : parseImportDate(cell(raw, columnMap.date) ?? "", dateFormat);
         const amount = applySignRule(signRule, {
           amount: cell(raw, columnMap.amount),
           debit: cell(raw, columnMap.debit),

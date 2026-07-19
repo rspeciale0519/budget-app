@@ -6,6 +6,7 @@ import { listCategories } from "@/services/category-service";
 import { ManageForms } from "@/components/manage/manage-forms";
 import { CategoryManager } from "@/components/manage/category-form";
 import { TransferForm } from "@/components/manage/transfer-form";
+import { ExportPanel } from "@/components/manage/export-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty/empty-state";
 import { fromDbDate } from "@/lib/calendar-date";
@@ -35,16 +36,9 @@ export default async function ManagePage({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <h1 className="text-xl font-semibold text-ink">Manage</h1>
-        <div className="flex gap-2 text-sm">
-          <a href={`/w/${workspaceId}/export?type=transactions`} className="rounded-control border border-rule px-3 py-1.5 hover:bg-raised">
-            Export transactions
-          </a>
-          <a href={`/w/${workspaceId}/export?type=bills`} className="rounded-control border border-rule px-3 py-1.5 hover:bg-raised">
-            Export bills
-          </a>
-        </div>
+        <ExportPanel workspaceId={workspaceId} />
       </div>
       {accounts.length === 0 && (
         <EmptyState

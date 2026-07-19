@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-const ITEMS: [string, string][] = [
+export const WORKSPACE_SECTIONS: [string, string][] = [
   ["Dashboard", ""],
   ["Transactions", "/transactions"],
   ["Manage", "/manage"],
@@ -24,7 +24,9 @@ export function WorkspaceSubNav({
 }) {
   const pathname = usePathname();
   const base = `/w/${workspaceId}`;
-  const items = showActivity ? ITEMS : ITEMS.filter(([, sub]) => sub !== "/audit");
+  const items = showActivity
+    ? WORKSPACE_SECTIONS
+    : WORKSPACE_SECTIONS.filter(([, sub]) => sub !== "/audit");
 
   return (
     <nav className="mb-5 flex flex-wrap items-center gap-0.5 border-b border-rule text-[13px]">

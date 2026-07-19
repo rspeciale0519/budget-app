@@ -81,6 +81,7 @@ export function ImportWizard({
     { computed: string; reported: string; mismatch: boolean } | null
   >(null);
   const [skip, setSkip] = useState<Set<number>>(new Set());
+  const [dateOverrides, setDateOverrides] = useState<Record<number, string>>({});
   const [batchId, setBatchId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -105,22 +106,42 @@ export function ImportWizard({
     setStep("map");
   }
 
-  async function preview() {
-    if (!parsed) return;
+  // Re-deriving after a date fix resets skip/duplicate flags to server truth
+  // (same as the first preview) rather than trying to preserve any manual
+  // include/exclude toggles made on other rows in between — simpler and never
+  // silently commits something the user didn't just see.
+  async function runPreview(overrides: Record<number, string>) {
+    if (!parsed) return false;
     setBusy(true);
     setError(null);
-    setBatchId(null);
-    const result = await previewImportAction(workspaceId, accountId, parsed.text, toMappingConfig(mapping));
+    const result = await previewImportAction(
+      workspaceId,
+      accountId,
+      parsed.text,
+      toMappingConfig(mapping),
+      overrides,
+    );
     setBusy(false);
     if (!result.ok) {
       setError(result.error ?? "Preview failed");
-      return;
+      return false;
     }
     setRows(result.rows);
     setSummary(result.summary);
     setReconcile(result.reconcile);
     setSkip(new Set(result.rows.flatMap((r, i) => (r.skip ? [i] : []))));
-    setStep("review");
+    return true;
+  }
+
+  async function preview() {
+    setBatchId(null);
+    if (await runPreview(dateOverrides)) setStep("review");
+  }
+
+  async function applyDateOverride(i: number, date: string) {
+    const next = { ...dateOverrides, [i]: date };
+    setDateOverrides(next);
+    await runPreview(next);
   }
 
   async function commit() {
@@ -135,6 +156,7 @@ export function ImportWizard({
       toMappingConfig(mapping),
       [...skip],
       rows.length,
+      dateOverrides,
     );
     setBusy(false);
     if (!result.ok) setError(result.error ?? "Import failed");
@@ -160,6 +182,7 @@ export function ImportWizard({
     setFileName(null);
     setMapping(EMPTY_MAPPING);
     setRows([]);
+    setDateOverrides({});
     setBatchId(null);
     setError(null);
   }
@@ -255,6 +278,7 @@ export function ImportWizard({
                 onCommit={commit}
                 onUndo={undo}
                 onBack={() => setStep("map")}
+                onDateOverride={applyDateOverride}
                 batchId={batchId}
                 busy={busy}
               />

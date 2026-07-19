@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/supabase/server";
 import { assertWorkspaceAccess } from "@/services/authz";
 import { getWorkspace } from "@/services/workspace-service";
 import { WorkspaceSubNav } from "@/components/workspace/workspace-sub-nav";
+import { WorkspaceBreadcrumb } from "@/components/workspace/workspace-breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
@@ -69,6 +70,7 @@ export default async function WorkspaceLayout({
           <Link href={`/w/${workspaceId}`} className="hover:underline">
             <h1 className="font-serif text-[22px] leading-tight tracking-[-0.01em] text-ink">
               {ws.name}
+              <WorkspaceBreadcrumb workspaceId={workspaceId} />
             </h1>
           </Link>
           <div className="text-xs font-medium uppercase tracking-[0.06em] text-dim">

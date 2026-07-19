@@ -6,7 +6,7 @@ import type { Frequency } from "@prisma/client";
 import { createTransaction } from "@/services/transaction-service";
 import { createBill, markPaid, markPaidStandalone } from "@/services/bill-service";
 import { createAccount } from "@/services/account-service";
-import { createCategory } from "@/services/category-service";
+import { createCategory, updateCategory, deleteCategory } from "@/services/category-service";
 import { tagOwnerDraw, createAccountTransfer } from "@/services/transfer-service";
 import { createIncomeSource, deleteIncomeSource } from "@/services/income-source-service";
 
@@ -55,6 +55,21 @@ export async function addCategoryAction(
   return run(workspaceId, (userId) =>
     createCategory(userId, workspaceId, { name: input.name, kind: input.kind as never }),
   );
+}
+
+export async function renameCategoryAction(
+  workspaceId: string,
+  categoryId: string,
+  name: string,
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => updateCategory(userId, categoryId, { name }));
+}
+
+export async function deleteCategoryAction(
+  workspaceId: string,
+  categoryId: string,
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => deleteCategory(userId, categoryId));
 }
 
 export async function addTransactionAction(

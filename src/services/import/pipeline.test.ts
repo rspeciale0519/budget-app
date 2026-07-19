@@ -81,4 +81,48 @@ describe("CSV import pipeline", () => {
     const rereadBatch = await prismaAdmin.importBatch.findUniqueOrThrow({ where: { id: batch.id } });
     expect(rereadBatch.archivedAt).not.toBeNull();
   });
+
+  it("a dateOverride fixes an unparseable row and lets it fully derive (category, hash, commit)", async () => {
+    const badCsv = [
+      "Date,Description,Amount,Balance",
+      "not-a-date,Rent,-1500.00,",
+      "06/21/2026,Internet,-60.00,",
+    ].join("\n");
+
+    const broken = await previewImport(admin, { accountId, csvText: badCsv, mapping });
+    const rentRow = broken.rows[0]!;
+    expect(rentRow.parsed).toBeNull();
+    // "not-a-date" splits into 3 parts, so it fails calendarDate()'s own
+    // validation rather than parseImportDate's missing-part guard — both are
+    // date-parse failures the review UI must recognize (see isDateError there).
+    expect(rentRow.errors[0]).toContain("Invalid calendar date");
+    expect(rentRow.skip).toBe(true);
+
+    // The other date-failure shape: too few parts to even attempt a real date.
+    const missingPart = await previewImport(admin, {
+      accountId,
+      csvText: "Date,Description,Amount,Balance\n06/2026,Rent,-1500.00,",
+      mapping,
+    });
+    expect(missingPart.rows[0]!.errors[0]).toContain("Cannot parse date");
+
+    const fixed = await previewImport(admin, {
+      accountId,
+      csvText: badCsv,
+      mapping,
+      dateOverrides: { 0: "2026-06-22" },
+    });
+    const fixedRent = fixed.rows[0]!;
+    expect(fixedRent.errors).toHaveLength(0);
+    expect(fixedRent.parsed?.date).toBe("2026-06-22");
+    expect(fixedRent.skip).toBe(false);
+    expect(fixedRent.dedupeHash).not.toBeNull();
+
+    const batch = await commitImport(admin, { accountId, filename: "fixed.csv", rows: fixed.rows });
+    expect(batch.rowCount).toBe(2);
+    const committed = await prismaAdmin.transaction.findMany({ where: { importBatchId: batch.id } });
+    const rentTxn = committed.find((t) => t.description === "Rent");
+    expect(rentTxn?.date.toISOString().slice(0, 10)).toBe("2026-06-22");
+    await undoImport(admin, batch.id);
+  });
 });

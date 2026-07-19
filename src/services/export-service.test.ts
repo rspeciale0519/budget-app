@@ -37,6 +37,20 @@ describe("export-service", () => {
     expect(lines[1]).toContain('"Coffee, large"'); // comma triggers quoting
   });
 
+  it("filters transactions by an optional date range", async () => {
+    const inRange = await exportTransactionsCsv(admin, workspaceId, {
+      from: calendarDate("2026-06-19"),
+      to: calendarDate("2026-06-21"),
+    });
+    expect(inRange).toContain("2026-06-20");
+    expect(inRange.split("\n")).toHaveLength(2); // header + the one June-20 row
+
+    const outOfRange = await exportTransactionsCsv(admin, workspaceId, {
+      from: calendarDate("2026-08-01"),
+    });
+    expect(outOfRange.split("\n")).toHaveLength(1); // header only
+  });
+
   it("exports bills", async () => {
     const csv = await exportBillsCsv(admin, workspaceId);
     expect(csv.split("\n")[0]).toBe("vendor,amount,dueDate,status,type");

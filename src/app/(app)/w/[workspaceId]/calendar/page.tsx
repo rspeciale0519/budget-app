@@ -5,6 +5,7 @@ import { billCalendar } from "@/services/dashboard/bill-calendar";
 import { today as todayFn } from "@/lib/calendar-date";
 import { MONTHS, parseYm, shiftMonth } from "@/lib/month-nav";
 import { BillCalendarView } from "@/components/calendar/bill-calendar-view";
+import { MonthYearPicker } from "@/components/chrome/month-year-picker";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +36,8 @@ export default async function CalendarPage({
         <h1 className="font-serif text-xl text-ink">
           {MONTHS[month - 1] ?? ""} {year}
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <MonthYearPicker basePath={`/w/${workspaceId}/calendar`} year={year} month={month} />
           <Link href={`/w/${workspaceId}/calendar?ym=${shiftMonth(year, month, -1)}`} className={navCls}>
             ← Prev
           </Link>

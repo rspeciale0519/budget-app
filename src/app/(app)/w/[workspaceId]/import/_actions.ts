@@ -50,10 +50,11 @@ export async function previewImportAction(
   accountId: string,
   csvText: string,
   mapping: MappingConfig,
+  dateOverrides?: Record<number, string>,
 ): Promise<PreviewActionResult> {
   try {
     const userId = await requireUserId();
-    const preview = await previewImport(userId, { accountId, csvText, mapping });
+    const preview = await previewImport(userId, { accountId, csvText, mapping, dateOverrides });
     const categories = await listCategories(userId, workspaceId).catch(() => []);
     const catName = new Map(categories.map((c) => [c.id, c.name]));
 
@@ -88,10 +89,11 @@ export async function commitImportAction(
   mapping: MappingConfig,
   skipIndices: number[],
   expectedRowCount: number,
+  dateOverrides?: Record<number, string>,
 ): Promise<{ ok: boolean; error?: string; batchId?: string; count?: number }> {
   try {
     const userId = await requireUserId();
-    const preview = await previewImport(userId, { accountId, csvText, mapping });
+    const preview = await previewImport(userId, { accountId, csvText, mapping, dateOverrides });
     if (preview.rows.length !== expectedRowCount) {
       return {
         ok: false,

@@ -48,6 +48,9 @@ export const createCategorySchema = z.object({
   kind: z.nativeEnum(CategoryKind),
   parentId: z.string().optional(),
 });
+export const updateCategorySchema = z.object({
+  name: z.string().min(1).max(60),
+});
 export const categoryRuleSchema = z.object({
   match: z.nativeEnum(MatchKind),
   pattern: z.string().min(1),
