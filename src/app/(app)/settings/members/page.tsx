@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/supabase/server";
-import { prismaAdmin } from "@/lib/prisma-admin";
 import { listMembersWithDetails } from "@/services/membership-service";
-import { listAccessibleWorkspaces } from "@/services/authz";
+import { listAccessibleWorkspaces, getUserPrimaryOrgMembership } from "@/services/authz";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InviteForm } from "@/components/members/invite-form";
 import { MemberAccessManager, type MemberView } from "@/components/members/member-access";
@@ -16,7 +15,7 @@ export default async function MembersPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const orgMembership = await prismaAdmin.orgMembership.findFirst({ where: { userId: user.id } });
+  const orgMembership = await getUserPrimaryOrgMembership(user.id);
   if (!orgMembership) redirect("/");
 
   let members: MemberView[] = [];

@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/supabase/server";
-import { prismaAdmin } from "@/lib/prisma-admin";
-import { listAccessibleWorkspaces } from "@/services/authz";
+import { listAccessibleWorkspaces, getUserPrimaryOrgMembership } from "@/services/authz";
 import { listLayouts, getLayout } from "@/services/layout-service";
 import { paneSummaries } from "@/services/dashboard/pane-summary";
 import { defaultLayout, collectWorkspaceIds } from "@/lib/pane-tree";
@@ -22,7 +21,7 @@ export default async function TilesPage({
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  const membership = await prismaAdmin.orgMembership.findFirst({ where: { userId: user.id } });
+  const membership = await getUserPrimaryOrgMembership(user.id);
   if (!membership) redirect("/");
 
   const workspaces = await listAccessibleWorkspaces(user.id);

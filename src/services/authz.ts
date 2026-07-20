@@ -1,4 +1,4 @@
-import type { OrgRole, WorkspaceRole, Workspace } from "@prisma/client";
+import type { OrgRole, WorkspaceRole, Workspace, OrgMembership } from "@prisma/client";
 import { prismaAdmin } from "@/lib/prisma-admin";
 
 // Service-layer authorization: the authoritative access check, independent of
@@ -40,6 +40,18 @@ export async function assertOrgRole(
   if (!membership || orgRoleRank[membership.role] < orgRoleRank[need]) {
     throw new ForbiddenError("Insufficient organization role");
   }
+}
+
+/**
+ * The user's primary org membership (their own row). A privileged read for the
+ * same reason the rest of this module is privileged: it resolves identity/nav
+ * context (which org am I in, am I an org admin) and must not depend on the RLS
+ * it helps enforce. Keeps prismaAdmin out of pages/components/actions.
+ */
+export async function getUserPrimaryOrgMembership(
+  userId: string,
+): Promise<OrgMembership | null> {
+  return prismaAdmin.orgMembership.findFirst({ where: { userId } });
 }
 
 export async function listAccessibleWorkspaces(userId: string): Promise<Workspace[]> {
