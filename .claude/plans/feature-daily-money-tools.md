@@ -138,26 +138,26 @@ Files: new `src/components/income/pay-yourself-card.tsx`.
 
 ### Task 3.1 — Cross-book search action
 Files: new action in `src/app/(app)/_actions.ts` (or a co-located palette actions file).
-- [ ] `searchTransactionsAction(query)` — for each accessible workspace (cap 10 books), call
+- [x] `searchTransactionsAction(query)` — for each accessible workspace (cap 10 books), call
       `listTransactions(user, wsId, { search: query, pageSize: 3 })`; return up to ~9 flattened
       hits: { workspaceId, workspaceName, description, amount (formatted), date }. Empty query or
       <3 chars → []. Viewer authz is inside listTransactions already.
-- [ ] Live test: seed two books with distinct descriptions → query matches across books; a
+- [x] Live test: seed two books with distinct descriptions → query matches across books; a
       non-member's books never appear (implicit via accessible-workspaces + authz).
 
 ### Task 3.2 — Palette wiring
 Files: `src/components/command/command-palette.tsx`, `src/components/chrome/search-button.tsx`.
-- [ ] Debounced (≈250ms) call when the query is ≥3 chars; results render in a new "Transactions"
+- [x] Debounced (≈250ms) call when the query is ≥3 chars; results render in a new "Transactions"
       group under the command matches: "{description} · {amount} — {book}". Selecting one
       navigates to `/w/{ws}/transactions?q={query}` (VERIFY the register's search param name in
       `transactions/page.tsx` first and use exactly that; prefill = the query, not the single row).
-- [ ] Keyboard nav must treat result rows like commands (same selected-index list).
-- [ ] With data search real: button label "Jump to…" → "Search", palette placeholder → "Search
+- [x] Keyboard nav must treat result rows like commands (same selected-index list).
+- [x] With data search real: button label "Jump to…" → "Search", palette placeholder → "Search
       transactions, or type a command…". The teaching empty state stays.
-- [ ] Loading/none states: subtle "Searching…" line; if no hits, the commands-only empty state.
+- [x] Loading/none states: subtle "Searching…" line; if no hits, the commands-only empty state.
 
 ### Phase 3 gate
-- [ ] type-check 0 / lint 0 / tests pass; commit `Phase 3: palette data search`.
+- [x] type-check 0 / lint 0 / tests pass; commit `Phase 3: palette data search`.
 
 ---
 
