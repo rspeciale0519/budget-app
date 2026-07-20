@@ -124,6 +124,15 @@ export const tagOwnerDrawSchema = z
     message: "Provide fromTransactionId, or both amount and date",
   });
 
+// ── Recurring bill ───────────────────────────────────────────────────────────
+export const createRecurringBillSchema = z.object({
+  vendor: z.string().min(1).max(120),
+  amount: zMoney,
+  firstDueDate: zCalendarDate,
+  frequency: z.enum(["weekly", "monthly", "quarterly", "annual"]),
+  categoryId: z.string().min(1).optional(),
+});
+
 // ── Goal ─────────────────────────────────────────────────────────────────────
 export const createGoalSchema = z.object({
   name: z.string().min(1).max(80),

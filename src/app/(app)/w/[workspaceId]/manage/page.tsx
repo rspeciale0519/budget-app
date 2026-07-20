@@ -4,6 +4,8 @@ import { listAccounts } from "@/services/account-service";
 import { listTransactions } from "@/services/transaction-service";
 import { listCategories } from "@/services/category-service";
 import { listRules } from "@/services/category-rule-service";
+import { listRecurringSchedules } from "@/services/recurring-service";
+import { RecurringCard, type RecurringView } from "@/components/manage/recurring-card";
 import { ManageForms } from "@/components/manage/manage-forms";
 import { CategoryManager } from "@/components/manage/category-form";
 import { RulesCard, type RuleView } from "@/components/manage/rules-card";
@@ -42,6 +44,13 @@ export default async function ManagePage({
     pattern: r.pattern,
     categoryName: categoryName.get(r.categoryId) ?? "a category",
   }));
+  const recurring: RecurringView[] = (await listRecurringSchedules(user.id, workspaceId)).map((s) => ({
+    id: s.id,
+    vendor: s.vendor,
+    amount: s.amount,
+    frequencyLabel: s.frequencyLabel,
+    nextDueDate: s.nextDueDate,
+  }));
 
   return (
     <div className="space-y-4">
@@ -58,6 +67,7 @@ export default async function ManagePage({
       <CategoryManager workspaceId={workspaceId} categories={categories} />
       <RulesCard workspaceId={workspaceId} rules={rules} />
       <ManageForms workspaceId={workspaceId} accounts={accounts} />
+      <RecurringCard workspaceId={workspaceId} schedules={recurring} />
       <TransferForm workspaceId={workspaceId} accounts={accounts} />
       <Card>
         <CardHeader>

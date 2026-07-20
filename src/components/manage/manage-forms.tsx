@@ -12,6 +12,7 @@ import {
   addAccountAction,
   addTransactionAction,
   addBillAction,
+  addRecurringBillAction,
   type ActionResult,
 } from "@/app/(app)/w/[workspaceId]/_actions";
 
@@ -33,7 +34,7 @@ function useAction() {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  async function submit(fn: () => Promise<ActionResult>, onSuccess?: () => void) {
+  async function submit(fn: () => Promise<ActionResult>, onSuccess?: () => void, message = "Saved") {
     setBusy(true);
     setError(null);
     const result = await fn();
@@ -42,7 +43,7 @@ function useAction() {
       setError(result.error ?? "That didn't save — check the fields and try again.");
       return;
     }
-    toast("Saved");
+    toast(message);
     onSuccess?.();
     router.refresh();
   }
@@ -222,11 +223,20 @@ function TransactionForm({ workspaceId, accounts }: { workspaceId: string; accou
   );
 }
 
+const REPEAT_CHOICES: { value: string; label: string }[] = [
+  { value: "", label: "Just once" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+  { value: "quarterly", label: "Quarterly" },
+  { value: "annual", label: "Yearly" },
+];
+
 function BillForm({ workspaceId }: { workspaceId: string }) {
   const { error, busy, submit } = useAction();
   const [vendor, setVendor] = useState("");
   const [amount, setAmount] = useState("");
   const [dueDate, setDueDate] = useState<string>(today());
+  const [repeats, setRepeats] = useState("");
   return (
     <Card>
       <CardHeader>
@@ -242,20 +252,38 @@ function BillForm({ workspaceId }: { workspaceId: string }) {
           <AmountInput id="bill-amount" placeholder="120.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="bill-due">Due date</Label>
+          <Label htmlFor="bill-due">{repeats ? "First due date" : "Due date"}</Label>
           <Input id="bill-due" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="bill-repeats">Repeats</Label>
+          <Select id="bill-repeats" value={repeats} onChange={(e) => setRepeats(e.target.value)}>
+            {REPEAT_CHOICES.map((c) => (
+              <option key={c.value} value={c.value}>{c.label}</option>
+            ))}
+          </Select>
+          {repeats && (
+            <p className="text-[11px] text-muted">
+              We&apos;ll add each upcoming bill automatically — cancel anytime.
+            </p>
+          )}
         </div>
         {error && <FieldError>{error}</FieldError>}
         <Button
           disabled={busy || vendor.trim() === "" || amount.trim() === ""}
           onClick={() =>
             submit(
-              () => addBillAction(workspaceId, { vendor, amount, dueDate }),
+              () =>
+                repeats
+                  ? addRecurringBillAction(workspaceId, { vendor, amount, firstDueDate: dueDate, frequency: repeats })
+                  : addBillAction(workspaceId, { vendor, amount, dueDate }),
               () => {
                 setVendor("");
                 setAmount("");
+                setRepeats("");
                 document.getElementById("bill-vendor")?.focus();
               },
+              repeats ? "Repeating bill added — the next ones are on the calendar." : "Saved",
             )
           }
           className="w-full"

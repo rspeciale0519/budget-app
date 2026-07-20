@@ -76,35 +76,35 @@ delete branch). One gated commit per phase.
 ### Task 1.1 — Schedule repo + service
 Files: `src/repositories/recurring-repo.ts` (read first — has list/insertBills/updateNextRun),
 `src/services/recurring-service.ts`, `src/lib/zod/entities.ts`.
-- [ ] Repo: `insertSchedule`, `findSchedule`, `deleteScheduleRow`, and
+- [x] Repo: `insertSchedule`, `findSchedule`, `deleteScheduleRow`, and
       `deleteFutureUnpaidBills(scheduleId, afterDate)` (DD1).
-- [ ] Zod `createRecurringBillSchema`: vendor 1..120, amount zMoney, firstDueDate zCalendarDate,
+- [x] Zod `createRecurringBillSchema`: vendor 1..120, amount zMoney, firstDueDate zCalendarDate,
       frequency enum (weekly|monthly|quarterly|annual), categoryId optional.
-- [ ] Service `createRecurringBill(actor, workspaceId, input)` — admin authz + RLS-tx categoryId
+- [x] Service `createRecurringBill(actor, workspaceId, input)` — admin authz + RLS-tx categoryId
       ownership check; inserts the schedule (`nextRunDate = firstDueDate`, `dayOfMonth` from the
       date for monthly), then calls `materializeRecurring` so the first bills appear immediately.
       Audit `create` / entityType `"RecurringSchedule"`.
-- [ ] Service `listRecurringSchedules(actor, workspaceId)` (viewer) → view rows: vendor, amount,
+- [x] Service `listRecurringSchedules(actor, workspaceId)` (viewer) → view rows: vendor, amount,
       frequency label ("Repeats monthly"), next due date.
-- [ ] Service `cancelRecurringSchedule(actor, scheduleId)` — DD1 semantics; audit `delete`.
-- [ ] Live test: create → bills materialized inside the 90-day horizon with the schedule id →
+- [x] Service `cancelRecurringSchedule(actor, scheduleId)` — DD1 semantics; audit `delete`.
+- [x] Live test: create → bills materialized inside the 90-day horizon with the schedule id →
       cancel → schedule gone, future unpaid bills gone, past/paid bills intact.
 
 ### Task 1.2 — "Repeats" on the Add-bill form
 Files: `src/components/manage/manage-forms.tsx` (BillForm), `_actions.ts`.
-- [ ] BillForm gains a "Repeats" select: "Just once" (default) | Weekly | Monthly | Quarterly |
+- [x] BillForm gains a "Repeats" select: "Just once" (default) | Weekly | Monthly | Quarterly |
       Yearly. "Just once" → existing `addBillAction`; otherwise a new `addRecurringBillAction`.
       Helper line: "We'll add each upcoming bill automatically — cancel anytime."
-- [ ] Success toast for recurring: "Repeating bill added — the next ones are on the calendar."
+- [x] Success toast for recurring: "Repeating bill added — the next ones are on the calendar."
 
 ### Task 1.3 — "Repeating bills" management card
 Files: new `src/components/manage/recurring-card.tsx`, `manage/page.tsx`, `_actions.ts`.
-- [ ] Card lists schedules as sentences: "**Rent** · $2,000.00 · repeats monthly · next Aug 1"
+- [x] Card lists schedules as sentences: "**Rent** · $2,000.00 · repeats monthly · next Aug 1"
       with a two-step "Stop repeating" (confirm copy per DD1). Renders under the bill form area.
-- [ ] Empty state: "Nothing repeats yet — set a bill to 'Repeats monthly' and it'll appear here."
+- [x] Empty state: "Nothing repeats yet — set a bill to 'Repeats monthly' and it'll appear here."
 
 ### Phase 1 gate
-- [ ] type-check 0 / lint 0 / tests pass; commit `Phase 1: recurring bills UI`.
+- [x] type-check 0 / lint 0 / tests pass; commit `Phase 1: recurring bills UI`.
 
 ---
 

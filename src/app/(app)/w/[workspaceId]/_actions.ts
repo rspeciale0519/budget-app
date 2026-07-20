@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/supabase/server";
 import type { Frequency } from "@prisma/client";
 import { createTransaction } from "@/services/transaction-service";
 import { createBill, markPaid, markPaidStandalone, markUnpaid } from "@/services/bill-service";
+import { createRecurringBill, cancelRecurringSchedule } from "@/services/recurring-service";
 import { createAccount } from "@/services/account-service";
 import { createCategory, updateCategory, deleteCategory } from "@/services/category-service";
 import { tagOwnerDraw, createAccountTransfer } from "@/services/transfer-service";
@@ -96,6 +97,27 @@ export async function addBillAction(
   return run(workspaceId, (userId) =>
     createBill(userId, workspaceId, { vendor: input.vendor, amount: input.amount, dueDate: input.dueDate }),
   );
+}
+
+export async function addRecurringBillAction(
+  workspaceId: string,
+  input: { vendor: string; amount: string; firstDueDate: string; frequency: string },
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) =>
+    createRecurringBill(userId, workspaceId, {
+      vendor: input.vendor,
+      amount: input.amount,
+      firstDueDate: input.firstDueDate,
+      frequency: input.frequency as never,
+    }),
+  );
+}
+
+export async function cancelRecurringBillAction(
+  workspaceId: string,
+  scheduleId: string,
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => cancelRecurringSchedule(userId, scheduleId));
 }
 
 export async function markBillPaidStandaloneAction(
