@@ -30,6 +30,17 @@
 - [x] Phase 5 — Verify & merge: gates green, grep evidence, browser verification (desktop/mobile/dark,
       forced negative safe-to-spend), merged to main
 
+## Goals & Debts (plan: `.claude/plans/feature-goals-and-debts.md`, branch `feature/goals-and-debts`)
+
+- [x] Phase 1 — Data & services: additive `Goal.accountId` migration, zod + repo CRUD, planning
+      service (CRUD + account-linked live balances + manual contribute/record-payment), pure
+      goalOnTrack + debtPayoff helpers, tests
+- [x] Phase 2 — Actions + "Goals & debts" tab/page: goals panel & debts panel (create/edit/delete,
+      link an account, contribute/record-payment, on-track + payoff insights)
+- [x] Phase 3 — Dashboard wiring: live linked values + "· linked" hints, empty-state CTAs → the new
+      tab (closes the prior honest exception), goal-reached "Reached ✓" moment
+- [x] Phase 4 — Verify & merge: gates green, browser-verified (desktop light+dark, mobile), merged
+
 ## Earlier milestones (from git history)
 
 - [x] Phases through 2.x of the original build (see git log)

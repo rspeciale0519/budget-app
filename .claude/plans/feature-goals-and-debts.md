@@ -198,7 +198,7 @@ Files: goals-panel + wherever contribution resolves.
 # Phase 4 — Verification & merge
 
 ### Task 4.1 — Gates + targeted greps
-- [ ] type-check 0, lint 0, full test suite green (flake protocol). Confirm the new pure helpers +
+- [x] type-check 0, lint 0, full test suite green (flake protocol). Confirm the new pure helpers +
       service tests are included.
 
 ### Task 4.2 — Browser verification (production build, chrome-devtools MCP)
@@ -206,14 +206,14 @@ Files: goals-panel + wherever contribution resolves.
 other projects — expect load). Reuse/refresh the throwaway `VERIFY-POLISH` verification account
 (or reseed) with: a savings account + a goal linked to it, an unlinked goal, a loan/credit_card
 account + a linked debt, and an unlinked debt.
-- [ ] Desktop 1440×900 (light + dark) + mobile 430×932: the Goals & debts page (create, edit,
+- [x] Desktop 1440×900 (light + dark) + mobile 430×932: the Goals & debts page (create, edit,
       delete, contribute to an unlinked goal, record a payment on an unlinked debt), a linked goal's
       progress reflecting the account balance, a linked debt's owed = −(account balance), the
       payoff/on-track labels, a goal crossing 100% → "Reached ✓", and the dashboard cards + empty-
       state CTAs. Zero console errors.
 
 ### Task 4.3 — Roadmap, merge, push, cleanup
-- [ ] Update `docs/ROADMAP.md`; merge `--ff-only` to `main`; re-run all three gates ON main; push
+- [x] Update `docs/ROADMAP.md`; merge `--ff-only` to `main`; re-run all three gates ON main; push
       (show output); `git rev-parse` parity; delete the feature branch; update project memory.
 
 ### Definition of done
