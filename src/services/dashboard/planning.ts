@@ -42,6 +42,19 @@ export interface GoalView {
 const zero = () => money(0);
 const clampPositive = (m: Money): Money => (compare(m, zero()) < 0 ? zero() : m);
 
+/** Reject linking a goal/debt to an account that isn't in the target workspace
+ * (prevents a multi-book user from pointing book A's goal at book B's account).
+ * Runs inside the RLS-scoped tx, so an account the user can't see is not-found. */
+async function assertAccountInWorkspace(
+  tx: RlsTx,
+  accountId: string | null | undefined,
+  workspaceId: string,
+): Promise<void> {
+  if (!accountId) return;
+  const acct = await tx.account.findFirst({ where: { id: accountId, workspaceId }, select: { id: true } });
+  if (!acct) throw new ForbiddenError("Account not in this book");
+}
+
 /** Live balance (opening + Σ transactions) for a set of accounts, in one pass. */
 async function accountBalances(tx: RlsTx, ids: string[]): Promise<Map<string, Money>> {
   const out = new Map<string, Money>();
@@ -148,6 +161,7 @@ export async function createGoal(
   await assertWorkspaceAccess(userId, workspaceId, "admin");
   const data = createGoalSchema.parse(input);
   return rlsClientFor(userId).run(async (tx) => {
+    await assertAccountInWorkspace(tx, data.accountId, workspaceId);
     const goal = await repo.insertGoal(tx, {
       workspaceId,
       name: data.name,
@@ -169,6 +183,7 @@ export async function updateGoal(
   const goal = await loadGoalForAdmin(userId, goalId);
   const data = updateGoalSchema.parse(input);
   return rlsClientFor(userId).run(async (tx) => {
+    await assertAccountInWorkspace(tx, data.accountId, goal.workspaceId);
     const updated = await repo.updateGoalRow(tx, goal.id, {
       name: data.name,
       targetAmount: data.targetAmount?.toFixed(2),
@@ -218,6 +233,7 @@ export async function createDebt(
   await assertWorkspaceAccess(userId, workspaceId, "admin");
   const data = createDebtSchema.parse(input);
   return rlsClientFor(userId).run(async (tx) => {
+    await assertAccountInWorkspace(tx, data.accountId, workspaceId);
     const debt = await repo.insertDebt(tx, {
       workspaceId,
       name: data.name,
@@ -241,6 +257,7 @@ export async function updateDebt(
   const debt = await loadDebtForAdmin(userId, debtId);
   const data = updateDebtSchema.parse(input);
   return rlsClientFor(userId).run(async (tx) => {
+    await assertAccountInWorkspace(tx, data.accountId, debt.workspaceId);
     const updated = await repo.updateDebtRow(tx, debt.id, {
       name: data.name,
       type: data.type,

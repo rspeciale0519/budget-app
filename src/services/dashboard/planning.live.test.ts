@@ -9,6 +9,7 @@ import {
   createDebt,
   recordDebtPayment,
 } from "@/services/dashboard/planning";
+import { ForbiddenError } from "@/services/authz";
 import { format } from "@/lib/money";
 import { calendarDate, toUtcDate } from "@/lib/calendar-date";
 
@@ -76,5 +77,21 @@ describe("planning-service debts", () => {
     const view = (await listDebts(admin, workspaceId)).items.find((d) => d.id === debt.id)!;
     expect(view.linked).toBe(true);
     expect(format(view.balance)).toBe("$5,000.00"); // owed = -(-5000)
+  });
+});
+
+describe("planning-service cross-workspace guard", () => {
+  it("rejects linking a goal or debt to an account in a different book, even for a member of both", async () => {
+    // A second book the same admin belongs to (so RLS would let them SEE the account).
+    const ws2 = await prismaAdmin.workspace.create({ data: { organizationId: orgId, name: "Other book", type: "business", color: "#999999" } });
+    await prismaAdmin.workspaceMembership.create({ data: { workspaceId: ws2.id, userId: admin, role: "admin" } });
+    const otherAcct = await prismaAdmin.account.create({ data: { workspaceId: ws2.id, name: "Other savings", type: "savings", institution: "X", openingBalance: "500.00", openingDate: toUtcDate(calendarDate("2026-01-01")) } });
+
+    await expect(
+      createGoal(admin, workspaceId, { name: "Cross", targetAmount: "100", accountId: otherAcct.id }),
+    ).rejects.toBeInstanceOf(ForbiddenError);
+    await expect(
+      createDebt(admin, workspaceId, { name: "Cross", type: "loan", apr: "5", minimumPayment: "50", dueDay: 1, accountId: otherAcct.id }),
+    ).rejects.toBeInstanceOf(ForbiddenError);
   });
 });
