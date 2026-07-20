@@ -59,8 +59,9 @@
 - [x] Phase 1 — Quick high-value fixes: constant-time service-token comparison, CSP + standard
       security headers on all routes (browser-verified no violations), in-memory API rate limiting
       (60/min/IP → 429)
-- [ ] Phase 2 — Least-privilege `app_admin` DB role (non-superuser, blanket admin policies) replaces
-      the `postgres`/`DIRECT_URL` credential in the runtime `prismaAdmin` client
+- [x] Phase 2 — Least-privilege `app_admin` DB role (non-superuser, blanket admin policies) replaces
+      the `postgres`/`DIRECT_URL` credential in the runtime `prismaAdmin` client (live test: connects
+      as app_admin, cross-tenant reads work, DDL + auth schema denied; full suite 280/280 green)
 - [ ] Phase 3 — `prismaAdmin` usage audit + ESLint `no-restricted-imports` fence
 - [ ] Phase 4 — TOTP MFA (deferred: dashboard-gated, post-launch)
 
