@@ -1,7 +1,7 @@
 "use server";
 
 import { getCurrentUser } from "@/lib/supabase/server";
-import { prismaAdmin } from "@/lib/prisma-admin";
+import { getUserPrimaryOrgMembership } from "@/services/authz";
 import { paneSummaries } from "@/services/dashboard/pane-summary";
 import {
   saveLayout,
@@ -20,7 +20,7 @@ async function requireUserId(): Promise<string> {
 }
 
 async function requireOrgId(userId: string): Promise<string> {
-  const membership = await prismaAdmin.orgMembership.findFirst({ where: { userId } });
+  const membership = await getUserPrimaryOrgMembership(userId);
   if (!membership) throw new Error("No organization");
   return membership.organizationId;
 }

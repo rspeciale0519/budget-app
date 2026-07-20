@@ -62,7 +62,10 @@
 - [x] Phase 2 — Least-privilege `app_admin` DB role (non-superuser, blanket admin policies) replaces
       the `postgres`/`DIRECT_URL` credential in the runtime `prismaAdmin` client (live test: connects
       as app_admin, cross-tenant reads work, DDL + auth schema denied; full suite 280/280 green)
-- [ ] Phase 3 — `prismaAdmin` usage audit + ESLint `no-restricted-imports` fence
+- [x] Phase 3 — `prismaAdmin` usage audit + ESLint `no-restricted-imports` fence: removed `prismaAdmin`
+      from all pages/components/actions (own-membership reads → `getUserPrimaryOrgMembership` in authz);
+      retained only in 5 sanctioned service files (authz/bootstrap/system-materialization); fence
+      verified to fire on a probe import
 - [ ] Phase 4 — TOTP MFA (deferred: dashboard-gated, post-launch)
 
 ## Earlier milestones (from git history)

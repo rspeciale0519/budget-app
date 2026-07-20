@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { listAccessibleWorkspaces } from "@/services/authz";
+import { listAccessibleWorkspaces, getUserPrimaryOrgMembership } from "@/services/authz";
 import { listLayouts } from "@/services/layout-service";
-import { prismaAdmin } from "@/lib/prisma-admin";
 import { createServerClient } from "@/lib/supabase/server";
 import { WorkspaceTabs } from "@/components/workspace/workspace-tabs";
 import { ThemeToggle } from "@/components/chrome/theme-toggle";
@@ -12,9 +11,7 @@ import { TilesGlyph } from "@/components/ui/glyphs";
 
 export async function TabBar({ userId }: { userId: string }) {
   const workspaces = await listAccessibleWorkspaces(userId);
-  const orgMembership = await prismaAdmin.orgMembership.findFirst({
-    where: { userId },
-  });
+  const orgMembership = await getUserPrimaryOrgMembership(userId);
   const layouts = orgMembership
     ? await listLayouts(userId, orgMembership.organizationId).catch(() => [])
     : [];

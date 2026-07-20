@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/supabase/server";
-import { prismaAdmin } from "@/lib/prisma-admin";
+import { getUserPrimaryOrgMembership } from "@/services/authz";
 import { rollup } from "@/services/dashboard/rollup";
 import { Card } from "@/components/ui/card";
 import { PageHeading } from "@/components/ui/page-heading";
@@ -31,7 +31,7 @@ function Stat({ label, value, alert }: { label: string; value: string; alert?: b
 export default async function AllWorkspacesPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  const membership = await prismaAdmin.orgMembership.findFirst({ where: { userId: user.id } });
+  const membership = await getUserPrimaryOrgMembership(user.id);
   if (!membership) redirect("/");
 
   const data = await rollup(user.id, membership.organizationId, "month", todayFn());
