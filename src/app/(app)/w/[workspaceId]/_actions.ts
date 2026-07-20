@@ -9,6 +9,16 @@ import { createAccount } from "@/services/account-service";
 import { createCategory, updateCategory, deleteCategory } from "@/services/category-service";
 import { tagOwnerDraw, createAccountTransfer } from "@/services/transfer-service";
 import { createIncomeSource, deleteIncomeSource } from "@/services/income-source-service";
+import {
+  createGoal,
+  updateGoal,
+  deleteGoal,
+  contributeToGoal,
+  createDebt,
+  updateDebt,
+  deleteDebt,
+  recordDebtPayment,
+} from "@/services/dashboard/planning";
 
 async function requireUserId(): Promise<string> {
   const user = await getCurrentUser();
@@ -150,6 +160,62 @@ export async function addAccountTransferAction(
   input: { fromAccountId: string; toAccountId: string; amount: string; date: string },
 ): Promise<ActionResult> {
   return run(workspaceId, (userId) => createAccountTransfer(userId, workspaceId, input));
+}
+
+// ── Goals & debts ────────────────────────────────────────────────────────────
+
+export async function addGoalAction(
+  workspaceId: string,
+  input: Parameters<typeof createGoal>[2],
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => createGoal(userId, workspaceId, input));
+}
+
+export async function updateGoalAction(
+  workspaceId: string,
+  goalId: string,
+  input: Parameters<typeof updateGoal>[2],
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => updateGoal(userId, goalId, input));
+}
+
+export async function deleteGoalAction(workspaceId: string, goalId: string): Promise<ActionResult> {
+  return run(workspaceId, (userId) => deleteGoal(userId, goalId));
+}
+
+export async function contributeGoalAction(
+  workspaceId: string,
+  goalId: string,
+  amount: string,
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => contributeToGoal(userId, goalId, amount));
+}
+
+export async function addDebtAction(
+  workspaceId: string,
+  input: Parameters<typeof createDebt>[2],
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => createDebt(userId, workspaceId, input));
+}
+
+export async function updateDebtAction(
+  workspaceId: string,
+  debtId: string,
+  input: Parameters<typeof updateDebt>[2],
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => updateDebt(userId, debtId, input));
+}
+
+export async function deleteDebtAction(workspaceId: string, debtId: string): Promise<ActionResult> {
+  return run(workspaceId, (userId) => deleteDebt(userId, debtId));
+}
+
+export async function recordDebtPaymentAction(
+  workspaceId: string,
+  debtId: string,
+  amount: string,
+): Promise<ActionResult> {
+  return run(workspaceId, (userId) => recordDebtPayment(userId, debtId, amount));
 }
 
 export async function tagOwnerDrawAction(

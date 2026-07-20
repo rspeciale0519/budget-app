@@ -131,44 +131,44 @@ Files: new `src/lib/goal-insight.ts`, `src/lib/debt-payoff.ts` (pure, no server 
 
 ### Task 2.1 — Server actions
 Files: `src/app/(app)/w/[workspaceId]/_actions.ts` (or a co-located `planning/_actions.ts`).
-- [ ] `addGoalAction`, `updateGoalAction`, `deleteGoalAction`, `contributeGoalAction`;
+- [x] `addGoalAction`, `updateGoalAction`, `deleteGoalAction`, `contributeGoalAction`;
       `addDebtAction`, `updateDebtAction`, `deleteDebtAction`, `recordDebtPaymentAction`. Same
       `run()`+`ActionResult` pattern as the file's other actions; revalidate the book + the new page.
 
 ### Task 2.2 — Sub-nav entry
 Files: `src/components/workspace/workspace-sub-nav.tsx`.
-- [ ] Add `["Goals & debts", "/planning"]` to `WORKSPACE_SECTIONS` (placement: after "Budget",
+- [x] Add `["Goals & debts", "/planning"]` to `WORKSPACE_SECTIONS` (placement: after "Budget",
       before "Income" — group the money-planning tabs). 9 tabs; acceptable (they already wrap).
 
 ### Task 2.3 — The page (server component)
 Files: new `src/app/(app)/w/[workspaceId]/planning/page.tsx`.
-- [ ] Fetch goals, debts (live-resolved via the service), and the book's non-archived accounts
+- [x] Fetch goals, debts (live-resolved via the service), and the book's non-archived accounts
       (for the link dropdowns; filter savings/checking/cash for goals, credit_card/loan for debts).
-- [ ] `export const metadata = { title: "Goals & debts" }`; `PageHeading` "Goals & debts";
+- [x] `export const metadata = { title: "Goals & debts" }`; `PageHeading` "Goals & debts";
       `export const dynamic = "force-dynamic"`.
-- [ ] Render `<GoalsPanel …/>` and `<DebtsPanel …/>`.
+- [x] Render `<GoalsPanel …/>` and `<DebtsPanel …/>`.
 
 ### Task 2.4 — Goals panel (client)
 Files: new `src/components/planning/goals-panel.tsx` (≤450 LOC; split a `GoalForm` if needed).
-- [ ] Add-goal form (name, target, optional target date, optional linked savings account, notes).
-- [ ] Goal rows: name, progress bar + saved/target + pct, the `goalOnTrack` label, and a
+- [x] Add-goal form (name, target, optional target date, optional linked savings account, notes).
+- [x] Goal rows: name, progress bar + saved/target + pct, the `goalOnTrack` label, and a
       "Linked to <account>" tag when linked. Actions: edit (inline), delete (two-step confirm),
       and — only when NOT linked — "Add to savings" popover (amount → `contributeGoalAction`).
       A reached goal shows a quiet "Reached ✓" treatment.
-- [ ] Empty state: "No goals yet — set a savings target and (optionally) link the account that
+- [x] Empty state: "No goals yet — set a savings target and (optionally) link the account that
       holds the money." with the add form right there.
 
 ### Task 2.5 — Debts panel (client)
 Files: new `src/components/planning/debts-panel.tsx` (≤450 LOC; split a `DebtForm` if needed).
-- [ ] Add-debt form (name, type, APR, min payment, due day, optional linked liability account,
+- [x] Add-debt form (name, type, APR, min payment, due day, optional linked liability account,
       manual starting balance when unlinked).
-- [ ] Debt rows: name, balance owed, APR · min · "due day N", the `debtPayoff` label, and a
+- [x] Debt rows: name, balance owed, APR · min · "due day N", the `debtPayoff` label, and a
       "Linked to <account>" tag when linked. Actions: edit, delete (two-step), and — only when NOT
       linked — "Record payment" popover (amount → `recordDebtPaymentAction`).
-- [ ] Empty state mirroring the goals one.
+- [x] Empty state mirroring the goals one.
 
 ### Phase 2 gate
-- [ ] type-check 0 / lint 0 / tests pass; commit `Phase 2: goals & debts management page + actions`.
+- [x] type-check 0 / lint 0 / tests pass; commit `Phase 2: goals & debts management page + actions`.
 
 ---
 

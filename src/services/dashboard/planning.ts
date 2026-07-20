@@ -4,7 +4,7 @@ import { rlsClientFor } from "@/lib/prisma-rls";
 import { assertWorkspaceAccess, ForbiddenError } from "@/services/authz";
 import { audit } from "@/services/audit-service";
 import { money, add, sub, sum, compare, toCents, type Money } from "@/lib/money";
-import { toUtcDate, fromDbDate } from "@/lib/calendar-date";
+import { toUtcDate, fromDbDate, type CalendarDate } from "@/lib/calendar-date";
 import {
   createGoalSchema,
   updateGoalSchema,
@@ -33,7 +33,7 @@ export interface GoalView {
   target: Money;
   saved: Money;
   pct: number;
-  targetDate: string | null;
+  targetDate: CalendarDate | null;
   status: string;
   accountId: string | null;
   linked: boolean;

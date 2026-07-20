@@ -10,6 +10,7 @@ export const WORKSPACE_SECTIONS: [string, string][] = [
   ["Accounts & bills", "/manage"],
   ["Calendar", "/calendar"],
   ["Budget", "/budget"],
+  ["Goals & debts", "/planning"],
   ["Income", "/income"],
   ["Import", "/import"],
   ["Activity", "/audit"],
