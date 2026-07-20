@@ -134,22 +134,47 @@ export const createRecurringBillSchema = z.object({
 });
 
 // ── Goal ─────────────────────────────────────────────────────────────────────
-export const createGoalSchema = z.object({
-  name: z.string().min(1).max(80),
-  targetAmount: zMoney,
-  targetDate: zCalendarDate.optional(),
-  accountId: z.string().min(1).optional(),
-  notes: z.string().max(500).optional(),
-});
-export const updateGoalSchema = z.object({
-  name: z.string().min(1).max(80).optional(),
-  targetAmount: zMoney.optional(),
-  targetDate: zCalendarDate.nullable().optional(),
-  accountId: z.string().min(1).nullable().optional(),
-  currentSaved: zMoney.optional(),
-  status: z.enum(["active", "reached", "archived"]).optional(),
-  notes: z.string().max(500).nullable().optional(),
-});
+const contributionFields = {
+  contributionAmount: zMoney.optional(),
+  contributionFrequency: z.enum(["weekly", "monthly", "quarterly", "annual"]).optional(),
+  contributionNextDate: zCalendarDate.optional(),
+};
+const contributionsTogether = (v: {
+  contributionAmount?: unknown;
+  contributionFrequency?: unknown;
+  contributionNextDate?: unknown;
+}) => {
+  const set = [v.contributionAmount, v.contributionFrequency, v.contributionNextDate].filter(
+    (x) => x !== undefined,
+  ).length;
+  return set === 0 || set === 3;
+};
+const CONTRIB_MSG = { message: "Auto-add needs an amount, a frequency, and a first date together" };
+
+export const createGoalSchema = z
+  .object({
+    name: z.string().min(1).max(80),
+    targetAmount: zMoney,
+    targetDate: zCalendarDate.optional(),
+    accountId: z.string().min(1).optional(),
+    notes: z.string().max(500).optional(),
+    ...contributionFields,
+  })
+  .refine(contributionsTogether, CONTRIB_MSG);
+export const updateGoalSchema = z
+  .object({
+    name: z.string().min(1).max(80).optional(),
+    targetAmount: zMoney.optional(),
+    targetDate: zCalendarDate.nullable().optional(),
+    accountId: z.string().min(1).nullable().optional(),
+    currentSaved: zMoney.optional(),
+    status: z.enum(["active", "reached", "archived"]).optional(),
+    notes: z.string().max(500).nullable().optional(),
+    ...contributionFields,
+    /** Set true to remove an auto-add schedule. */
+    clearContributions: z.boolean().optional(),
+  })
+  .refine(contributionsTogether, CONTRIB_MSG);
 export const contributeGoalSchema = z.object({ amount: zMoney });
 
 // ── Debt ─────────────────────────────────────────────────────────────────────

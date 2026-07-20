@@ -437,7 +437,10 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
                   className={`flex items-center gap-2 py-3 text-[13px] ${i > 0 ? "border-t border-rule" : ""}`}
                 >
                   <div>
-                    <div className="font-semibold text-ink">{d.name}</div>
+                    <div className="flex items-center gap-2 font-semibold text-ink">
+                      {d.name}
+                      {d.due && <StatusTag status={d.due.key}>{d.due.label}</StatusTag>}
+                    </div>
                     <div className="text-[11px] text-muted">
                       {d.aprMin}
                       {d.linked ? " · linked" : ""}

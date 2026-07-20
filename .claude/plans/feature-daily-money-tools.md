@@ -166,46 +166,46 @@ Files: `src/components/command/command-palette.tsx`, `src/components/chrome/sear
 ### Task 4.1 — Payoff planner (snowball vs avalanche)
 Files: new `src/lib/payoff-plan.ts` (+ test), planning page + a new
 `src/components/planning/payoff-planner.tsx`.
-- [ ] Pure `payoffPlan(debts: {name, balance, apr, minimum}[], extraPerMonth, strategy)` →
+- [x] Pure `payoffPlan(debts: {name, balance, apr, minimum}[], extraPerMonth, strategy)` →
       month-by-month simulation (decimal inputs, plain-number month counts): payoff order, months
       to debt-free, total interest paid; and `comparePlans(...)` → both strategies + interest
       saved by the winner. Guard: if Σ minimums can't cover interest, return the honest
       "minimums don't cover interest" result. Tests: hand-computed 2-debt case (avalanche beats
       snowball on interest; snowball clears the small debt first), 0% APR, zero-extra.
-- [ ] Planner card on the planning page (only when ≥2 debts): "Extra per month" input + a
+- [x] Planner card on the planning page (only when ≥2 debts): "Extra per month" input + a
       Snowball/Avalanche toggle → "Debt-free in ~N months · ~$X interest. Avalanche saves ~$Y vs
       snowball." + the payoff order as a numbered list. Advisory copy: "Estimates at today's
       balances."
 
 ### Task 4.2 — Envelope allocation (shared-account goals, DD2)
 Files: `src/services/dashboard/planning.ts`, `goals-panel.tsx`, `_actions.ts`.
-- [ ] Service: when resolving linked goals, group by accountId; if 2+ goals share one account →
+- [x] Service: when resolving linked goals, group by accountId; if 2+ goals share one account →
       envelope mode for that group: each saved = own `currentSaved`; expose per-goal
       `envelope: true` and a per-account `unallocated` figure (balance − Σ, clamped ≥ 0).
       Single-goal links unchanged (live balance).
-- [ ] TRANSITION RULE (prevents a surprising drop-to-zero): when a create/update link makes an
+- [x] TRANSITION RULE (prevents a surprising drop-to-zero): when a create/update link makes an
       account shared (1 goal → 2), first set the previously-single goal's `currentSaved` to the
       account's current live balance — its envelope keeps everything it was showing; the new goal
       starts at $0 with $0 unallocated. Symmetrically, when deletes/unlinks drop the account back
       to exactly one linked goal, that goal resumes live tracking (its stored value is ignored
       again). Do this inside the same RLS tx as the link change. Test the 1→2 transition
       explicitly: the first goal's displayed saved must not change across the flip.
-- [ ] `allocateToGoalAction(workspaceId, goalId, amount)` → service moves `amount` from
+- [x] `allocateToGoalAction(workspaceId, goalId, amount)` → service moves `amount` from
       unallocated into the goal's `currentSaved`, validated inside the RLS tx (amount > 0 and
       Σ allocations + amount ≤ live account balance → else "Only $X is unallocated").
-- [ ] Panel: envelope goals show "envelope of {account}" instead of "Tracks {account}", an
+- [x] Panel: envelope goals show "envelope of {account}" instead of "Tracks {account}", an
       "Allocate" popover (like Add to savings), and one shared line per account group:
       "Unallocated in {account}: $X".
-- [ ] Live test: two goals on one account (balance 1000): allocate 600 + 300 → saved amounts and
+- [x] Live test: two goals on one account (balance 1000): allocate 600 + 300 → saved amounts and
       unallocated 100 correct; allocating 200 more rejects; a single-goal account still live-tracks.
 
 ### Task 4.3 — Auto-contributions (DD3 — the one migration)
 Files: `prisma/schema.prisma` + migration `add_goal_contributions`, `zod/entities.ts`,
 `planning.ts`, `goals-panel.tsx`.
-- [ ] Migration: `contributionAmount Decimal? @db.Decimal(14,2)`, `contributionFrequency
+- [x] Migration: `contributionAmount Decimal? @db.Decimal(14,2)`, `contributionFrequency
       Frequency?`, `contributionNextDate DateTime? @db.Date` on Goal (verify env host is the
       local 127.0.0.1 DB before `pnpm exec prisma migrate dev --name add_goal_contributions`).
-- [ ] Service: a `materializeGoalContributions(workspaceId, today)` step that EXACTLY mirrors the
+- [x] Service: a `materializeGoalContributions(workspaceId, today)` step that EXACTLY mirrors the
       recurring-bills pattern — runs via `prismaAdmin` (a system action, not a user write, so a
       viewer-triggered read never performs RLS writes) behind the same once-per-day in-process
       guard, called at the top of `listGoals`. For UNLINKED goals with a schedule: while
@@ -213,21 +213,21 @@ Files: `prisma/schema.prisma` + migration `add_goal_contributions`, `zod/entitie
       `stepByFrequency`; reached-check applies. create/update schemas accept the 3 fields
       together-or-none (zod refine); setting them on a linked goal is rejected with the
       linked-guard error.
-- [ ] Goal form/edit: "Auto-add" — amount + frequency + first date (all optional). Row label:
+- [x] Goal form/edit: "Auto-add" — amount + frequency + first date (all optional). Row label:
       "auto-adds $200 monthly". Contribute popover unchanged.
-- [ ] Live test: goal with contributionNextDate 2 months back, monthly $100 → listGoals shows
+- [x] Live test: goal with contributionNextDate 2 months back, monthly $100 → listGoals shows
       +$200 and nextDate advanced; runs idempotently on the next read.
 
 ### Task 4.4 — Debt due-day chips (DD4 reminders)
 Files: `src/lib/debt-due.ts` (+ test), `planning.ts` views, `debts-panel.tsx`, `dashboard.tsx`.
-- [ ] Pure `nextDebtDueDate(dueDay, today)` → this month's dueDay or next month's (clamp 29–31
+- [x] Pure `nextDebtDueDate(dueDay, today)` → this month's dueDay or next month's (clamp 29–31
       to the month's last day); feed `billDisplayStatus` for the chip {key,label}.
-- [ ] DebtView gains `due: { key, label }`; chips render on the planning rows and the dashboard
+- [x] DebtView gains `due: { key, label }`; chips render on the planning rows and the dashboard
       debts card (StatusTag, same vocabulary as bills). Tests cover month-end clamping (dueDay 31
       in a 30-day month) and the today/tomorrow boundaries.
 
 ### Phase 4 gate
-- [ ] type-check 0 / lint 0 / tests pass; commit `Phase 4: goals & debts follow-ups`.
+- [x] type-check 0 / lint 0 / tests pass; commit `Phase 4: goals & debts follow-ups`.
 
 ---
 

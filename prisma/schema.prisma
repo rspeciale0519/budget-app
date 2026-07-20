@@ -314,6 +314,9 @@ model Goal {
   status       String    @default("active")
   notes        String?
   accountId    String?
+  contributionAmount    Decimal?   @db.Decimal(14, 2)
+  contributionFrequency Frequency?
+  contributionNextDate  DateTime?  @db.Date
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 

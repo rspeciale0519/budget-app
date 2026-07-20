@@ -75,6 +75,7 @@ export interface DebtItem {
   balance: string;
   aprMin: string;
   linked?: boolean;
+  due?: { key: "overdue" | "today" | "soon" | "later" | "paid"; label: string };
 }
 
 export interface DashboardData {

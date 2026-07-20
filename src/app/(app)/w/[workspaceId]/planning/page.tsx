@@ -8,6 +8,7 @@ import { today as todayFn } from "@/lib/calendar-date";
 import { format } from "@/lib/money";
 import { GoalsPanel, type GoalRow, type AccountOption } from "@/components/planning/goals-panel";
 import { DebtsPanel, type DebtRow } from "@/components/planning/debts-panel";
+import { PayoffPlanner, type PlannerDebt } from "@/components/planning/payoff-planner";
 import { PageHeading } from "@/components/ui/page-heading";
 
 export const dynamic = "force-dynamic";
@@ -54,6 +55,10 @@ export default async function PlanningPage({
       reached: insight.reached,
       insight: insight.label,
       targetRaw: g.target.toFixed(2),
+      envelope: g.envelope,
+      unallocated: g.unallocated ? format(g.unallocated) : null,
+      autoAdd: g.autoAdd,
+      accountId: g.accountId,
     };
   });
 
@@ -70,8 +75,16 @@ export default async function PlanningPage({
       accountName: d.accountId ? (nameById.get(d.accountId) ?? null) : null,
       payoff: payoff.label,
       minimumRaw: d.minimum.toFixed(2),
+      due: d.due,
     };
   });
+
+  const plannerDebts: PlannerDebt[] = debtsData.items.map((d) => ({
+    name: d.name,
+    balance: d.balance.toFixed(2),
+    apr: d.aprValue.toFixed(2),
+    minimum: d.minimum.toFixed(2),
+  }));
 
   return (
     <div className="space-y-4">
@@ -83,6 +96,7 @@ export default async function PlanningPage({
         total={format(debtsData.total)}
         accounts={debtAccounts}
       />
+      {plannerDebts.length >= 2 && <PayoffPlanner debts={plannerDebts} />}
     </div>
   );
 }

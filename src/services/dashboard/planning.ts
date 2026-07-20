@@ -1,10 +1,14 @@
 import type { z } from "zod";
 import type { RlsTx } from "@/lib/prisma-rls";
 import { rlsClientFor } from "@/lib/prisma-rls";
+import { prismaAdmin } from "@/lib/prisma-admin";
 import { assertWorkspaceAccess, ForbiddenError } from "@/services/authz";
 import { audit } from "@/services/audit-service";
-import { money, add, sub, sum, compare, toCents, type Money } from "@/lib/money";
-import { toUtcDate, fromDbDate, type CalendarDate } from "@/lib/calendar-date";
+import { money, add, sub, sum, compare, toCents, format, type Money } from "@/lib/money";
+import { toUtcDate, fromDbDate, today as todayFn, type CalendarDate } from "@/lib/calendar-date";
+import { stepByFrequency } from "@/lib/recurrence";
+import { nextDebtDueDate } from "@/lib/debt-due";
+import { billDisplayStatus, type BillDisplay } from "@/services/bills/bill-status";
 import {
   createGoalSchema,
   updateGoalSchema,
@@ -25,6 +29,8 @@ export interface DebtView {
   dueDay: number;
   accountId: string | null;
   linked: boolean;
+  /** Next payment chip from the shared bill-status vocabulary. */
+  due: BillDisplay;
 }
 
 export interface GoalView {
@@ -37,6 +43,13 @@ export interface GoalView {
   status: string;
   accountId: string | null;
   linked: boolean;
+  /** True when 2+ goals share this goal's linked account (DD2). */
+  envelope: boolean;
+  /** Envelope mode only: the shared account's balance − Σ envelopes (same value
+   * for every goal in the group); null otherwise. */
+  unallocated: Money | null;
+  /** e.g. "auto-adds $200.00 monthly"; null when no schedule. */
+  autoAdd: string | null;
 }
 
 const zero = () => money(0);
@@ -76,18 +89,96 @@ function goalPct(saved: Money, target: Money): number {
   return Math.min(100, Math.round((Number(toCents(saved)) / Number(targetCents)) * 100));
 }
 
+// In-process "materialized today" marker, exactly like the recurring-bills one.
+const contributionsMaterializedToday = new Map<string, string>();
+
+const AUTO_ADD_LABEL: Record<string, string> = {
+  weekly: "weekly",
+  monthly: "monthly",
+  quarterly: "quarterly",
+  annual: "yearly",
+  custom: "monthly",
+};
+
+/**
+ * Apply due auto-contributions to UNLINKED goals. A system action mirroring the
+ * recurring-bills pattern: runs via the privileged client behind a once-per-day
+ * in-process guard, so a viewer-triggered page read never performs RLS writes.
+ */
+export async function materializeGoalContributions(
+  workspaceId: string,
+  today: CalendarDate,
+): Promise<void> {
+  if (contributionsMaterializedToday.get(workspaceId) === today) return;
+  contributionsMaterializedToday.set(workspaceId, today);
+  const goals = await prismaAdmin.goal.findMany({
+    where: { workspaceId, accountId: null, contributionNextDate: { lte: toUtcDate(today) } },
+  });
+  for (const g of goals) {
+    if (!g.contributionAmount || !g.contributionFrequency || !g.contributionNextDate) continue;
+    let saved = money(g.currentSaved.toFixed(2));
+    const amount = money(g.contributionAmount.toFixed(2));
+    let next = fromDbDate(g.contributionNextDate);
+    // Anchor the day-of-month to the schedule's own date so a 31st doesn't
+    // permanently drift to 28 after passing through February.
+    const dayAnchor = Number(next.split("-")[2]);
+    for (let guard = 0; compare2(next, today) <= 0 && guard < 2000; guard++) {
+      saved = add(saved, amount);
+      next = stepByFrequency(next, g.contributionFrequency, 1, dayAnchor);
+    }
+    const reached = compare(saved, money(g.targetAmount.toFixed(2))) >= 0;
+    await prismaAdmin.goal.update({
+      where: { id: g.id },
+      data: {
+        currentSaved: saved.toFixed(2),
+        contributionNextDate: toUtcDate(next),
+        status: reached ? "reached" : g.status,
+      },
+    });
+  }
+}
+
+// calendar-date compare, renamed to avoid clashing with the money compare import.
+function compare2(a: CalendarDate, b: CalendarDate): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
 export async function listGoals(userId: string, workspaceId: string): Promise<GoalView[]> {
   await assertWorkspaceAccess(userId, workspaceId, "viewer");
+  await materializeGoalContributions(workspaceId, todayFn());
   return rlsClientFor(userId).run(async (tx) => {
     const goals = await repo.listGoalsByWorkspace(tx, workspaceId);
-    const linkedIds = [...new Set(goals.flatMap((g) => (g.accountId ? [g.accountId] : [])))];
-    const balances = await accountBalances(tx, linkedIds);
+    const linkedIds = goals.flatMap((g) => (g.accountId ? [g.accountId] : []));
+    const balances = await accountBalances(tx, [...new Set(linkedIds)]);
+
+    // DD2: an account shared by 2+ goals switches that group to envelope mode.
+    const linkCount = new Map<string, number>();
+    for (const id of linkedIds) linkCount.set(id, (linkCount.get(id) ?? 0) + 1);
+    const envelopeAccounts = new Set([...linkCount.entries()].filter(([, n]) => n >= 2).map(([id]) => id));
+    const unallocatedByAccount = new Map<string, Money>();
+    for (const accountId of envelopeAccounts) {
+      const balance = balances.get(accountId) ?? zero();
+      const allocated = sum(
+        goals.filter((g) => g.accountId === accountId).map((g) => money(g.currentSaved.toFixed(2))),
+      );
+      unallocatedByAccount.set(accountId, clampPositive(sub(balance, allocated)));
+    }
+
     return goals.map((g) => {
       const target = money(g.targetAmount.toFixed(2));
       const linked = g.accountId != null;
+      const envelope = linked && envelopeAccounts.has(g.accountId!);
       const saved = clampPositive(
-        linked ? (balances.get(g.accountId!) ?? zero()) : money(g.currentSaved.toFixed(2)),
+        envelope
+          ? money(g.currentSaved.toFixed(2))
+          : linked
+            ? (balances.get(g.accountId!) ?? zero())
+            : money(g.currentSaved.toFixed(2)),
       );
+      const autoAdd =
+        !linked && g.contributionAmount && g.contributionFrequency
+          ? `auto-adds ${format(money(g.contributionAmount.toFixed(2)))} ${AUTO_ADD_LABEL[g.contributionFrequency] ?? g.contributionFrequency}`
+          : null;
       return {
         id: g.id,
         name: g.name,
@@ -98,6 +189,9 @@ export async function listGoals(userId: string, workspaceId: string): Promise<Go
         status: g.status,
         accountId: g.accountId,
         linked,
+        envelope,
+        unallocated: envelope ? (unallocatedByAccount.get(g.accountId!) ?? zero()) : null,
+        autoAdd,
       };
     });
   });
@@ -112,6 +206,7 @@ export async function listDebts(
     const debts = await repo.listDebtsByWorkspace(tx, workspaceId);
     const linkedIds = [...new Set(debts.flatMap((d) => (d.accountId ? [d.accountId] : [])))];
     const balances = await accountBalances(tx, linkedIds);
+    const today = todayFn();
     const items: DebtView[] = debts.map((d) => {
       const linked = d.accountId != null;
       // A liability account's live balance is negative when money is owed, so
@@ -131,6 +226,7 @@ export async function listDebts(
         dueDay: d.dueDay,
         accountId: d.accountId,
         linked,
+        due: billDisplayStatus("unpaid", nextDebtDueDate(d.dueDay, today), today),
       };
     });
     return { items, total: sum(items.map((d) => d.balance)) };
@@ -153,6 +249,23 @@ async function loadDebtForAdmin(userId: string, debtId: string) {
   return debt;
 }
 
+const LINKED_AUTO_ADD_ERROR =
+  "Auto-add works on manually-tracked goals — a linked goal already tracks its account.";
+
+/** DD2 transition (1 → 2 goals on one account): seed the previously-single
+ * goal's envelope with the account's live balance, so the savings it displayed
+ * yesterday is exactly what its envelope holds today. */
+async function seedEnvelopeOnShare(tx: RlsTx, accountId: string, excludeGoalId?: string) {
+  const existing = await tx.goal.findMany({
+    where: { accountId, ...(excludeGoalId ? { id: { not: excludeGoalId } } : {}) },
+    select: { id: true },
+  });
+  if (existing.length !== 1) return; // 0 → first link (live mode); 2+ → already envelopes
+  const balances = await accountBalances(tx, [accountId]);
+  const bal = clampPositive(balances.get(accountId) ?? zero());
+  await repo.updateGoalRow(tx, existing[0]!.id, { currentSaved: bal.toFixed(2) });
+}
+
 export async function createGoal(
   userId: string,
   workspaceId: string,
@@ -160,8 +273,10 @@ export async function createGoal(
 ) {
   await assertWorkspaceAccess(userId, workspaceId, "admin");
   const data = createGoalSchema.parse(input);
+  if (data.accountId && data.contributionAmount) throw new Error(LINKED_AUTO_ADD_ERROR);
   return rlsClientFor(userId).run(async (tx) => {
     await assertAccountInWorkspace(tx, data.accountId, workspaceId);
+    if (data.accountId) await seedEnvelopeOnShare(tx, data.accountId);
     const goal = await repo.insertGoal(tx, {
       workspaceId,
       name: data.name,
@@ -169,6 +284,9 @@ export async function createGoal(
       targetDate: data.targetDate ? toUtcDate(data.targetDate) : null,
       accountId: data.accountId ?? null,
       notes: data.notes ?? null,
+      contributionAmount: data.contributionAmount?.toFixed(2),
+      contributionFrequency: data.contributionFrequency,
+      contributionNextDate: data.contributionNextDate ? toUtcDate(data.contributionNextDate) : undefined,
     });
     await audit(tx, { userId, workspaceId, action: "create", entityType: "Goal", entityId: goal.id, after: { name: goal.name } });
     return goal;
@@ -182,8 +300,18 @@ export async function updateGoal(
 ) {
   const goal = await loadGoalForAdmin(userId, goalId);
   const data = updateGoalSchema.parse(input);
+  const effectiveAccountId = data.accountId === undefined ? goal.accountId : data.accountId;
+  const addingContributions = data.contributionAmount !== undefined && !data.clearContributions;
+  const keepsContributions = goal.contributionAmount != null && !data.clearContributions;
+  if (effectiveAccountId && (addingContributions || (data.accountId && keepsContributions))) {
+    throw new Error(LINKED_AUTO_ADD_ERROR);
+  }
   return rlsClientFor(userId).run(async (tx) => {
     await assertAccountInWorkspace(tx, data.accountId, goal.workspaceId);
+    // A NEW link (different account than before) may flip that account 1 → 2.
+    if (data.accountId && data.accountId !== goal.accountId) {
+      await seedEnvelopeOnShare(tx, data.accountId, goal.id);
+    }
     const updated = await repo.updateGoalRow(tx, goal.id, {
       name: data.name,
       targetAmount: data.targetAmount?.toFixed(2),
@@ -192,9 +320,46 @@ export async function updateGoal(
       currentSaved: data.currentSaved?.toFixed(2),
       status: data.status,
       notes: data.notes,
+      ...(data.clearContributions
+        ? { contributionAmount: null, contributionFrequency: null, contributionNextDate: null }
+        : {
+            contributionAmount: data.contributionAmount?.toFixed(2),
+            contributionFrequency: data.contributionFrequency,
+            contributionNextDate: data.contributionNextDate ? toUtcDate(data.contributionNextDate) : undefined,
+          }),
     });
     await audit(tx, { userId, workspaceId: goal.workspaceId, action: "update", entityType: "Goal", entityId: goal.id, after: { name: updated.name } });
     return updated;
+  });
+}
+
+/** Envelope mode only: move `amount` from the shared account's unallocated pool
+ * into this goal's envelope. Validated inside the RLS tx. */
+export async function allocateToGoal(userId: string, goalId: string, amountInput: string) {
+  const goal = await loadGoalForAdmin(userId, goalId);
+  if (!goal.accountId) throw new Error("This goal isn't linked to an account — use Add to savings.");
+  const { amount } = contributeGoalSchema.parse({ amount: amountInput });
+  if (compare(amount, zero()) <= 0) throw new Error("Enter a positive amount");
+  return rlsClientFor(userId).run(async (tx) => {
+    const siblings = await tx.goal.findMany({ where: { accountId: goal.accountId } });
+    if (siblings.length < 2) {
+      throw new Error("This goal tracks the whole account — its balance is already the progress.");
+    }
+    const balances = await accountBalances(tx, [goal.accountId!]);
+    const balance = clampPositive(balances.get(goal.accountId!) ?? zero());
+    const allocated = sum(siblings.map((s) => money(s.currentSaved.toFixed(2))));
+    const unallocated = clampPositive(sub(balance, allocated));
+    if (compare(amount, unallocated) > 0) {
+      throw new Error(`Only ${format(unallocated)} is unallocated in this account.`);
+    }
+    const newSaved = add(money(goal.currentSaved.toFixed(2)), amount);
+    const reached = compare(newSaved, money(goal.targetAmount.toFixed(2))) >= 0;
+    const updated = await repo.updateGoalRow(tx, goal.id, {
+      currentSaved: newSaved.toFixed(2),
+      status: reached ? "reached" : goal.status,
+    });
+    await audit(tx, { userId, workspaceId: goal.workspaceId, action: "update", entityType: "Goal", entityId: goal.id, after: { currentSaved: newSaved.toFixed(2) } });
+    return { goal: updated, reached };
   });
 }
 

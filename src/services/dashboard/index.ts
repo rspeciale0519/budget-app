@@ -145,6 +145,7 @@ export async function getDashboardData(
     balance: format(d.balance),
     aprMin: `${d.apr} · min ${format(d.minimum)}`,
     linked: d.linked,
+    due: d.due,
   }));
 
   const billWord = items.length === 1 ? "bill" : "bills";

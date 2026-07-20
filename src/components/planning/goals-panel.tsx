@@ -11,6 +11,7 @@ import {
   updateGoalAction,
   deleteGoalAction,
   contributeGoalAction,
+  allocateGoalAction,
   type ActionResult,
 } from "@/app/(app)/w/[workspaceId]/_actions";
 
@@ -25,6 +26,13 @@ export interface GoalRow {
   reached: boolean;
   insight: string;
   targetRaw: string;
+  /** 2+ goals share this goal's linked account (DD2). */
+  envelope: boolean;
+  /** Envelope groups only: the account's unallocated remainder (formatted). */
+  unallocated: string | null;
+  /** e.g. "auto-adds $200.00 monthly". */
+  autoAdd: string | null;
+  accountId: string | null;
 }
 
 export interface AccountOption {
@@ -60,6 +68,9 @@ function AddGoalForm({ workspaceId, accounts }: { workspaceId: string; accounts:
   const [target, setTarget] = useState("");
   const [targetDate, setTargetDate] = useState("");
   const [accountId, setAccountId] = useState("");
+  const [autoAmount, setAutoAmount] = useState("");
+  const [autoFrequency, setAutoFrequency] = useState("monthly");
+  const [autoStart, setAutoStart] = useState("");
   return (
     <div className="flex flex-wrap items-end gap-2">
       <div className="space-y-1">
@@ -83,8 +94,38 @@ function AddGoalForm({ workspaceId, accounts }: { workspaceId: string; accounts:
           ))}
         </Select>
       </div>
+      {accountId === "" && (
+        <>
+          <div className="space-y-1">
+            <Label htmlFor="goal-auto-amt">Auto-add (optional)</Label>
+            <AmountInput id="goal-auto-amt" className="w-auto min-w-[6rem]" placeholder="200.00" value={autoAmount} onChange={(e) => setAutoAmount(e.target.value)} />
+          </div>
+          {autoAmount.trim() !== "" && (
+            <>
+              <div className="space-y-1">
+                <Label htmlFor="goal-auto-freq">How often</Label>
+                <Select id="goal-auto-freq" className="w-auto" value={autoFrequency} onChange={(e) => setAutoFrequency(e.target.value)}>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="annual">Yearly</option>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="goal-auto-start">Starting</Label>
+                <Input id="goal-auto-start" type="date" className="w-auto" value={autoStart} onChange={(e) => setAutoStart(e.target.value)} />
+              </div>
+            </>
+          )}
+        </>
+      )}
       <Button
-        disabled={busy || name.trim() === "" || target.trim() === ""}
+        disabled={
+          busy ||
+          name.trim() === "" ||
+          target.trim() === "" ||
+          (autoAmount.trim() !== "" && accountId === "" && autoStart === "")
+        }
         onClick={() =>
           run(
             () =>
@@ -93,6 +134,13 @@ function AddGoalForm({ workspaceId, accounts }: { workspaceId: string; accounts:
                 targetAmount: target,
                 targetDate: targetDate || undefined,
                 accountId: accountId || undefined,
+                ...(accountId === "" && autoAmount.trim() !== ""
+                  ? {
+                      contributionAmount: autoAmount,
+                      contributionFrequency: autoFrequency as never,
+                      contributionNextDate: autoStart,
+                    }
+                  : {}),
               }),
             "Goal added",
           ).then((ok) => {
@@ -101,6 +149,8 @@ function AddGoalForm({ workspaceId, accounts }: { workspaceId: string; accounts:
               setTarget("");
               setTargetDate("");
               setAccountId("");
+              setAutoAmount("");
+              setAutoStart("");
             }
           })
         }
@@ -115,6 +165,7 @@ function GoalItem({ workspaceId, goal }: { workspaceId: string; goal: GoalRow })
   const { busy, run, runResult } = useAction();
   const [confirming, setConfirming] = useState(false);
   const [contributing, setContributing] = useState(false);
+  const [allocating, setAllocating] = useState(false);
   const [amount, setAmount] = useState("");
   const [editing, setEditing] = useState(false);
   const [target, setTarget] = useState(goal.targetRaw);
@@ -129,8 +180,11 @@ function GoalItem({ workspaceId, goal }: { workspaceId: string; goal: GoalRow })
           ) : (
             <span className="text-xs text-muted">{goal.insight}</span>
           )}
+          {goal.autoAdd && <span className="text-[11px] text-muted">· {goal.autoAdd}</span>}
           {goal.linked && goal.accountName && (
-            <span className="rounded bg-raised px-1.5 py-0.5 text-[10px] text-muted">Tracks {goal.accountName}</span>
+            <span className="rounded bg-raised px-1.5 py-0.5 text-[10px] text-muted">
+              {goal.envelope ? `envelope of ${goal.accountName}` : `Tracks ${goal.accountName}`}
+            </span>
           )}
         </span>
         <span className="flex items-center gap-1">
@@ -138,6 +192,11 @@ function GoalItem({ workspaceId, goal }: { workspaceId: string; goal: GoalRow })
           {!goal.linked && (
             <Button variant="ghost" size="sm" disabled={busy} onClick={() => setContributing((v) => !v)}>
               Add to savings
+            </Button>
+          )}
+          {goal.envelope && (
+            <Button variant="ghost" size="sm" disabled={busy} onClick={() => setAllocating((v) => !v)}>
+              Allocate
             </Button>
           )}
           <Button variant="ghost" size="sm" disabled={busy} onClick={() => setEditing((v) => !v)}>
@@ -164,6 +223,26 @@ function GoalItem({ workspaceId, goal }: { workspaceId: string; goal: GoalRow })
           style={{ width: `${Math.min(goal.pct, 100)}%` }}
         />
       </div>
+      {allocating && goal.envelope && (
+        <form
+          className="flex items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void runResult(
+              () => allocateGoalAction(workspaceId, goal.id, amount),
+              (r) => (r.reached ? "Goal reached — nice ✓" : "Allocated"),
+            ).then((ok) => {
+              if (ok) {
+                setAmount("");
+                setAllocating(false);
+              }
+            });
+          }}
+        >
+          <AmountInput aria-label={`Amount to allocate to ${goal.name}`} className="h-8 w-28 text-xs" placeholder="100.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          <Button type="submit" size="sm" disabled={busy || amount.trim() === ""}>Allocate</Button>
+        </form>
+      )}
       {contributing && !goal.linked && (
         <form
           className="flex items-center gap-2"
@@ -195,6 +274,22 @@ function GoalItem({ workspaceId, goal }: { workspaceId: string; goal: GoalRow })
           <Label htmlFor={`gt-${goal.id}`} className="text-xs">Target</Label>
           <AmountInput id={`gt-${goal.id}`} className="h-8 w-28 text-xs" value={target} onChange={(e) => setTarget(e.target.value)} />
           <Button type="submit" size="sm" disabled={busy}>Save</Button>
+          {goal.autoAdd && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={busy}
+              onClick={() =>
+                run(
+                  () => updateGoalAction(workspaceId, goal.id, { clearContributions: true }),
+                  "Auto-add removed",
+                ).then((ok) => ok && setEditing(false))
+              }
+            >
+              Remove auto-add
+            </Button>
+          )}
         </form>
       )}
     </div>
@@ -224,9 +319,25 @@ export function GoalsPanel({
           </p>
         ) : (
           <div className="space-y-2">
-            {goals.map((g) => (
-              <GoalItem key={g.id} workspaceId={workspaceId} goal={g} />
-            ))}
+            {(() => {
+              const headed = new Set<string>();
+              return goals.map((g) => {
+                const showEnvelopeHeader =
+                  g.envelope && g.accountId != null && !headed.has(g.accountId);
+                if (showEnvelopeHeader) headed.add(g.accountId!);
+                return (
+                  <div key={g.id} className="space-y-1">
+                    {showEnvelopeHeader && (
+                      <p className="px-1 text-[11px] text-muted">
+                        Unallocated in {g.accountName}:{" "}
+                        <b className="tabular font-semibold text-ink">{g.unallocated}</b>
+                      </p>
+                    )}
+                    <GoalItem workspaceId={workspaceId} goal={g} />
+                  </div>
+                );
+              });
+            })()}
           </div>
         )}
       </CardContent>

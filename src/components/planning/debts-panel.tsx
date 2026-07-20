@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { StatusTag, type BillStatus } from "@/components/ui/status-tag";
 import { Input, Label, AmountInput, Select } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
 import {
@@ -26,6 +27,7 @@ export interface DebtRow {
   accountName: string | null;
   payoff: string;
   minimumRaw: string;
+  due: { key: BillStatus; label: string };
 }
 
 const DEBT_TYPES = [
@@ -149,6 +151,7 @@ function DebtItem({ workspaceId, debt }: { workspaceId: string; debt: DebtRow })
       <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
         <span className="flex items-baseline gap-2">
           <span className="font-semibold text-ink">{debt.name}</span>
+          <StatusTag status={debt.due.key}>{debt.due.label}</StatusTag>
           <span className="text-xs text-muted">{debt.apr} · min {debt.minimum} · due day {debt.dueDay}</span>
           {debt.linked && debt.accountName && (
             <span className="rounded bg-raised px-1.5 py-0.5 text-[10px] text-muted">Tracks {debt.accountName}</span>

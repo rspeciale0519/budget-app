@@ -15,6 +15,7 @@ import {
   updateGoal,
   deleteGoal,
   contributeToGoal,
+  allocateToGoal,
   createDebt,
   updateDebt,
   deleteDebt,
@@ -213,6 +214,21 @@ export async function contributeGoalAction(
   try {
     const userId = await requireUserId();
     const { reached } = await contributeToGoal(userId, goalId, amount);
+    revalidatePath(`/w/${workspaceId}`);
+    return { ok: true, reached };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Action failed" };
+  }
+}
+
+export async function allocateGoalAction(
+  workspaceId: string,
+  goalId: string,
+  amount: string,
+): Promise<ActionResult & { reached?: boolean }> {
+  try {
+    const userId = await requireUserId();
+    const { reached } = await allocateToGoal(userId, goalId, amount);
     revalidatePath(`/w/${workspaceId}`);
     return { ok: true, reached };
   } catch (e) {
