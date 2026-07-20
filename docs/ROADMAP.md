@@ -54,6 +54,16 @@
       (one additive Goal migration, bills-pattern materializer), debt due-day chips
 - [x] Phase 5 — Verify & merge: gates green, browser matrix (desktop light+dark, mobile), merged
 
+## Security launch hardening (plan: `.claude/plans/security-launch-hardening.md`, branch `security/launch-hardening`)
+
+- [x] Phase 1 — Quick high-value fixes: constant-time service-token comparison, CSP + standard
+      security headers on all routes (browser-verified no violations), in-memory API rate limiting
+      (60/min/IP → 429)
+- [ ] Phase 2 — Least-privilege `app_admin` DB role (non-superuser, blanket admin policies) replaces
+      the `postgres`/`DIRECT_URL` credential in the runtime `prismaAdmin` client
+- [ ] Phase 3 — `prismaAdmin` usage audit + ESLint `no-restricted-imports` fence
+- [ ] Phase 4 — TOTP MFA (deferred: dashboard-gated, post-launch)
+
 ## Earlier milestones (from git history)
 
 - [x] Phases through 2.x of the original build (see git log)

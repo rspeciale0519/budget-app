@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { randomUUID } from "node:crypto";
 import { prismaAdmin } from "@/lib/prisma-admin";
 import { GET } from "@/app/api/v1/workspaces/route";
+import { resetRateLimits } from "@/lib/rate-limit";
 
 const serviceUser = randomUUID();
 let orgId: string;
@@ -56,5 +57,19 @@ describe("GET /api/v1/workspaces", () => {
       }),
     );
     expect(res.status).toBe(401);
+  });
+
+  it("returns 429 after 60 requests from one IP in a minute", async () => {
+    resetRateLimits();
+    const make = () =>
+      GET(
+        new Request("http://localhost/api/v1/workspaces", {
+          headers: { "x-forwarded-for": "203.0.113.9", authorization: "Bearer wrong" },
+        }),
+      );
+    let last: Response | undefined;
+    for (let i = 0; i < 61; i++) last = await make();
+    expect(last!.status).toBe(429);
+    resetRateLimits();
   });
 });
