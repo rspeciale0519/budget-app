@@ -41,6 +41,19 @@
       tab (closes the prior honest exception), goal-reached "Reached ✓" moment
 - [x] Phase 4 — Verify & merge: gates green, browser-verified (desktop light+dark, mobile), merged
 
+## Daily Money Tools (plan: `.claude/plans/feature-daily-money-tools.md`, branch `feature/daily-money-tools`)
+
+- [x] Phase 1 — Recurring bills UI: "Repeats" on Add-bill, Repeating-bills card, create/cancel
+      service on the existing materializer (cancel removes future unpaid bills, keeps history)
+- [x] Phase 2 — Pay yourself: business-book Income card → tagOwnerDrawAction (recorded once per
+      book; /all nets it)
+- [x] Phase 3 — Real palette data search: debounced cross-book transaction hits → prefilled
+      register; the button honestly says "Search" again
+- [x] Phase 4 — Goals & debts follow-ups: payoff planner (snowball/avalanche + saves-figure),
+      envelope allocation (shared-account goals, seeded 1→2 transition), auto-contributions
+      (one additive Goal migration, bills-pattern materializer), debt due-day chips
+- [x] Phase 5 — Verify & merge: gates green, browser matrix (desktop light+dark, mobile), merged
+
 ## Earlier milestones (from git history)
 
 - [x] Phases through 2.x of the original build (see git log)

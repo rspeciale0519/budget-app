@@ -234,7 +234,7 @@ Files: `src/lib/debt-due.ts` (+ test), `planning.ts` views, `debts-panel.tsx`, `
 # Phase 5 — Verification & merge
 
 ### Task 5.1 — Gates + constraint evidence
-- [ ] All three gates green on the branch. `git diff` vs branch-start: prisma/ limited to the ONE
+- [x] All three gates green on the branch. `git diff` vs branch-start: prisma/ limited to the ONE
       `add_goal_contributions` migration + schema fields; package.json unchanged.
 
 ### Task 5.2 — Browser verification (production build, chrome-devtools MCP)
@@ -242,7 +242,7 @@ Reseed the throwaway `verify-polish@example.com` fixtures (DIRECT_URL script) wi
 book + a personal book (both admin), accounts on each, **distinctively-named transactions in BOTH
 books** (so palette search can prove a cross-book hit), ≥2 manual debts, two goals sharing one
 savings account, and an unlinked goal with a backdated auto-contribution.
-- [ ] Desktop 1440×900 (light + dark) + mobile 430×932, zero console errors, covering: create a
+- [x] Desktop 1440×900 (light + dark) + mobile 430×932, zero console errors, covering: create a
       monthly recurring bill → bills appear on calendar/dashboard with "· recurring" → "Stop
       repeating" removes future unpaid ones; Pay yourself from the business book → toast + the
       personal book's register shows the income + /all nets it once; palette search finds a
@@ -251,7 +251,7 @@ savings account, and an unlinked goal with a backdated auto-contribution.
       materialized on page load; debt due chips ("Due today"/"in N days").
 
 ### Task 5.3 — Roadmap, merge, push, cleanup
-- [ ] Update `docs/ROADMAP.md`; ff-merge to `main`; re-run gates ON main; push (output shown);
+- [x] Update `docs/ROADMAP.md`; ff-merge to `main`; re-run gates ON main; push (output shown);
       `git rev-parse` parity; delete branch; update project memory.
 
 ### Definition of done
