@@ -14,7 +14,23 @@
 - [x] Phase 5 — Budget page: month nav, summary, inline edit, move money
 - [x] Phase 6 — Language, dates, accessibility, loading states
 
+## UX Trust & Fun (plan: `.claude/plans/feature-ux-trust-and-fun.md`, branch `feature/ux-trust-and-fun`)
+
+- [x] Phase 1 — Trust fixes: negative safe-to-spend alert state, honest forecast (no down-sampling,
+      "Lowest point" not "Large bill"), period-aware KPI labels, one bill-status vocabulary
+      ("Due later" not "scheduled"), credit-card sign suggestion, ambiguous-date warning
+- [x] Phase 2 — Friction removal: clickable All-books rows, mark-paid undo, calendar-as-a-tool
+      (summary/legend/clickable chips + mark-paid), dismissible toasts, honest Jump-to + Ctrl/⌘,
+      deep-linked quick actions, import clarity, jargon batch (Manage → Accounts & bills), Activity
+      who/what, sharing reassurance, tiles degradation, dashboard/budget/income clarity, Google in sign-up
+- [x] Phase 3 — Categorize loop: rule CRUD, Auto-categorize card, smart "Always" patterns,
+      apply-to-N-similar, inbox-zero payoff
+- [x] Phase 4 — Celebration moments: fully-funded budget, all-bills-paid, payday up-ticks,
+      first-run welcome + book-creation toast, All-books insight + greeting
+- [x] Phase 5 — Verify & merge: gates green, grep evidence, browser verification (desktop/mobile/dark,
+      forced negative safe-to-spend), merged to main
+
 ## Earlier milestones (from git history)
 
 - [x] Phases through 2.x of the original build (see git log)
-- [ ] v2 reports (next major milestone after UX overhaul)
+- [ ] v2 reports (next major milestone)

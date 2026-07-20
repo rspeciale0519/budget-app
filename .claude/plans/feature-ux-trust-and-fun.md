@@ -390,33 +390,33 @@ Files: `src/components/command/command-palette.tsx` (:136).
 # Phase 5 — Verification & merge
 
 ### Task 5.1 — Full-suite gates on the branch
-- [ ] `pnpm type-check` → 0. `pnpm lint` → 0. `pnpm test` → all pass (flake protocol per Global
+- [x] `pnpm type-check` → 0. `pnpm lint` → 0. `pnpm test` → all pass (flake protocol per Global
       constraints).
-- [ ] Copy greps: `rg -i "scheduled" src/components src/app` (only identifiers);
+- [x] Copy greps: `rg -i "scheduled" src/components src/app` (only identifiers);
       `rg "workspace" src/components src/app` rendered-string check (identifiers/routes exempt);
       `rg '"Manage"'` if D1 approved → 0 user-visible remnants.
 
 ### Task 5.2 — Browser verification (production build, chrome-devtools MCP)
 `pnpm build` + `pnpm exec next start` on a free port ≥3006 (check `netstat -ano` first; kill only
 this project's stale server via `taskkill //F //PID`).
-- [ ] Desktop 1440×900 light: dashboard (incl. a NEGATIVE safe-to-spend book — adjust seed data if
+- [x] Desktop 1440×900 light: dashboard (incl. a NEGATIVE safe-to-spend book — adjust seed data if
       none exists), forecast hover matches caption, period toggle relabels KPIs, budget
       fully-funded state, calendar summary/legend/chip-popover mark-paid + undo, import wizard
       (credit-card sign suggestion, all-duplicates message, success card), rules card CRUD,
       Always popover + apply-to-similar, inbox-zero, All books links + insight, tiles labels,
       Activity who/what, palette Ctrl K + new commands + deep-linked quick actions.
-- [ ] Mobile 430×932: calendar agenda statuses, dashboard alert state, toasts dismissible,
+- [x] Mobile 430×932: calendar agenda statuses, dashboard alert state, toasts dismissible,
       transactions loop usable, All books table scroll container intact.
-- [ ] Dark theme spot-pass on every changed surface (alert tints, legend swatches, up-ticks).
-- [ ] Zero console errors throughout.
-- [ ] Regression spot-check on unchanged pages (settings, income, export).
+- [x] Dark theme spot-pass on every changed surface (alert tints, legend swatches, up-ticks).
+- [x] Zero console errors throughout.
+- [x] Regression spot-check on unchanged pages (settings, income, export).
 
 ### Task 5.3 — Roadmap, merge, push, cleanup
-- [ ] Update `docs/ROADMAP.md` (mark this effort's items complete).
-- [ ] Merge: `git checkout main && git merge --ff-only feature/ux-trust-and-fun` (rebase first if
+- [x] Update `docs/ROADMAP.md` (mark this effort's items complete).
+- [x] Merge: `git checkout main && git merge --ff-only feature/ux-trust-and-fun` (rebase first if
       needed); re-run all three gates ON main.
-- [ ] `git push` (show output); delete the feature branch.
-- [ ] Update memory (`project-state-ledger-budget-app.md`) with the shipped state.
+- [x] `git push` (show output); delete the feature branch.
+- [x] Update memory (`project-state-ledger-budget-app.md`) with the shipped state.
 
 ### Definition of done
 Every checkbox above checked; gates green on `main`; `origin/main` = local `main`; browser
