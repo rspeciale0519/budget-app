@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/components/chrome/theme-toggle";
 import { AvatarMenu } from "@/components/chrome/avatar-menu";
 import { SearchButton } from "@/components/chrome/search-button";
 import { LayoutsDropdown } from "@/components/chrome/layouts-dropdown";
+import { TilesGlyph } from "@/components/ui/glyphs";
 
 export async function TabBar({ userId }: { userId: string }) {
   const workspaces = await listAccessibleWorkspaces(userId);
@@ -29,7 +30,7 @@ export async function TabBar({ userId }: { userId: string }) {
       <div className="mx-auto flex max-w-[1240px] items-center gap-2 px-3 py-2.5 sm:gap-4 sm:px-5">
         <Link href="/" className="flex items-center gap-2 whitespace-nowrap">
           <LedgerMark />
-          <span className="font-serif text-[19px] leading-none tracking-[-0.01em] text-ink">
+          <span className="font-serif text-[19px] font-medium leading-none tracking-[-0.01em] text-ink">
             Ledger
           </span>
         </Link>
@@ -52,14 +53,14 @@ export async function TabBar({ userId }: { userId: string }) {
             title="Side by side"
             aria-label="Side by side"
           >
-            ⊞
+            <TilesGlyph />
           </Link>
           <Link
             href="/tiles"
             className="hidden h-9 items-center gap-1.5 rounded-control border border-rule bg-surface px-3 text-xs font-semibold text-ink/85 transition-colors hover:border-dim hover:bg-raised lg:flex"
             title="See multiple books side by side"
           >
-            ⊞ Side by side
+            <TilesGlyph /> Side by side
           </Link>
           <LayoutsDropdown layouts={layouts} />
           <SearchButton />

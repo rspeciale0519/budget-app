@@ -56,12 +56,19 @@ function CategoryDonut({ data }: { data: DashboardData }) {
         </text>
       </svg>
       <div className="flex flex-col gap-2">
-        {data.categories.map((c) => (
-          <span key={c.name} className="flex items-center gap-2 text-xs text-muted">
-            <i className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: c.color }} />
-            {c.name} <b className="tabular ml-1 text-ink">{c.amount}</b>
-          </span>
-        ))}
+        {data.categories.length === 0 ? (
+          <p className="max-w-[240px] text-xs leading-relaxed text-muted">
+            Nothing categorized this period. Give transactions a category and the
+            breakdown fills in.
+          </p>
+        ) : (
+          data.categories.map((c) => (
+            <span key={c.name} className="flex items-center gap-2 text-xs text-muted">
+              <i className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: c.color }} />
+              {c.name} <b className="tabular ml-1 text-ink">{c.amount}</b>
+            </span>
+          ))
+        )}
       </div>
     </div>
   );
@@ -328,8 +335,8 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
                   key={b.vendor}
                   className={`flex items-center gap-3 py-2.5 ${i > 0 ? "border-t border-rule" : ""}`}
                 >
-                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-control bg-raised text-[15px]">
-                    {b.icon}
+                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-control bg-raised text-[13px] font-semibold text-muted">
+                    {b.vendor.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
                     <div className="truncate text-[13.5px] font-semibold text-ink">{b.vendor}</div>
@@ -358,23 +365,34 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
               <CardTitle note={data.periodLabel}>Paid vs. unpaid</CardTitle>
             </CardHeader>
             <CardContent>
-              {data.paidVsUnpaid.paidPct === 100 && (
-                <p className="mb-2 text-xs font-semibold text-credit">100% paid this month ✓</p>
+              {/* No bills at all → an empty track, not a full "unpaid" bar. A bar
+                  that's 100% gold when nothing is owed reads as a warning. */}
+              {data.paidVsUnpaid.paid === "$0.00" && data.paidVsUnpaid.unpaid === "$0.00" ? (
+                <>
+                  <div className="mb-3 h-3 rounded-full bg-raised" />
+                  <p className="text-xs text-muted">No bills this month — nothing to pay yet.</p>
+                </>
+              ) : (
+                <>
+                  {data.paidVsUnpaid.paidPct === 100 && (
+                    <p className="mb-2 text-xs font-semibold text-credit">100% paid this month ✓</p>
+                  )}
+                  <div className="mb-3 flex h-3 overflow-hidden rounded-full bg-raised">
+                    <div className="bg-credit" style={{ width: `${data.paidVsUnpaid.paidPct}%` }} />
+                    <div className="bg-debit" style={{ width: `${100 - data.paidVsUnpaid.paidPct}%` }} />
+                  </div>
+                  <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted">
+                    <span className="flex items-center gap-1.5">
+                      <i className="inline-block h-2 w-2 rounded-sm bg-credit" />
+                      Paid <b className="tabular text-ink">{data.paidVsUnpaid.paid}</b>
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <i className="inline-block h-2 w-2 rounded-sm bg-debit" />
+                      Unpaid <b className="tabular text-ink">{data.paidVsUnpaid.unpaid}</b>
+                    </span>
+                  </div>
+                </>
               )}
-              <div className="mb-3 flex h-3 overflow-hidden rounded-full bg-raised">
-                <div className="bg-credit" style={{ width: `${data.paidVsUnpaid.paidPct}%` }} />
-                <div className="bg-debit" style={{ width: `${100 - data.paidVsUnpaid.paidPct}%` }} />
-              </div>
-              <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted">
-                <span className="flex items-center gap-1.5">
-                  <i className="inline-block h-2 w-2 rounded-sm bg-credit" />
-                  Paid <b className="tabular text-ink">{data.paidVsUnpaid.paid}</b>
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <i className="inline-block h-2 w-2 rounded-sm bg-debit" />
-                  Unpaid <b className="tabular text-ink">{data.paidVsUnpaid.unpaid}</b>
-                </span>
-              </div>
             </CardContent>
           </Card>
 
@@ -400,7 +418,7 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
                 <div key={g.name} className={`py-3 ${i > 0 ? "border-t border-rule" : ""}`}>
                   <div className="mb-2 flex justify-between text-[13px] font-semibold text-ink">
                     <span>
-                      {g.icon} {g.name}
+                      {g.name}
                       {g.linked && <span className="ml-1 text-[10px] font-normal text-dim">· linked</span>}
                     </span>
                     <span className="tabular font-medium text-muted">
@@ -408,7 +426,10 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
                     </span>
                   </div>
                   <div className="h-1.5 overflow-hidden rounded-full bg-raised">
-                    <div className="h-full rounded-full" style={{ width: `${g.pct}%`, background: g.color }} />
+                    <div
+                      className={`h-full rounded-full ${g.pct >= 100 ? "bg-credit" : "bg-now"}`}
+                      style={{ width: `${Math.min(g.pct, 100)}%` }}
+                    />
                   </div>
                 </div>
               ))}

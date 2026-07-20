@@ -89,11 +89,11 @@ export default async function ManagePage({
             />
           ) : (
             txns.map((t) => (
-              <div key={t.id} className="flex justify-between border-b border-rule py-1">
+              <div key={t.id} className="flex justify-between border-b border-rule py-1 last:border-b-0">
                 <span className="text-ink/85">
                   {formatDate(fromDbDate(t.date))} · {t.description}
                 </span>
-                <span className="tabular-nums text-ink">{format(money(t.amount.toFixed(2)))}</span>
+                <span className="tabular text-ink">{format(money(t.amount.toFixed(2)))}</span>
               </div>
             ))
           )}

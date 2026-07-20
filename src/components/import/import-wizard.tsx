@@ -254,7 +254,9 @@ export function ImportWizard({
           {step === "upload" && (
             <>
               <label className="block space-y-1">
-                <span className="text-xs font-semibold text-muted">Import into account</span>
+                <span className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-muted">
+                  Import into account
+                </span>
                 <Select value={accountId} onChange={(e) => setAccountId(e.target.value)}>
                   {accounts.map((a) => (
                     <option key={a.id} value={a.id}>

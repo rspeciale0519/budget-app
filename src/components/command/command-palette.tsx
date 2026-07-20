@@ -9,6 +9,47 @@ import { searchTransactionsAction, type TransactionHit } from "@/app/(app)/searc
 
 type Workspace = { id: string; name: string; color: string };
 
+/*
+  One icon language for the whole palette: 14px strokes in the current text
+  color. Book commands are the exception on purpose — they get the same colored
+  dot their pills wear in the top bar, so "Go to Personal" matches "Personal".
+*/
+const STROKE = {
+  strokeWidth: 1.6,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+  fill: "none",
+  stroke: "currentColor",
+} as const;
+
+function PaletteIcon({ name, color }: { name: string; color?: string }) {
+  if (name === "book") {
+    return <span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />;
+  }
+  const paths: Record<string, React.ReactNode> = {
+    plus: <path d="M7 2.5v9M2.5 7h9" />,
+    bill: <path d="M3.5 1.5h7v11l-1.75-1-1.75 1-1.75-1-1.75 1zM5.5 5h3M5.5 7.5h3" />,
+    draw: <path d="M2.5 11.5l9-9m0 0h-5.5m5.5 0v5.5" />,
+    import: <path d="M7 1.5v7m0 0L4 5.7M7 8.5l3-2.8M2 10v1.5a1 1 0 001 1h8a1 1 0 001-1V10" />,
+    grid: <path d="M2 2h4v4H2zM8 2h4v4H8zM2 8h4v4H2zM8 8h4v4H8z" />,
+    tiles: <path d="M2 2.5h4.25v9H2zM7.75 2.5H12v9H7.75z" />,
+    theme: (
+      <>
+        <circle cx="7" cy="7" r="5.25" />
+        <path d="M7 1.75a5.25 5.25 0 010 10.5z" fill="currentColor" stroke="none" />
+      </>
+    ),
+    settings: <path d="M2 4h6.5M11 4h1M9 4a1.4 1.4 0 103 0 1.4 1.4 0 00-3 0zM12 10H5.5M3 10H2M5 10a1.4 1.4 0 10-3 0 1.4 1.4 0 003 0z" />,
+    members: <path d="M5.25 6.5a2 2 0 100-4 2 2 0 000 4zM1.75 11.5a3.5 3.5 0 017 0M9.5 6.3a1.9 1.9 0 10-.9-3.6M12.25 11.5a3.3 3.3 0 00-2.6-3.2" />,
+    search: <path d="M6.25 10.5a4.25 4.25 0 100-8.5 4.25 4.25 0 000 8.5zM9.4 9.4l3.1 3.1" />,
+  };
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" {...STROKE} aria-hidden>
+      {paths[name] ?? paths.search}
+    </svg>
+  );
+}
+
 export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -171,7 +212,7 @@ export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
       >
         <div className="flex items-center gap-3 border-b border-rule px-4 py-3.5 text-[15px] text-ink">
           <span aria-hidden className="text-dim">
-            ⌕
+            <PaletteIcon name="search" />
           </span>
           <input
             ref={inputRef}
@@ -222,12 +263,12 @@ export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
                       >
                         <span
                           className={cn(
-                            "grid h-6 w-6 place-items-center rounded-md text-[13px] transition-colors",
+                            "grid h-6 w-6 place-items-center rounded-md transition-colors",
                             active ? "bg-now-tint text-now" : "bg-raised text-muted",
                           )}
                           aria-hidden
                         >
-                          {cmd.icon}
+                          <PaletteIcon name={cmd.icon} color={cmd.color} />
                         </span>
                         {cmd.label}
                       </button>
@@ -257,12 +298,12 @@ export function CommandPalette({ workspaces }: { workspaces: Workspace[] }) {
                     >
                       <span
                         className={cn(
-                          "grid h-6 w-6 place-items-center rounded-md text-[13px] transition-colors",
+                          "grid h-6 w-6 place-items-center rounded-md transition-colors",
                           active ? "bg-now-tint text-now" : "bg-raised text-muted",
                         )}
                         aria-hidden
                       >
-                        ⌕
+                        <PaletteIcon name="search" />
                       </span>
                       <span className="min-w-0 flex-1 truncate">{hit.description}</span>
                       <span className="tabular shrink-0 text-xs text-muted">{hit.amount}</span>

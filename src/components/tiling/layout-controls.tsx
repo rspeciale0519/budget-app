@@ -7,6 +7,7 @@ import { Input, Select } from "@/components/ui/field";
 import type { PaneConfig } from "@/lib/zod/layout";
 import type { SavedLayout } from "@/services/layout-service";
 import type { WorkspaceOption } from "@/components/tiling/tiles-client";
+import { StackGlyph, TilesGlyph } from "@/components/ui/glyphs";
 
 const EYEBROW = "text-[10px] font-semibold uppercase tracking-[0.06em] text-muted";
 
@@ -87,7 +88,15 @@ export function LayoutControls({
           + Add a book
         </Button>
         <Button variant="outline" size="sm" disabled={busy} onClick={onToggleDirection}>
-          {direction === "row" ? "⬍ Stack" : "⬌ Side by side"}
+          {direction === "row" ? (
+            <>
+              <StackGlyph /> Stack
+            </>
+          ) : (
+            <>
+              <TilesGlyph /> Side by side
+            </>
+          )}
         </Button>
       </div>
 

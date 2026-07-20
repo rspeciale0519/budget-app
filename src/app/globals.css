@@ -109,9 +109,10 @@
   --color-scheduled: var(--scheduled);
   --color-scheduled-tint: var(--scheduled-tint);
 
-  /* One family carries the UI; hierarchy is weight and size, not a second face. */
+  /* Geist carries the UI; hierarchy is weight and size. The serif is the
+     masthead face only — brand mark, book-identity header, sign-in wordmark. */
   --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
 
   --shadow-card: var(--shadow-card-v);

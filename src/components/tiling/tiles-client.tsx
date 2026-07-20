@@ -84,7 +84,7 @@ export function TilesClient({ workspaces, layouts, initialConfig, initialSummari
 
   return (
     <div className="space-y-4">
-      <PageHeading>Tiles</PageHeading>
+      <PageHeading>Side by side</PageHeading>
       <LayoutControls
         workspaces={workspaces}
         layouts={saved}

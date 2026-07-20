@@ -9,7 +9,7 @@ import type {
 } from "@/lib/mock/dashboard";
 import { rlsClientFor } from "@/lib/prisma-rls";
 import { assertWorkspaceAccess } from "@/services/authz";
-import { categoryColor, paletteAt } from "@/lib/chart-palette";
+import { categoryColor } from "@/lib/chart-palette";
 import { format, isNegative, money, sum, toCents, type Money } from "@/lib/money";
 import { addDays, compare, diffDays, fromDbDate, type CalendarDate } from "@/lib/calendar-date";
 import { periodRange, periodLabel, type Period } from "@/services/dashboard/period";
@@ -29,17 +29,6 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 function shortLabel(d: CalendarDate): string {
   const p = d.split("-");
   return `${MONTHS[Number(p[1]) - 1]} ${p[2]}`;
-}
-
-function iconFor(vendor: string): string {
-  const v = vendor.toLowerCase();
-  if (/electric|power|energy/.test(v)) return "⚡";
-  if (/rent|office|lease/.test(v)) return "🏢";
-  if (/payroll|salary|staff/.test(v)) return "👥";
-  if (/postage|usps|ship/.test(v)) return "🖨️";
-  if (/internet|phone|comcast|verizon/.test(v)) return "🌐";
-  if (/water/.test(v)) return "💧";
-  return "🧾";
 }
 
 function deltaInfo(current: Money, previous: Money, isIncome: boolean): { delta: string; up: boolean } {
@@ -68,7 +57,6 @@ function mapBill(b: Bill, today: CalendarDate): BillItem {
     dueLabel: `Due ${shortLabel(due)}${suffix}`,
     status: display.key,
     statusLabel: display.label,
-    icon: iconFor(b.vendor),
   };
 }
 
@@ -130,13 +118,11 @@ export async function getDashboardData(
     dueDate: shortLabel(u.dueDate),
   }));
 
-  const goalsOut: GoalItem[] = goals.map((g, i) => ({
+  const goalsOut: GoalItem[] = goals.map((g) => ({
     name: g.name,
-    icon: "🎯",
     target: format(g.target),
     saved: format(g.saved),
     pct: g.pct,
-    color: paletteAt(i),
     linked: g.linked,
   }));
 

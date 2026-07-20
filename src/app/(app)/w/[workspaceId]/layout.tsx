@@ -68,7 +68,7 @@ export default async function WorkspaceLayout({
         </div>
         <div>
           <Link href={`/w/${workspaceId}`} className="hover:underline">
-            <h1 className="font-serif text-[22px] leading-tight tracking-[-0.01em] text-ink">
+            <h1 className="font-serif text-[22px] font-medium leading-tight tracking-[-0.01em] text-ink">
               {ws.name}
               <WorkspaceBreadcrumb workspaceId={workspaceId} />
             </h1>

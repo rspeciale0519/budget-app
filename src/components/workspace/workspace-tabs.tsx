@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { WorkspaceCreateDialog } from "@/components/workspace/workspace-create-dialog";
+import { GridGlyph } from "@/components/ui/glyphs";
 
 export interface TabWorkspace {
   id: string;
@@ -72,11 +73,11 @@ export function WorkspaceTabs({
       <Link
         href="/all"
         className={cn(
-          "ml-1 whitespace-nowrap rounded-control px-3 py-2 text-[13px] font-semibold transition-colors",
+          "ml-1 flex items-center gap-1.5 whitespace-nowrap rounded-control px-3 py-2 text-[13px] font-semibold transition-colors",
           allActive ? "bg-raised text-ink" : "text-muted hover:bg-raised/60 hover:text-ink",
         )}
       >
-        ▦ All books
+        <GridGlyph /> All books
       </Link>
     </div>
   );

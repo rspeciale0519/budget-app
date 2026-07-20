@@ -55,7 +55,7 @@ export function AvatarMenu({ initial, email }: { initial: string; email: string 
         <div
           role="menu"
           aria-label="Account"
-          className="absolute right-0 top-10 z-30 w-56 rounded-control border border-rule-strong bg-raised p-1.5 shadow-lg"
+          className="absolute right-0 top-10 z-30 w-56 rounded-card border border-rule-strong bg-surface p-1.5 shadow-lift"
         >
           <div className="truncate px-2.5 py-1.5 text-xs text-muted" title={email}>
             {email}

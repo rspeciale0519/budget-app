@@ -16,7 +16,7 @@ export default async function LoginPage({
 
       <div className="relative w-full max-w-[340px]">
         <div className="mb-8 text-center">
-          <h1 className="text-[52px] font-semibold leading-none tracking-[-0.03em] text-ink">
+          <h1 className="font-serif text-[52px] font-medium leading-none tracking-[-0.02em] text-ink">
             Ledger
           </h1>
           {/*

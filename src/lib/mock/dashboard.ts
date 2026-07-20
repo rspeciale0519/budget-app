@@ -51,7 +51,6 @@ export interface BillItem {
   dueLabel: string;
   status: "overdue" | "today" | "soon" | "later" | "paid";
   statusLabel: string;
-  icon: string;
 }
 
 export interface PaidVsUnpaid {
@@ -62,11 +61,9 @@ export interface PaidVsUnpaid {
 
 export interface GoalItem {
   name: string;
-  icon: string;
   target: string;
   saved: string;
   pct: number;
-  color: string;
   linked?: boolean;
 }
 
@@ -145,15 +142,15 @@ export const mockDashboard: DashboardData = {
   ],
   categoriesTotal: "$27.9k",
   bills: [
-    { id: "mock-1", vendor: "Electric — Duke Energy", amount: "$640", dueLabel: "Due Jun 17 · 3 days ago", status: "overdue", statusLabel: "Overdue", icon: "⚡" },
-    { id: "mock-2", vendor: "Office Rent", amount: "$4,200", dueLabel: "Due Jun 28", status: "soon", statusLabel: "in 5 days", icon: "🏢" },
-    { id: "mock-3", vendor: "Payroll run", amount: "$8,400", dueLabel: "Due Jun 30 · recurring", status: "later", statusLabel: "Due later", icon: "👥" },
-    { id: "mock-4", vendor: "USPS postage account", amount: "$2,150", dueLabel: "Due Jul 03", status: "later", statusLabel: "Due later", icon: "🖨️" },
+    { id: "mock-1", vendor: "Electric — Duke Energy", amount: "$640", dueLabel: "Due Jun 17 · 3 days ago", status: "overdue", statusLabel: "Overdue" },
+    { id: "mock-2", vendor: "Office Rent", amount: "$4,200", dueLabel: "Due Jun 28", status: "soon", statusLabel: "in 5 days" },
+    { id: "mock-3", vendor: "Payroll run", amount: "$8,400", dueLabel: "Due Jun 30 · recurring", status: "later", statusLabel: "Due later" },
+    { id: "mock-4", vendor: "USPS postage account", amount: "$2,150", dueLabel: "Due Jul 03", status: "later", statusLabel: "Due later" },
   ],
   paidVsUnpaid: { paid: "$18,300", unpaid: "$11,390", paidPct: 62 },
   goals: [
-    { name: "Team retreat", icon: "🏝️", target: "$6,000", saved: "$3,200", pct: 53, color: "#16a34a" },
-    { name: "New equipment", icon: "🖥️", target: "$4,500", saved: "$1,400", pct: 31, color: "#2563eb" },
+    { name: "Team retreat", target: "$6,000", saved: "$3,200", pct: 53 },
+    { name: "New equipment", target: "$4,500", saved: "$1,400", pct: 31 },
   ],
   debts: [
     { name: "Amex Business", balance: "$9,200", aprMin: "22.9% APR · min $310" },
