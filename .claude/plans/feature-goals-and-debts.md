@@ -67,27 +67,27 @@ avalanche across multiple debts); notifications/reminders; goal/debt reports.
 
 ### Task 1.1 — Schema: add `Goal.accountId` (the one migration)
 Files: `prisma/schema.prisma`, new migration under `prisma/migrations/`.
-- [ ] Add `accountId String?` and `@@index([accountId])` (or fold into existing index list) to the
+- [x] Add `accountId String?` and `@@index([accountId])` (or fold into existing index list) to the
       `Goal` model; do NOT add a hard FK relation block unless the schema already relates Account↔
       children (match how `Debt.accountId` is declared — it's a bare `String?`, so mirror that).
-- [ ] Run `pnpm prisma migrate dev --name add_goal_account`; commit the generated migration folder.
-- [ ] `pnpm prisma generate` picks up the new field (type-check will confirm).
+- [x] Run `pnpm prisma migrate dev --name add_goal_account`; commit the generated migration folder.
+- [x] `pnpm prisma generate` picks up the new field (type-check will confirm).
 
 ### Task 1.2 — Zod schemas for goal & debt CRUD
 Files: `src/lib/zod/entities.ts`.
-- [ ] `createGoalSchema` { name 1..80, targetAmount zMoney, targetDate zCalendarDate.optional(),
+- [x] `createGoalSchema` { name 1..80, targetAmount zMoney, targetDate zCalendarDate.optional(),
       accountId string.optional(), notes string.max(500).optional() }; `updateGoalSchema` = partial
       of the same + `currentSaved zMoney.optional()`, `status` enum "active"|"reached"|"archived".
-- [ ] `contributeGoalSchema` { amount zMoney (positive) }.
-- [ ] `createDebtSchema` { name 1..80, type string 1..40, apr zMoney (used as a percent, ≥0),
+- [x] `contributeGoalSchema` { amount zMoney (positive) }.
+- [x] `createDebtSchema` { name 1..80, type string 1..40, apr zMoney (used as a percent, ≥0),
       minimumPayment zMoney (≥0), dueDay int 1..31, accountId string.optional(),
       currentBalance zMoney (manual fallback; required when accountId absent) }; `updateDebtSchema`
       = partial; `recordDebtPaymentSchema` { amount zMoney (positive) }.
-- [ ] Export the input types (`CreateGoalInput`, etc.), mirroring the file's existing pattern.
+- [x] Export the input types (`CreateGoalInput`, etc.), mirroring the file's existing pattern.
 
 ### Task 1.3 — planning-repo: CRUD
 Files: `src/repositories/planning-repo.ts`.
-- [ ] Add `insertGoal`, `findGoal`, `updateGoalRow`, `deleteGoalRow`; `insertDebt`, `findDebt`,
+- [x] Add `insertGoal`, `findGoal`, `updateGoalRow`, `deleteGoalRow`; `insertDebt`, `findDebt`,
       `updateDebtRow`, `deleteDebtRow`. Bare Prisma calls like the sibling `category-repo` /
       `bill-repo` (Unchecked create/update input types). Keep the existing list functions.
 
@@ -97,33 +97,33 @@ policies on both `Goal` and `Debt` with USING + WITH CHECK on workspace membersh
 `rlsClientFor` will pass RLS with no policy changes needed.
 Files: `src/services/dashboard/planning.ts` (or split into `src/services/planning-service.ts` if it
 would exceed 450 LOC — likely split), reusing `getAccountBalance` from `account-service`.
-- [ ] `DebtView`/`GoalView` gain `id`, `accountId: string | null`, `linked: boolean`, and for
+- [x] `DebtView`/`GoalView` gain `id`, `accountId: string | null`, `linked: boolean`, and for
       goals `targetDate: string | null`; keep existing fields.
-- [ ] `listGoals`/`listDebts`: when `accountId` is set, compute the live amount —
+- [x] `listGoals`/`listDebts`: when `accountId` is set, compute the live amount —
       goal.saved = `getAccountBalance(accountId)` (clamped ≥ 0); debt.balance =
       `max(0, negate(getAccountBalance(accountId)))` (DD2). When null, use the stored value.
       Recompute `pct` from the resolved saved/target. (Batch the per-account balance lookups.)
-- [ ] `createGoal`/`updateGoal`/`deleteGoal`; `createDebt`/`updateDebt`/`deleteDebt` — admin authz,
+- [x] `createGoal`/`updateGoal`/`deleteGoal`; `createDebt`/`updateDebt`/`deleteDebt` — admin authz,
       RLS client, zod-parsed, audit-logged consistent with siblings that audit (bills do; match
       that — action `create|update|delete`, entityType `"Goal"`/`"Debt"`).
-- [ ] `contributeToGoal(actor, goalId, amount)` — only valid when the goal is NOT linked; adds to
+- [x] `contributeToGoal(actor, goalId, amount)` — only valid when the goal is NOT linked; adds to
       `currentSaved`; if it reaches/exceeds target, set `status = "reached"`. Throws a clear error
       if the goal is account-linked ("This goal tracks an account — move money into that account
       instead").
-- [ ] `recordDebtPayment(actor, debtId, amount)` — only when NOT linked; reduces `currentBalance`
+- [x] `recordDebtPayment(actor, debtId, amount)` — only when NOT linked; reduces `currentBalance`
       (clamped ≥ 0). Same linked-guard error shape.
 
 ### Task 1.5 — Pure insight helpers (+ tests)
 Files: new `src/lib/goal-insight.ts`, `src/lib/debt-payoff.ts` (pure, no server deps).
-- [ ] `goalOnTrack({ saved, target, targetDate, today }) → { reached, needPerMonth?, monthsLeft?,
+- [x] `goalOnTrack({ saved, target, targetDate, today }) → { reached, needPerMonth?, monthsLeft?,
       label }` — e.g. "Reached ✓", "≈ $250/mo to hit it by Dec", "No target date". Decimal-safe.
-- [ ] `debtPayoff({ balance, apr, minimumPayment }) → { months, label }` — standard amortization:
+- [x] `debtPayoff({ balance, apr, minimumPayment }) → { months, label }` — standard amortization:
       if minimum ≤ monthly interest, return `{ months: Infinity, label: "Minimum barely covers
       interest" }`; else iterate/closed-form months to zero; label "~N months at the minimum".
-- [ ] Unit-test boundaries for both (reached; no date; min-too-low; 0% APR; already-paid-off).
+- [x] Unit-test boundaries for both (reached; no date; min-too-low; 0% APR; already-paid-off).
 
 ### Phase 1 gate
-- [ ] type-check 0 / lint 0 / tests pass; commit `Phase 1: goals & debts data + services (account-linked)`.
+- [x] type-check 0 / lint 0 / tests pass; commit `Phase 1: goals & debts data + services (account-linked)`.
 
 ---
 

@@ -124,7 +124,49 @@ export const tagOwnerDrawSchema = z
     message: "Provide fromTransactionId, or both amount and date",
   });
 
+// ── Goal ─────────────────────────────────────────────────────────────────────
+export const createGoalSchema = z.object({
+  name: z.string().min(1).max(80),
+  targetAmount: zMoney,
+  targetDate: zCalendarDate.optional(),
+  accountId: z.string().min(1).optional(),
+  notes: z.string().max(500).optional(),
+});
+export const updateGoalSchema = z.object({
+  name: z.string().min(1).max(80).optional(),
+  targetAmount: zMoney.optional(),
+  targetDate: zCalendarDate.nullable().optional(),
+  accountId: z.string().min(1).nullable().optional(),
+  currentSaved: zMoney.optional(),
+  status: z.enum(["active", "reached", "archived"]).optional(),
+  notes: z.string().max(500).nullable().optional(),
+});
+export const contributeGoalSchema = z.object({ amount: zMoney });
+
+// ── Debt ─────────────────────────────────────────────────────────────────────
+export const createDebtSchema = z.object({
+  name: z.string().min(1).max(80),
+  type: z.string().min(1).max(40),
+  apr: zMoney, // a percent value, e.g. "19.99"
+  minimumPayment: zMoney,
+  dueDay: z.number().int().min(1).max(31),
+  accountId: z.string().min(1).optional(),
+  currentBalance: zMoney.optional(), // required when accountId is absent (checked in service)
+});
+export const updateDebtSchema = z.object({
+  name: z.string().min(1).max(80).optional(),
+  type: z.string().min(1).max(40).optional(),
+  apr: zMoney.optional(),
+  minimumPayment: zMoney.optional(),
+  dueDay: z.number().int().min(1).max(31).optional(),
+  accountId: z.string().min(1).nullable().optional(),
+  currentBalance: zMoney.optional(),
+});
+export const recordDebtPaymentSchema = z.object({ amount: zMoney });
+
 export type CreateWorkspaceInput = z.input<typeof createWorkspaceSchema>;
 export type CreateAccountInput = z.input<typeof createAccountSchema>;
 export type CreateTransactionInput = z.input<typeof createTransactionSchema>;
 export type CreateBillInput = z.input<typeof createBillSchema>;
+export type CreateGoalInput = z.input<typeof createGoalSchema>;
+export type CreateDebtInput = z.input<typeof createDebtSchema>;
