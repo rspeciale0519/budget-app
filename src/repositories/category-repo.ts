@@ -35,3 +35,15 @@ export function listRulesByWorkspace(db: Db, workspaceId: string) {
     orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
   });
 }
+
+export function findCategoryRule(db: Db, id: string) {
+  return db.categoryRule.findUnique({ where: { id } });
+}
+
+export function updateCategoryRuleRow(db: Db, id: string, data: Prisma.CategoryRuleUncheckedUpdateInput) {
+  return db.categoryRule.update({ where: { id }, data });
+}
+
+export function deleteCategoryRuleRow(db: Db, id: string) {
+  return db.categoryRule.delete({ where: { id } });
+}

@@ -124,13 +124,23 @@ export function TransactionsView({
         </Button>
       </form>
 
-      {rows.length === 0 ? (
+      {rows.length === 0 && uncategorizedActive ? (
         <EmptyState
-          title={total === 0 && !filters.q && !filters.account && !filters.category && !uncategorizedActive
+          title="All caught up — every transaction has a category ✓"
+          description="Nothing left to categorize."
+          action={
+            <button type="button" onClick={() => pushFilters({ filter: "", page: 1 })} className={navCls}>
+              Show all transactions
+            </button>
+          }
+        />
+      ) : rows.length === 0 ? (
+        <EmptyState
+          title={total === 0 && !filters.q && !filters.account && !filters.category
             ? "No transactions yet"
             : "Nothing matches"}
           description={
-            total === 0 && !filters.q && !filters.account && !filters.category && !uncategorizedActive
+            total === 0 && !filters.q && !filters.account && !filters.category
               ? "Add one from the Accounts & bills page, or import a CSV from your bank."
               : "Try a different search or clear the filters."
           }

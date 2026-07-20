@@ -280,44 +280,44 @@ Files: `src/components/auth/login-form.tsx` (:151-169).
 
 ### Task 3.1 — Rules service: full CRUD
 Files: `src/services/category-rule-service.ts`, `src/repositories/category-repo.ts`, tests.
-- [ ] Add `deleteRule(actorUserId, workspaceId, ruleId)` and `updateRule(...)` (pattern +
+- [x] Add `deleteRule(actorUserId, workspaceId, ruleId)` and `updateRule(...)` (pattern +
       category), authz-checked (admin), audit-logged consistent with siblings.
-- [ ] Live tests: create → list → update → delete; non-admin forbidden.
+- [x] Live tests: create → list → update → delete; non-admin forbidden.
 
 ### Task 3.2 — "Auto-categorize" card in Accounts & bills
 Files: new `src/components/manage/rules-card.tsx` (≤450 LOC), `manage/page.tsx`, `_actions.ts`.
-- [ ] List rules as human sentences: "Anything containing **'NETFLIX'** → Streaming" with ✕
+- [x] List rules as human sentences: "Anything containing **'NETFLIX'** → Streaming" with ✕
       delete (two-step inline confirm, same pattern as categories) and inline pattern edit.
-- [ ] Empty state: "No rules yet. Set one from any transaction with the Always button — Ledger
+- [x] Empty state: "No rules yet. Set one from any transaction with the Always button — Ledger
       will categorize matching transactions automatically."
-- [ ] Renders in the same section family as the category manager.
+- [x] Renders in the same section family as the category manager.
 
 ### Task 3.3 — "Always" saves a pattern that will actually fire
 Files: `src/components/transactions/transaction-row.tsx` (:110-125), small popover component.
-- [ ] Clicking Always opens a one-field popover pre-filled with a smart-trimmed pattern
+- [x] Clicking Always opens a one-field popover pre-filled with a smart-trimmed pattern
       (strip trailing dates, store numbers, city/state fragments — pure function, unit-tested
       against realistic bank strings like "POS DEBIT 4732 STARBUCKS #10894 SEATTLE WA 06/14").
-- [ ] Hint: "Keep just the part that always appears — e.g. STARBUCKS."
-- [ ] Success toast links to the rules card: "Rule saved — manage rules".
+- [x] Hint: "Keep just the part that always appears — e.g. STARBUCKS."
+- [x] Success toast links to the rules card: "Rule saved — manage rules".
 
 ### Task 3.4 — Apply to similar (retroactive, one click)
 Files: `_actions.ts` (transactions), `src/services/` (new function on transaction or rule
 service), `transaction-row.tsx`, toast usage.
-- [ ] After a rule is created (3.3) OR a category is set on a row: count OTHER uncategorized
+- [x] After a rule is created (3.3) OR a category is set on a row: count OTHER uncategorized
       transactions in the book matching the pattern/description; if N > 0, toast offers
       "Apply to N similar → " one-click action.
-- [ ] Service: `applyCategoryToMatching(actor, workspaceId, pattern, categoryId)` — only
+- [x] Service: `applyCategoryToMatching(actor, workspaceId, pattern, categoryId)` — only
       uncategorized rows, never overwrites human choices; returns count; live-tested.
-- [ ] Full refresh after apply; toast confirms "Categorized N transactions."
+- [x] Full refresh after apply; toast confirms "Categorized N transactions."
 
 ### Task 3.5 — Inbox-zero payoff
 Files: `src/components/transactions/transactions-view.tsx` (:66-79, :127-142).
-- [ ] When the uncategorized filter is active and now matches zero rows (but the book has
+- [x] When the uncategorized filter is active and now matches zero rows (but the book has
       transactions): "All caught up — every transaction has a category ✓" + link "Show all
       transactions". Generic empty state everywhere else unchanged.
 
 ### Phase 3 gate
-- [ ] type-check 0 / lint 0 / tests pass; commit `Phase 3: categorize loop — visible rules, patterns that fire, bulk apply`.
+- [x] type-check 0 / lint 0 / tests pass; commit `Phase 3: categorize loop — visible rules, patterns that fire, bulk apply`.
 
 ---
 

@@ -6,11 +6,21 @@ import {
   updateTransaction,
   deleteTransaction,
 } from "@/services/transaction-service";
-import { createRule } from "@/services/category-rule-service";
+import {
+  createRule,
+  updateRule,
+  deleteRule,
+  countUncategorizedMatching,
+  applyCategoryToMatching,
+} from "@/services/category-rule-service";
 
 export interface ActionResult {
   ok: boolean;
   error?: string;
+}
+
+function msg(e: unknown): string {
+  return e instanceof Error ? e.message : "Action failed";
 }
 
 async function requireUserId(): Promise<string> {
@@ -62,12 +72,65 @@ export async function markTransferAction(
   return run(workspaceId, (userId) => updateTransaction(userId, transactionId, { isTransfer }));
 }
 
-export async function createRuleFromTransactionAction(
+/** Save an "Always" rule and report how many OTHER uncategorized transactions
+ * the pattern would also match (for the follow-up "apply to N similar?" offer). */
+export async function saveRuleAction(
   workspaceId: string,
   pattern: string,
   categoryId: string,
+): Promise<ActionResult & { similar?: number }> {
+  try {
+    const userId = await requireUserId();
+    await createRule(userId, workspaceId, { match: "contains", pattern, categoryId, priority: 0 });
+    const similar = await countUncategorizedMatching(userId, workspaceId, pattern);
+    revalidatePath(`/w/${workspaceId}/transactions`);
+    revalidatePath(`/w/${workspaceId}`);
+    return { ok: true, similar };
+  } catch (e) {
+    return { ok: false, error: msg(e) };
+  }
+}
+
+/** Count uncategorized transactions matching a pattern (used after a manual
+ * categorize to offer "apply to N similar?"). */
+export async function countSimilarAction(
+  workspaceId: string,
+  pattern: string,
+  excludeTransactionId?: string,
+): Promise<{ ok: boolean; count: number }> {
+  try {
+    const userId = await requireUserId();
+    const count = await countUncategorizedMatching(userId, workspaceId, pattern, excludeTransactionId);
+    return { ok: true, count };
+  } catch {
+    return { ok: false, count: 0 };
+  }
+}
+
+export async function applyToSimilarAction(
+  workspaceId: string,
+  pattern: string,
+  categoryId: string,
+): Promise<ActionResult & { count?: number }> {
+  try {
+    const userId = await requireUserId();
+    const count = await applyCategoryToMatching(userId, workspaceId, pattern, categoryId);
+    revalidatePath(`/w/${workspaceId}/transactions`);
+    revalidatePath(`/w/${workspaceId}`);
+    return { ok: true, count };
+  } catch (e) {
+    return { ok: false, error: msg(e) };
+  }
+}
+
+export async function deleteRuleAction(workspaceId: string, ruleId: string): Promise<ActionResult> {
+  return run(workspaceId, (userId) => deleteRule(userId, ruleId));
+}
+
+export async function updateRuleAction(
+  workspaceId: string,
+  ruleId: string,
+  input: { pattern?: string; categoryId?: string },
 ): Promise<ActionResult> {
-  return run(workspaceId, (userId) =>
-    createRule(userId, workspaceId, { match: "contains", pattern, categoryId, priority: 0 }),
-  );
+  return run(workspaceId, (userId) => updateRule(userId, ruleId, input));
 }

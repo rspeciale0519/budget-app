@@ -6,12 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input, AmountInput, Select } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
 import { money, format } from "@/lib/money";
+import { suggestRulePattern } from "@/lib/rule-pattern";
 import {
   setTransactionCategoryAction,
   updateTransactionAction,
   deleteTransactionAction,
   markTransferAction,
-  createRuleFromTransactionAction,
+  saveRuleAction,
+  applyToSimilarAction,
+  countSimilarAction,
 } from "@/app/(app)/w/[workspaceId]/transactions/_actions";
 import type { CategoryOption } from "@/components/transactions/transactions-view";
 
@@ -42,8 +45,51 @@ export function TransactionRow({
   const [date, setDate] = useState(row.date);
   const [amount, setAmount] = useState(row.amount);
   const [description, setDescription] = useState(row.description);
+  const [alwaysOpen, setAlwaysOpen] = useState(false);
+  const [pattern, setPattern] = useState("");
 
   const income = !row.amount.startsWith("-");
+
+  /** After a category is chosen, offer to apply it to similar uncategorized rows. */
+  function offerApplySimilar(pat: string, categoryId: string) {
+    void countSimilarAction(workspaceId, pat, row.id).then((res) => {
+      if (res.ok && res.count > 0) {
+        toast(`${res.count} similar uncategorized — apply this category?`, {
+          actionLabel: `Apply to ${res.count}`,
+          onAction: async () => {
+            const r = await applyToSimilarAction(workspaceId, pat, categoryId);
+            toast(r.ok ? `Categorized ${r.count} transaction${r.count === 1 ? "" : "s"}` : "Could not apply — try again.", r.ok ? {} : { kind: "error" });
+            router.refresh();
+          },
+        });
+      }
+    });
+  }
+
+  async function saveAlways() {
+    setBusy(true);
+    const res = await saveRuleAction(workspaceId, pattern.trim(), row.categoryId!);
+    setBusy(false);
+    setAlwaysOpen(false);
+    if (!res.ok) {
+      toast(res.error ?? "Could not save the rule — try again.", { kind: "error" });
+      return;
+    }
+    const similar = res.similar ?? 0;
+    if (similar > 0) {
+      toast(`Rule saved — ${similar} similar uncategorized. Apply now?`, {
+        actionLabel: `Apply to ${similar}`,
+        onAction: async () => {
+          const r = await applyToSimilarAction(workspaceId, pattern.trim(), row.categoryId!);
+          toast(r.ok ? `Categorized ${r.count} transaction${r.count === 1 ? "" : "s"}` : "Could not apply — try again.", r.ok ? {} : { kind: "error" });
+          router.refresh();
+        },
+      });
+    } else {
+      toast("Rule saved — manage rules in Accounts & bills");
+    }
+    router.refresh();
+  }
 
   async function act(fn: () => Promise<{ ok: boolean; error?: string }>, successMsg: string) {
     setBusy(true);
@@ -92,12 +138,14 @@ export function TransactionRow({
               className="h-8 w-auto min-w-[9rem] text-xs"
               value={row.categoryId ?? ""}
               disabled={busy}
-              onChange={(e) =>
-                act(
-                  () => setTransactionCategoryAction(workspaceId, row.id, e.target.value || null),
-                  e.target.value ? "Category updated" : "Category cleared",
-                )
-              }
+              onChange={async (e) => {
+                const catId = e.target.value || null;
+                await act(
+                  () => setTransactionCategoryAction(workspaceId, row.id, catId),
+                  catId ? "Category updated" : "Category cleared",
+                );
+                if (catId) offerApplySimilar(suggestRulePattern(row.description), catId);
+              }}
             >
               <option value="">Uncategorized</option>
               <optgroup label="Spending">
@@ -132,22 +180,46 @@ export function TransactionRow({
           {format(money(row.amount))}
         </td>
         <td className="whitespace-nowrap px-3 py-2 text-right">
-          <div className="inline-flex items-center gap-1">
+          <div className="relative inline-flex items-center gap-1">
             {row.categoryId && !row.isTransfer && (
               <Button
                 variant="ghost"
                 size="sm"
                 disabled={busy}
                 title="Automatically use this category for future transactions like this one"
-                onClick={() =>
-                  act(
-                    () => createRuleFromTransactionAction(workspaceId, row.description, row.categoryId!),
-                    `Rule saved — “${row.description}” will use this category from now on`,
-                  )
-                }
+                onClick={() => {
+                  setPattern(suggestRulePattern(row.description));
+                  setAlwaysOpen((v) => !v);
+                }}
               >
                 Always
               </Button>
+            )}
+            {alwaysOpen && (
+              <div className="absolute right-0 top-9 z-30 w-72 space-y-2 rounded-control border border-rule-strong bg-surface p-3 text-left shadow-lg">
+                <p className="text-[11px] font-semibold text-muted">
+                  Auto-categorize future transactions matching:
+                </p>
+                <Input
+                  aria-label="Rule pattern"
+                  className="text-xs"
+                  value={pattern}
+                  autoFocus
+                  onChange={(e) => setPattern(e.target.value)}
+                  onKeyDown={(e) => e.key === "Escape" && setAlwaysOpen(false)}
+                />
+                <p className="text-[11px] text-dim">
+                  Keep just the part that always appears — e.g. <span className="font-mono">STARBUCKS</span>.
+                </p>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setAlwaysOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button size="sm" disabled={busy || pattern.trim() === ""} onClick={saveAlways}>
+                    Save rule
+                  </Button>
+                </div>
+              </div>
             )}
             <Button
               variant="ghost"
