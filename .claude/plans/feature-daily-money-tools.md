@@ -112,23 +112,25 @@ Files: new `src/components/manage/recurring-card.tsx`, `manage/page.tsx`, `_acti
 
 ### Task 2.1 — Data plumbing on the Income page
 Files: `src/app/(app)/w/[workspaceId]/income/page.tsx`.
-- [ ] For a BUSINESS book: fetch the user's other accessible books where they are admin
+- [x] For a BUSINESS book: fetch the user's other accessible books where they are admin
       (`listAccessibleWorkspaces` + an admin check per book) and, for each, its non-archived
       accounts (`listAccounts` — works because the user is a member). Pass to the card. Personal
       books first in the dropdown.
 
 ### Task 2.2 — PayYourselfCard
 Files: new `src/components/income/pay-yourself-card.tsx`.
-- [ ] Renders ONLY on business books with ≥1 other admin book. Fields: To book (default first
+- [x] Renders ONLY on business books with ≥1 other admin book. Fields: To book (default first
       personal), To account (that book's accounts), From account (this book's), Amount, Date
       (default today) → `tagOwnerDrawAction` (exists). Explainer line: "Recorded once in each
       book — the combined view never double-counts it."
-- [ ] Success toast: "Paid yourself ✓ — money moved to {book}." Errors surface verbatim.
-- [ ] Component render test (renderToString): business-with-other-book shows the card; personal
-      book / no-other-book renders nothing.
+- [x] Success toast: "Paid yourself ✓ — money moved to {book}." Errors surface verbatim.
+- [x] Component render test (renderToString): business-with-other-book shows the card. (The
+      personal-book / no-other-book "renders nothing" gate lives in the PAGE conditional —
+      `ws.type === "business" && targets.length > 0 && fromAccounts.length > 0` — a server
+      component branch, verified in the Phase 5 browser pass rather than a unit test.)
 
 ### Phase 2 gate
-- [ ] type-check 0 / lint 0 / tests pass; commit `Phase 2: pay yourself UI`.
+- [x] type-check 0 / lint 0 / tests pass; commit `Phase 2: pay yourself UI`.
 
 ---
 
