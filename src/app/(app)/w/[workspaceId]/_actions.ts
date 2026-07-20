@@ -187,8 +187,15 @@ export async function contributeGoalAction(
   workspaceId: string,
   goalId: string,
   amount: string,
-): Promise<ActionResult> {
-  return run(workspaceId, (userId) => contributeToGoal(userId, goalId, amount));
+): Promise<ActionResult & { reached?: boolean }> {
+  try {
+    const userId = await requireUserId();
+    const { reached } = await contributeToGoal(userId, goalId, amount);
+    revalidatePath(`/w/${workspaceId}`);
+    return { ok: true, reached };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Action failed" };
+  }
 }
 
 export async function addDebtAction(

@@ -137,12 +137,14 @@ export async function getDashboardData(
     saved: format(g.saved),
     pct: g.pct,
     color: paletteAt(i),
+    linked: g.linked,
   }));
 
   const debtsOut: DebtItem[] = debts.items.map((d) => ({
     name: d.name,
     balance: format(d.balance),
     aprMin: `${d.apr} · min ${format(d.minimum)}`,
+    linked: d.linked,
   }));
 
   const billWord = items.length === 1 ? "bill" : "bills";

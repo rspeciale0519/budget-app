@@ -67,12 +67,14 @@ export interface GoalItem {
   saved: string;
   pct: number;
   color: string;
+  linked?: boolean;
 }
 
 export interface DebtItem {
   name: string;
   balance: string;
   aprMin: string;
+  linked?: boolean;
 }
 
 export interface DashboardData {

@@ -37,18 +37,21 @@ function useAction() {
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
   async function run(fn: () => Promise<ActionResult>, ok: string) {
+    return runResult(fn, () => ok);
+  }
+  async function runResult<T extends ActionResult>(fn: () => Promise<T>, ok: (r: T) => string) {
     setBusy(true);
     const res = await fn();
     setBusy(false);
     if (res.ok) {
-      toast(ok);
+      toast(ok(res));
       router.refresh();
       return true;
     }
     toast(res.error ?? "That didn't work — try again.", { kind: "error" });
     return false;
   }
-  return { busy, run };
+  return { busy, run, runResult };
 }
 
 function AddGoalForm({ workspaceId, accounts }: { workspaceId: string; accounts: AccountOption[] }) {
@@ -109,7 +112,7 @@ function AddGoalForm({ workspaceId, accounts }: { workspaceId: string; accounts:
 }
 
 function GoalItem({ workspaceId, goal }: { workspaceId: string; goal: GoalRow }) {
-  const { busy, run } = useAction();
+  const { busy, run, runResult } = useAction();
   const [confirming, setConfirming] = useState(false);
   const [contributing, setContributing] = useState(false);
   const [amount, setAmount] = useState("");
@@ -166,7 +169,10 @@ function GoalItem({ workspaceId, goal }: { workspaceId: string; goal: GoalRow })
           className="flex items-center gap-2"
           onSubmit={(e) => {
             e.preventDefault();
-            void run(() => contributeGoalAction(workspaceId, goal.id, amount), "Added to savings").then((ok) => {
+            void runResult(
+              () => contributeGoalAction(workspaceId, goal.id, amount),
+              (r) => (r.reached ? "Goal reached — nice ✓" : "Added to savings"),
+            ).then((ok) => {
               if (ok) {
                 setAmount("");
                 setContributing(false);

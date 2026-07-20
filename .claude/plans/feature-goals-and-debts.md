@@ -176,22 +176,22 @@ Files: new `src/components/planning/debts-panel.tsx` (≤450 LOC; split a `DebtF
 
 ### Task 3.1 — Live values on the dashboard cards
 Files: `src/services/dashboard/index.ts`, `src/lib/mock/dashboard.ts` (types), `dashboard.tsx`.
-- [ ] The dashboard already renders `listGoals`/`listDebts`; confirm it now shows the live
+- [x] The dashboard already renders `listGoals`/`listDebts`; confirm it now shows the live
       account-linked amounts (it will, since the service resolves them) and the pct reflects them.
-- [ ] `GoalItem`/`DebtItem` gain a small "· linked" hint when account-backed (optional, subtle).
+- [x] `GoalItem`/`DebtItem` gain a small "· linked" hint when account-backed (optional, subtle).
 
 ### Task 3.2 — Empty-state CTAs → the new tab (closes the prior honest exception)
 Files: `src/components/dashboard/dashboard.tsx`.
-- [ ] Goals empty state → link "Set a savings goal →" to `/w/{ws}/planning`.
-- [ ] Debts empty state → link "Track a debt →" to `/w/{ws}/planning`.
+- [x] Goals empty state → link "Set a savings goal →" to `/w/{ws}/planning`.
+- [x] Debts empty state → link "Track a debt →" to `/w/{ws}/planning`.
 
 ### Task 3.3 — Goal-reached moment
 Files: goals-panel + wherever contribution resolves.
-- [ ] When a contribution (or a linked balance) crosses the target, the row flips to "Reached ✓"
+- [x] When a contribution (or a linked balance) crosses the target, the row flips to "Reached ✓"
       (calm credit-tint), and the contribute toast reads "Goal reached — nice." Once per crossing.
 
 ### Phase 3 gate
-- [ ] type-check 0 / lint 0 / tests pass; commit `Phase 3: dashboard wiring + goal-reached moment`.
+- [x] type-check 0 / lint 0 / tests pass; commit `Phase 3: dashboard wiring + goal-reached moment`.
 
 ---
 

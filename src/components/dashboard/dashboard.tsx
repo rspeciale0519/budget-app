@@ -383,16 +383,25 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
               <CardTitle>Goals</CardTitle>
             </CardHeader>
             <CardContent className="py-1.5">
-              {data.goals.length === 0 && (
-                <p className="py-3 text-[12.5px] text-muted">
-                  No goals yet — add a savings goal to track progress.
-                </p>
-              )}
+              {data.goals.length === 0 &&
+                (workspaceId ? (
+                  <Link
+                    href={`/w/${workspaceId}/planning`}
+                    className="block py-3 text-[12.5px] font-medium text-now hover:underline"
+                  >
+                    Set a savings goal →
+                  </Link>
+                ) : (
+                  <p className="py-3 text-[12.5px] text-muted">
+                    No goals yet — add a savings goal to track progress.
+                  </p>
+                ))}
               {data.goals.map((g, i) => (
                 <div key={g.name} className={`py-3 ${i > 0 ? "border-t border-rule" : ""}`}>
                   <div className="mb-2 flex justify-between text-[13px] font-semibold text-ink">
                     <span>
                       {g.icon} {g.name}
+                      {g.linked && <span className="ml-1 text-[10px] font-normal text-dim">· linked</span>}
                     </span>
                     <span className="tabular font-medium text-muted">
                       {g.saved} / {g.target}
@@ -411,9 +420,17 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
               <CardTitle note={`total ${data.debtsTotal}`}>Debts</CardTitle>
             </CardHeader>
             <CardContent className="py-1.5">
-              {data.debts.length === 0 && (
-                <p className="py-3 text-[12.5px] text-muted">No debts tracked.</p>
-              )}
+              {data.debts.length === 0 &&
+                (workspaceId ? (
+                  <Link
+                    href={`/w/${workspaceId}/planning`}
+                    className="block py-3 text-[12.5px] font-medium text-now hover:underline"
+                  >
+                    Track a debt →
+                  </Link>
+                ) : (
+                  <p className="py-3 text-[12.5px] text-muted">No debts tracked.</p>
+                ))}
               {data.debts.map((d, i) => (
                 <div
                   key={d.name}
@@ -421,7 +438,10 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
                 >
                   <div>
                     <div className="font-semibold text-ink">{d.name}</div>
-                    <div className="text-[11px] text-muted">{d.aprMin}</div>
+                    <div className="text-[11px] text-muted">
+                      {d.aprMin}
+                      {d.linked ? " · linked" : ""}
+                    </div>
                   </div>
                   <div className="tabular ml-auto font-semibold text-ink">{d.balance}</div>
                 </div>
