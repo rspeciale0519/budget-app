@@ -13,6 +13,7 @@ import { PageHeading } from "@/components/ui/page-heading";
 import type { PaneConfig } from "@/lib/zod/layout";
 import type { PaneSummary } from "@/services/dashboard/pane-summary";
 import type { SavedLayout } from "@/services/layout-service";
+import { actionErrorMessage } from "@/lib/action-error";
 
 export interface WorkspaceOption {
   id: string;
@@ -48,7 +49,7 @@ export function TilesClient({ workspaces, layouts, initialConfig, initialSummari
         const fetched = await paneSummariesAction(missing);
         setSummaries((prev) => ({ ...prev, ...fetched }));
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Could not load pane");
+        setError(actionErrorMessage(e, "Could not load pane"));
       }
     });
   }
@@ -60,7 +61,7 @@ export function TilesClient({ workspaces, layouts, initialConfig, initialSummari
         setSaved((prev) => [...prev.filter((l) => l.name !== layout.name), layout]);
         setError(null);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Save failed");
+        setError(actionErrorMessage(e, "Save failed"));
       }
     });
   }
@@ -77,7 +78,7 @@ export function TilesClient({ workspaces, layouts, initialConfig, initialSummari
         setSaved((prev) => prev.filter((l) => l.id !== layoutId));
         setError(null);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Delete failed");
+        setError(actionErrorMessage(e, "Delete failed"));
       }
     });
   }

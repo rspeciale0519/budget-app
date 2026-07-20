@@ -13,6 +13,7 @@ import {
   countUncategorizedMatching,
   applyCategoryToMatching,
 } from "@/services/category-rule-service";
+import { actionErrorMessage } from "@/lib/action-error";
 
 export interface ActionResult {
   ok: boolean;
@@ -20,7 +21,7 @@ export interface ActionResult {
 }
 
 function msg(e: unknown): string {
-  return e instanceof Error ? e.message : "Action failed";
+  return actionErrorMessage(e, "Action failed");
 }
 
 async function requireUserId(): Promise<string> {
@@ -37,7 +38,7 @@ async function run(workspaceId: string, fn: (userId: string) => Promise<unknown>
     revalidatePath(`/w/${workspaceId}`);
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Action failed" };
+    return { ok: false, error: actionErrorMessage(e, "Action failed") };
   }
 }
 

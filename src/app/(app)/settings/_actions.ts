@@ -8,6 +8,7 @@ import {
   revokeWorkspaceMembership,
 } from "@/services/membership-service";
 import type { WorkspaceRole } from "@prisma/client";
+import { actionErrorMessage } from "@/lib/action-error";
 
 export interface ActionResult {
   ok: boolean;
@@ -27,7 +28,7 @@ export async function inviteAction(organizationId: string, email: string): Promi
     revalidatePath("/settings/members");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Invite failed" };
+    return { ok: false, error: actionErrorMessage(e, "Invite failed") };
   }
 }
 
@@ -42,7 +43,7 @@ export async function assignAction(
     revalidatePath("/settings/members");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Assign failed" };
+    return { ok: false, error: actionErrorMessage(e, "Assign failed") };
   }
 }
 
@@ -53,6 +54,6 @@ export async function revokeAction(workspaceId: string, targetUserId: string): P
     revalidatePath("/settings/members");
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Revoke failed" };
+    return { ok: false, error: actionErrorMessage(e, "Revoke failed") };
   }
 }

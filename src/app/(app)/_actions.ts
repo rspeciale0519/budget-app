@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { createWorkspace } from "@/services/workspace-service";
+import { actionErrorMessage } from "@/lib/action-error";
 
 async function requireUserId(): Promise<string> {
   const user = await getCurrentUser();
@@ -26,6 +27,6 @@ export async function createWorkspaceAction(input: {
     revalidatePath("/");
     return { ok: true, workspaceId: ws.id };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Could not create the book" };
+    return { ok: false, error: actionErrorMessage(e, "Could not create the book") };
   }
 }

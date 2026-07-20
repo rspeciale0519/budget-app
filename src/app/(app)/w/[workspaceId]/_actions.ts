@@ -21,6 +21,7 @@ import {
   deleteDebt,
   recordDebtPayment,
 } from "@/services/dashboard/planning";
+import { actionErrorMessage } from "@/lib/action-error";
 
 async function requireUserId(): Promise<string> {
   const user = await getCurrentUser();
@@ -41,7 +42,7 @@ async function run(workspaceId: string, fn: (userId: string) => Promise<unknown>
     revalidatePath(`/w/${workspaceId}/manage`);
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Action failed" };
+    return { ok: false, error: actionErrorMessage(e, "Action failed") };
   }
 }
 
@@ -217,7 +218,7 @@ export async function contributeGoalAction(
     revalidatePath(`/w/${workspaceId}`);
     return { ok: true, reached };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Action failed" };
+    return { ok: false, error: actionErrorMessage(e, "Action failed") };
   }
 }
 
@@ -232,7 +233,7 @@ export async function allocateGoalAction(
     revalidatePath(`/w/${workspaceId}`);
     return { ok: true, reached };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Action failed" };
+    return { ok: false, error: actionErrorMessage(e, "Action failed") };
   }
 }
 

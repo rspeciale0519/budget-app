@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { setBudget, deleteBudget, moveBudget } from "@/services/budget-service";
+import { actionErrorMessage } from "@/lib/action-error";
 
 export interface ActionResult {
   ok: boolean;
@@ -26,7 +27,7 @@ export async function setBudgetAction(
     revalidatePath(`/w/${workspaceId}/budget`);
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Could not set budget" };
+    return { ok: false, error: actionErrorMessage(e, "Could not set budget") };
   }
 }
 
@@ -42,7 +43,7 @@ export async function moveBudgetAction(
     revalidatePath(`/w/${workspaceId}/budget`);
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Could not move that money" };
+    return { ok: false, error: actionErrorMessage(e, "Could not move that money") };
   }
 }
 
@@ -53,6 +54,6 @@ export async function deleteBudgetAction(workspaceId: string, budgetId: string):
     revalidatePath(`/w/${workspaceId}/budget`);
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Could not delete budget" };
+    return { ok: false, error: actionErrorMessage(e, "Could not delete budget") };
   }
 }

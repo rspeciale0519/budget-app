@@ -370,7 +370,7 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
               {data.paidVsUnpaid.paid === "$0.00" && data.paidVsUnpaid.unpaid === "$0.00" ? (
                 <>
                   <div className="mb-3 h-3 rounded-full bg-raised" />
-                  <p className="text-xs text-muted">No bills this month — nothing to pay yet.</p>
+                  <p className="text-xs text-muted">No bills {data.periodLabel} — nothing to pay yet.</p>
                 </>
               ) : (
                 <>

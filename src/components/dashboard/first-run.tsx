@@ -9,7 +9,7 @@ export function FirstRun({ workspaceId }: { workspaceId: string }) {
       </span>
       <h2 className="text-lg font-semibold text-ink">Welcome to Ledger</h2>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted">
-        A <b className="font-semibold text-ink">book</b> is one pot of money — a household or a
+        A <b className="font-semibold text-ink">book</b>{" "}is one pot of money — a household or a
         business. This is your first one; rename it in Settings, or add another anytime with ＋.
         Start by adding a bank or credit account, or import transactions straight from your
         bank&apos;s CSV export — your dashboard fills in from there.

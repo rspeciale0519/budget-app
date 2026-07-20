@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/supabase/server";
 import { previewImport, commitImport, undoImport } from "@/services/import";
 import { listCategories } from "@/services/category-service";
 import type { MappingConfig } from "@/services/import";
+import { actionErrorMessage } from "@/lib/action-error";
 
 async function requireUserId(): Promise<string> {
   const user = await getCurrentUser();
@@ -42,7 +43,7 @@ export interface PreviewActionResult {
 const EMPTY_SUMMARY: ImportSummary = { total: 0, newCount: 0, duplicateCount: 0, errorCount: 0 };
 
 function msg(e: unknown): string {
-  return e instanceof Error ? e.message : "Action failed";
+  return actionErrorMessage(e, "Action failed");
 }
 
 export async function previewImportAction(
