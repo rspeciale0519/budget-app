@@ -75,4 +75,28 @@ describe("BudgetView", () => {
     expect(html).toContain("No budgets yet");
     expect(html).toContain("move money from another category");
   });
+
+  it("celebrates a fully-funded budget only when income is set and nothing is left", () => {
+    const funded: BudgetSummary = {
+      ...summary,
+      unbudgeted: "$0.00",
+      overCommitted: false,
+      overspentCount: 0,
+      incomeConfigured: true,
+    };
+    const html = renderToString(
+      <ToastProvider>
+        <BudgetView workspaceId="w" rows={[saas]} categories={cats} summary={funded} />
+      </ToastProvider>,
+    );
+    expect(html).toContain("Every dollar has a job");
+
+    const noIncome: BudgetSummary = { ...funded, incomeConfigured: false };
+    const html2 = renderToString(
+      <ToastProvider>
+        <BudgetView workspaceId="w" rows={[saas]} categories={cats} summary={noIncome} />
+      </ToastProvider>,
+    );
+    expect(html2).not.toContain("Every dollar has a job");
+  });
 });

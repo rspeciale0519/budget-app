@@ -6,6 +6,7 @@ export interface ForecastPoint {
   label: string;
   value: number;
   display: string;
+  payday?: boolean;
 }
 
 interface Geometry {
@@ -161,6 +162,21 @@ export function ForecastChart({
     ctx.font = "600 9px ui-monospace, 'SF Mono', monospace";
     ctx.textBaseline = "alphabetic";
     ctx.fillText("NOW", nowX + 4, PAD.top - 8);
+
+    // Paydays — small upward ticks where expected income lands, so the line reads
+    // as "it dips, then payday lifts it" rather than a slide toward zero.
+    points.forEach((p, i) => {
+      if (!p.payday || g.x(i) > revealX) return;
+      const px = g.x(i);
+      const py = g.y(p.value);
+      ctx.fillStyle = credit;
+      ctx.beginPath();
+      ctx.moveTo(px, py - 10);
+      ctx.lineTo(px - 4, py - 3);
+      ctx.lineTo(px + 4, py - 3);
+      ctx.closePath();
+      ctx.fill();
+    });
 
     // The trough — the moment the account is thinnest, and the only marked point.
     // Drawn in neutral ink (not alert red): a low balance is a fact to notice, not

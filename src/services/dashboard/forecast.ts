@@ -7,6 +7,8 @@ import { projectIncome } from "@/services/dashboard/income-projection";
 export interface ForecastPoint {
   date: CalendarDate;
   balance: Money;
+  /** An expected-income event lands on this day. */
+  isPayday: boolean;
 }
 
 export interface CashflowForecast {
@@ -47,17 +49,21 @@ export async function cashflowForecast(
       deltas.set(date, add(deltas.get(date) ?? money(0), signed));
     };
     for (const b of bills) bump(fromDbDate(b.dueDate), sub(money(0), money(b.amount.toFixed(2))));
-    for (const e of incomeEvents) bump(e.date, e.amount);
+    const incomeDates = new Set<string>();
+    for (const e of incomeEvents) {
+      bump(e.date, e.amount);
+      incomeDates.add(e.date);
+    }
 
     const points: ForecastPoint[] = [];
     let lowest: ForecastPoint | null = null;
     for (let d: CalendarDate = today; cmpDate(d, end) <= 0; d = addDays(d, 1)) {
       balance = add(balance, deltas.get(d) ?? money(0));
-      const point = { date: d, balance };
+      const point = { date: d, balance, isPayday: incomeDates.has(d) };
       points.push(point);
       if (lowest === null || compare(balance, lowest.balance) < 0) lowest = point;
     }
 
-    return { points, lowest: lowest ?? { date: today, balance }, incomeConfigured };
+    return { points, lowest: lowest ?? { date: today, balance, isPayday: false }, incomeConfigured };
   });
 }

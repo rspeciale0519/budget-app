@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, FieldError } from "@/components/ui/field";
 import { createWorkspaceAction } from "@/app/(app)/_actions";
+import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
 const COLORS: { hex: string; name: string }[] = [
@@ -18,6 +19,7 @@ const COLORS: { hex: string; name: string }[] = [
 
 export function WorkspaceCreateDialog({ organizationId }: { organizationId: string }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [type, setType] = useState<"personal" | "business">("personal");
@@ -61,8 +63,10 @@ export function WorkspaceCreateDialog({ organizationId }: { organizationId: stri
     const res = await createWorkspaceAction({ organizationId, name: name.trim(), type, color });
     setBusy(false);
     if (res.ok && res.workspaceId) {
+      const created = name.trim();
       setOpen(false);
       setName("");
+      toast(`“${created}” is ready — let's add its first account.`);
       router.push(`/w/${res.workspaceId}`);
       router.refresh();
     } else {

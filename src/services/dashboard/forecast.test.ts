@@ -41,5 +41,9 @@ describe("cashflowForecast", () => {
     expect(f.lowest.date).toBe("2026-06-23");
     expect(format(f.lowest.balance)).toBe("$500.00");
     expect(f.incomeConfigured).toBe(true);
+    // Payday flag is set exactly on the income date, nowhere else.
+    expect(at("2026-06-25")!.isPayday).toBe(true);
+    expect(at("2026-06-23")!.isPayday).toBe(false);
+    expect(f.points.filter((p) => p.isPayday).map((p) => p.date)).toEqual(["2026-06-25"]);
   });
 });

@@ -4,10 +4,15 @@ import Link from "next/link";
 export function FirstRun({ workspaceId }: { workspaceId: string }) {
   return (
     <div className="rounded-card border border-dashed border-rule bg-surface p-10 text-center">
-      <h2 className="text-lg font-semibold text-ink">Let&apos;s set up your money</h2>
+      <span className="mx-auto mb-4 grid h-9 w-9 place-items-center overflow-hidden rounded-[9px] bg-gradient-to-br from-now to-credit">
+        <span className="h-px w-full bg-paper/60" />
+      </span>
+      <h2 className="text-lg font-semibold text-ink">Welcome to Ledger</h2>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted">
-        Add a bank or credit account, or import transactions straight from your bank&apos;s CSV
-        export. Your dashboard fills in from there.
+        A <b className="font-semibold text-ink">book</b> is one pot of money — a household or a
+        business. This is your first one; rename it in Settings, or add another anytime with ＋.
+        Start by adding a bank or credit account, or import transactions straight from your
+        bank&apos;s CSV export — your dashboard fills in from there.
       </p>
       <div className="mt-5 flex flex-wrap justify-center gap-2">
         <Link

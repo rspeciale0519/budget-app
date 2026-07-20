@@ -325,65 +325,65 @@ Files: `src/components/transactions/transactions-view.tsx` (:66-79, :127-142).
 
 ### Task 4.1 — Fully-funded budget: "Every dollar has a job ✓"
 Files: `src/components/budget/budget-view.tsx` (SummaryStrip ~:121-142).
-- [ ] When Left to budget is exactly $0.00 AND expected income > 0: SummaryStrip renders
+- [x] When Left to budget is exactly $0.00 AND expected income > 0: SummaryStrip renders
       "Every dollar has a job ✓" treatment (soft credit-tint highlight, no animation beyond the
       existing transitions). Distinct from the $0-because-nothing-configured case.
-- [ ] Component test: exact-zero + income → text present; zero-income → absent.
+- [x] Component test: exact-zero + income → text present; zero-income → absent.
 
 ### Task 4.2 — Import success card that leads with the win
 Files: `src/components/import/import-preview.tsx` (:46-58), `import-wizard.tsx` (:285-289),
 pipeline result (auto-categorized count — `proposedCategoryId` per row already known).
-- [ ] VERIFIED: `commitImport` (pipeline.ts:146) currently returns only the `ImportBatch` record —
+- [x] VERIFIED: `commitImport` (pipeline.ts:146) currently returns only the `ImportBatch` record —
       it does NOT report categorized counts, though it has every row in hand at insert time
       (`categoryId: r.proposedCategoryId` at :173). Extend the commit path server-side: return
       `{ batch, insertedCount, categorizedCount }` (categorizedCount = committed rows with a
       non-null categoryId), thread through the commit action. Do NOT compute counts from the
       client-side preview — commit re-derives rows on the server and could differ.
-- [ ] Success card: "**N transactions imported** into {account}." + "Your rules categorized X
+- [x] Success card: "**N transactions imported** into {account}." + "Your rules categorized X
       automatically — Y still need a home. → **Categorize them**" (links to
       `/w/{ws}/transactions?filter=uncategorized`; X/Y from the extended commit result).
-- [ ] Pipeline test updated for the new return shape.
-- [ ] Undo demoted to quiet text link below (function unchanged).
-- [ ] When Y = 0 and X > 0: "Your rules categorized all of them. Nothing to do. ✓"
+- [x] Pipeline test updated for the new return shape.
+- [x] Undo demoted to quiet text link below (function unchanged).
+- [x] When Y = 0 and X > 0: "Your rules categorized all of them. Nothing to do. ✓"
 
 ### Task 4.3 — All bills paid gets acknowledged
 Files: `dashboard.tsx` (:270-274 empty list, :305-325 paid bar, mark-paid toast :173-184).
-- [ ] Upcoming-bills card: bills exist this period but none open → "All caught up — every bill
+- [x] Upcoming-bills card: bills exist this period but none open → "All caught up — every bill
       this month is paid ✓" (only truly-zero-bills books see "Add bills in {Accounts & bills}…").
-- [ ] Paid-vs-unpaid bar at 100% → caption "100% paid this month ✓".
-- [ ] Mark-paid toast varies: normally "Paid ✓ — {vendor} off the list"; when it was the last
+- [x] Paid-vs-unpaid bar at 100% → caption "100% paid this month ✓".
+- [x] Mark-paid toast varies: normally "Paid ✓ — {vendor} off the list"; when it was the last
       open bill: "That was the last one — all bills paid this month."
 
 ### Task 4.4 — Payday up-ticks on the forecast
 Files: `src/services/dashboard/forecast.ts` (income events already computed),
 `src/services/dashboard/index.ts`, `forecast-chart.tsx`, legend in `dashboard.tsx`.
-- [ ] Mark income-event days in the chart data; render small up-tick markers (credit color) on
+- [x] Mark income-event days in the chart data; render small up-tick markers (credit color) on
       those days; legend entry "Payday". Reduced-motion and canvas-fallback paths respected.
-- [ ] Test: forecast data flags exactly the income dates.
+- [x] Test: forecast data flags exactly the income dates.
 
 ### Task 4.5 — First-run welcome + book-creation moment
 Files: `src/components/dashboard/first-run.tsx`, `src/components/workspace/workspace-create-dialog.tsx`,
 `_actions.ts` (create), toast usage.
-- [ ] FirstRun hero gains one warm intro line: "Welcome to Ledger. This is your book *Personal* —
+- [x] FirstRun hero gains one warm intro line: "Welcome to Ledger. This is your book *Personal* —
       a book is one pot of money (a household, a business). Rename it in Settings, or add another
       with ＋." Visual: carry the login coin-mark gradient into the hero header (reuse existing
       brand mark styles; no new assets).
-- [ ] After creating a book: success toast "'{name}' is ready — let's add its first account."
+- [x] After creating a book: success toast "'{name}' is ready — let's add its first account."
       (accent uses the book's chosen color variable, matching the tab underline mechanism).
 
 ### Task 4.6 — All-books warmth
 Files: `src/app/(app)/all/page.tsx`, rollup service (read).
-- [ ] Insight sentence under the Combined row: "Across all books, you kept $X of the $Y that came
+- [x] Insight sentence under the Combined row: "Across all books, you kept $X of the $Y that came
       in {periodLabel}." (kept = in − out, decimal-safe; only when in > 0; service-tested).
-- [ ] Time-aware greeting above the heading: "Good morning/afternoon/evening — here's everything
+- [x] Time-aware greeting above the heading: "Good morning/afternoon/evening — here's everything
       as of today." (client-rendered time so no server-tz drift; falls back to no greeting).
 
 ### Task 4.7 — Palette teaches instead of shrugging
 Files: `src/components/command/command-palette.tsx` (:136).
-- [ ] Empty state → "Nothing matched. Try a book name, or 'import', 'bill', 'settings'."
+- [x] Empty state → "Nothing matched. Try a book name, or 'import', 'bill', 'settings'."
 
 ### Phase 4 gate
-- [ ] type-check 0 / lint 0 / tests pass; commit `Phase 4: celebration moments — wins get acknowledged`.
+- [x] type-check 0 / lint 0 / tests pass; commit `Phase 4: celebration moments — wins get acknowledged`.
 
 ---
 

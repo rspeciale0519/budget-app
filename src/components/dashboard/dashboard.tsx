@@ -164,6 +164,7 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
     label: p.date,
     value: num(p.balance),
     display: p.balance,
+    payday: p.payday,
   }));
   const stsNeg = data.kpis.safeToSpendNegative;
 
@@ -281,6 +282,12 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
                   <i className="inline-block h-2 w-2 rounded-full bg-ink/70" />
                   Lowest point
                 </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="text-credit" aria-hidden>
+                    ▲
+                  </span>
+                  Payday
+                </span>
                 <span className="ml-auto">
                   Lowest: <b className="tabular text-ink">{data.lowestPoint.balance}</b> on{" "}
                   {data.lowestPoint.date}
@@ -305,11 +312,17 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
               <CardTitle note="next 30 days">Upcoming &amp; overdue</CardTitle>
             </CardHeader>
             <CardContent className="py-1.5">
-              {data.bills.length === 0 && (
-                <p className="py-2 text-sm text-muted">
-                  Nothing due. Add bills in Accounts &amp; bills and they&apos;ll show up here with due dates.
-                </p>
-              )}
+              {data.bills.length === 0 &&
+                (data.paidVsUnpaid.paid !== "$0.00" ? (
+                  <p className="py-2 text-sm font-medium text-credit">
+                    All caught up — every bill this month is paid ✓
+                  </p>
+                ) : (
+                  <p className="py-2 text-sm text-muted">
+                    Nothing due. Add bills in Accounts &amp; bills and they&apos;ll show up here with
+                    due dates.
+                  </p>
+                ))}
               {data.bills.map((b, i) => (
                 <div
                   key={b.vendor}
@@ -345,6 +358,9 @@ export function Dashboard({ data, workspaceId }: { data: DashboardData; workspac
               <CardTitle note={data.periodLabel}>Paid vs. unpaid</CardTitle>
             </CardHeader>
             <CardContent>
+              {data.paidVsUnpaid.paidPct === 100 && (
+                <p className="mb-2 text-xs font-semibold text-credit">100% paid this month ✓</p>
+              )}
               <div className="mb-3 flex h-3 overflow-hidden rounded-full bg-raised">
                 <div className="bg-credit" style={{ width: `${data.paidVsUnpaid.paidPct}%` }} />
                 <div className="bg-debit" style={{ width: `${100 - data.paidVsUnpaid.paidPct}%` }} />

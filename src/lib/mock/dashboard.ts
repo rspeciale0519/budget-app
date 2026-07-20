@@ -34,6 +34,7 @@ export interface SafeToSpendMath {
 export interface ForecastPoint {
   date: string;
   balance: string;
+  payday?: boolean;
 }
 
 export interface CategorySlice {

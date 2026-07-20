@@ -5,7 +5,8 @@ import { prismaAdmin } from "@/lib/prisma-admin";
 import { rollup } from "@/services/dashboard/rollup";
 import { Card } from "@/components/ui/card";
 import { PageHeading } from "@/components/ui/page-heading";
-import { format, isNegative } from "@/lib/money";
+import { TimeGreeting } from "@/components/dashboard/time-greeting";
+import { format, isNegative, sub, money, compare } from "@/lib/money";
 import { today as todayFn } from "@/lib/calendar-date";
 
 export const dynamic = "force-dynamic";
@@ -34,10 +35,15 @@ export default async function AllWorkspacesPage() {
   if (!membership) redirect("/");
 
   const data = await rollup(user.id, membership.organizationId, "month", todayFn());
+  const kept = sub(data.combined.in, data.combined.out);
+  const showInsight = compare(data.combined.in, money(0)) > 0;
 
   return (
     <div className="space-y-4">
-      <PageHeading>All books</PageHeading>
+      <div>
+        <PageHeading>All books</PageHeading>
+        <TimeGreeting />
+      </div>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Stat label="Total balance" value={format(data.combined.balance)} />
         <Stat label="Money in · this month" value={format(data.combined.in)} />
@@ -97,6 +103,13 @@ export default async function AllWorkspacesPage() {
           </tbody>
         </table>
         </div>
+        {showInsight && (
+          <p className="mt-3 text-sm text-ink/85">
+            Across all books, you kept <b className="tabular font-semibold text-credit">{format(kept)}</b>{" "}
+            of the <b className="tabular font-semibold text-ink">{format(data.combined.in)}</b> that came
+            in this month.
+          </p>
+        )}
         <p className="mt-3 text-[11.5px] text-muted">
           <b className="font-semibold text-ink/80">Net</b> is money in minus money out this month.
           {" ↔ "}Money you pay yourself from a business, and transfers between books, are counted

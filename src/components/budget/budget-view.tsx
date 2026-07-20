@@ -101,6 +101,9 @@ function SetBudgetForm({
 }
 
 function SummaryStrip({ workspaceId, summary }: { workspaceId: string; summary: BudgetSummary }) {
+  // The YNAB holy-grail: income configured and every dollar assigned to a category.
+  const fullyFunded =
+    summary.incomeConfigured && !summary.overCommitted && summary.unbudgeted === "$0.00";
   return (
     <Card className="flex flex-wrap items-center gap-x-8 gap-y-2 p-4 text-sm">
       {summary.incomeConfigured ? (
@@ -135,12 +138,16 @@ function SummaryStrip({ workspaceId, summary }: { workspaceId: string; summary: 
           <div className="text-[11px] text-muted">of {summary.expectedIncome} expected income</div>
         </div>
       )}
-      {summary.overspentCount > 0 && (
+      {summary.overspentCount > 0 ? (
         <span className="ml-auto text-sm font-medium text-alert">
           {summary.overspentCount} {summary.overspentCount === 1 ? "category" : "categories"} over
           budget
         </span>
-      )}
+      ) : fullyFunded ? (
+        <span className="ml-auto rounded-full bg-credit-tint px-3 py-1 text-sm font-semibold text-credit">
+          Every dollar has a job ✓
+        </span>
+      ) : null}
     </Card>
   );
 }

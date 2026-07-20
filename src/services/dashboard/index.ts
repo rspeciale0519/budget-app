@@ -109,6 +109,7 @@ export async function getDashboardData(
   const forecastOut: ForecastPoint[] = forecast.points.map((p) => ({
     date: shortLabel(p.date),
     balance: format(p.balance),
+    payday: p.isPayday,
   }));
 
   const categoriesOut: CategorySlice[] = categories.map((c) => ({
