@@ -80,7 +80,9 @@ Public-facing site that sells the app (Project 1 of the launch plan). Spec:
 - [x] Phase 5 — Demo tour (numbered "morning review" with real screenshots), About (founder story),
       FAQ (full accordion + contact), `/signup` plan-select with marked checkout-handoff stub, branded
       marketing 404. Legal drafts with DRAFT banners done in Phase 2. All statically prerendered
-- [ ] Phase 6 — Blog (MDX + RSS)
+- [x] Phase 6 — Blog: index + 3 SEO-targeted posts (separate finances / owner draws / safe-to-spend),
+      structured type-safe content (dependency-free, no MDX toolchain), static per-post pages, valid
+      RSS 2.0 feed at `/blog/rss.xml` (covered by `rss.test.ts`, 3 tests)
 - [ ] Phase 7 — SEO, a11y, performance (Lighthouse ≥90)
 - [ ] Phase 8 — Final QA + PR (verify, code review, cross-model review, PR to `main`, unmerged)
 
