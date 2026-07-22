@@ -60,7 +60,10 @@ Public-facing site that sells the app (Project 1 of the launch plan). Spec:
 `docs/superpowers/specs/2026-07-22-marketing-site-design.md`; build order:
 `docs/MARKETING_SITE_BUILD_SPEC.md`.
 
-- [ ] Phase 1 — Branch + camera-ready demo seed (isolated demo auth user + org)
+- [x] Phase 1 — Branch + camera-ready demo seed (isolated demo auth user + org): `pnpm db:seed:demo`
+      creates `demo@example.com` + Demo org with 3 books, 41 transactions, 11 bills, 4 goals, 2
+      owner-draw bridges; idempotent (re-run no-op); isolation proven (non-demo orgs/users unchanged);
+      login + dashboard screenshotted via chrome-devtools
 - [ ] Phase 2 — Marketing shell: `(marketing)` route group, layout, site-config, `/` split, stub routes
 - [ ] Phase 3 — Art direction + landing page
 - [ ] Phase 4 — Pricing + features pages
