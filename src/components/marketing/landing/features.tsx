@@ -90,9 +90,12 @@ function FeatureRow({ feature, index }: { feature: Feature; index: number }) {
   );
 }
 
-export function Features() {
+export function Features({ withHeader = true }: { withHeader?: boolean }) {
   return (
-    <Section eyebrow="What you get" title="Built for owner-operators — nothing an accountant demands.">
+    <Section
+      eyebrow={withHeader ? "What you get" : undefined}
+      title={withHeader ? "Built for owner-operators — nothing an accountant demands." : undefined}
+    >
       <div>
         {features.map((f, i) => (
           <FeatureRow key={f.eyebrow} feature={f} index={i} />

@@ -74,7 +74,9 @@ Public-facing site that sells the app (Project 1 of the launch plan). Spec:
       teaser (live tier cards), FAQ teaser, final CTA. Fixed middleware blocking public `/marketing`
       assets; CSS-only reveal (no stranded content). Fresh-context subagent critique passed (its sole
       P1 — sparse side-by-side screenshot — resolved by using the dense all-books roll-up)
-- [ ] Phase 4 — Pricing + features pages
+- [x] Phase 4 — Pricing page (cards with monthly/annual toggle, Pro emphasized, full comparison
+      table from the locked matrix, anxiety FAQ) + features page (reuses the critiqued showcase, trust,
+      CTA). Prices verified on-page ($9/$19/$39); both statically prerendered
 - [ ] Phase 5 — Demo tour, about, FAQ, legal drafts, `/signup` stub, 404
 - [ ] Phase 6 — Blog (MDX + RSS)
 - [ ] Phase 7 — SEO, a11y, performance (Lighthouse ≥90)
