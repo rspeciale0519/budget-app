@@ -26,9 +26,18 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
-  const isLogin = path === "/login" || path.startsWith("/auth");
 
-  if (!user && !isLogin) {
+  // Publicly reachable without auth: the login/auth flow and the whole marketing
+  // site. "/" is public too — the page renders the landing for anonymous
+  // visitors and dispatches into the app for authenticated ones.
+  const publicPrefixes = ["/features", "/pricing", "/demo", "/about", "/blog", "/faq", "/legal", "/signup"];
+  const isPublic =
+    path === "/" ||
+    path === "/login" ||
+    path.startsWith("/auth") ||
+    publicPrefixes.some((p) => path === p || path.startsWith(p + "/"));
+
+  if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
