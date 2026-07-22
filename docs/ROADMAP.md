@@ -77,7 +77,9 @@ Public-facing site that sells the app (Project 1 of the launch plan). Spec:
 - [x] Phase 4 — Pricing page (cards with monthly/annual toggle, Pro emphasized, full comparison
       table from the locked matrix, anxiety FAQ) + features page (reuses the critiqued showcase, trust,
       CTA). Prices verified on-page ($9/$19/$39); both statically prerendered
-- [ ] Phase 5 — Demo tour, about, FAQ, legal drafts, `/signup` stub, 404
+- [x] Phase 5 — Demo tour (numbered "morning review" with real screenshots), About (founder story),
+      FAQ (full accordion + contact), `/signup` plan-select with marked checkout-handoff stub, branded
+      marketing 404. Legal drafts with DRAFT banners done in Phase 2. All statically prerendered
 - [ ] Phase 6 — Blog (MDX + RSS)
 - [ ] Phase 7 — SEO, a11y, performance (Lighthouse ≥90)
 - [ ] Phase 8 — Final QA + PR (verify, code review, cross-model review, PR to `main`, unmerged)
