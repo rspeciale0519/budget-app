@@ -54,6 +54,21 @@
       (one additive Goal migration, bills-pattern materializer), debt due-day chips
 - [x] Phase 5 — Verify & merge: gates green, browser matrix (desktop light+dark, mobile), merged
 
+## Marketing Website (plan: `.claude/plans/feature-marketing-site.md`, branch `feature/marketing-site`)
+
+Public-facing site that sells the app (Project 1 of the launch plan). Spec:
+`docs/superpowers/specs/2026-07-22-marketing-site-design.md`; build order:
+`docs/MARKETING_SITE_BUILD_SPEC.md`.
+
+- [ ] Phase 1 — Branch + camera-ready demo seed (isolated demo auth user + org)
+- [ ] Phase 2 — Marketing shell: `(marketing)` route group, layout, site-config, `/` split, stub routes
+- [ ] Phase 3 — Art direction + landing page
+- [ ] Phase 4 — Pricing + features pages
+- [ ] Phase 5 — Demo tour, about, FAQ, legal drafts, `/signup` stub, 404
+- [ ] Phase 6 — Blog (MDX + RSS)
+- [ ] Phase 7 — SEO, a11y, performance (Lighthouse ≥90)
+- [ ] Phase 8 — Final QA + PR (verify, code review, cross-model review, PR to `main`, unmerged)
+
 ## Earlier milestones (from git history)
 
 - [x] Phases through 2.x of the original build (see git log)
