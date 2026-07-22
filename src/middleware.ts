@@ -51,5 +51,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/).*)"],
+  // Skip Next internals, the API, and any static file (a path segment with a
+  // dot — e.g. /marketing/hero.png), so public marketing assets are reachable
+  // by anonymous visitors instead of being redirected to /login.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/|.*\\.).*)"],
 };

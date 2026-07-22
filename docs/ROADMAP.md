@@ -69,7 +69,11 @@ Public-facing site that sells the app (Project 1 of the launch plan). Spec:
       authenticated → unchanged dispatch, regression-tested), middleware opened to public marketing
       routes (app routes still gated), stub routes for every sitemap page (all 200). Also serialized
       the DB integration suite (`fileParallelism: false`) to remove pre-existing parallel flakiness
-- [ ] Phase 3 — Art direction + landing page
+- [x] Phase 3 — Art direction (`docs/temp/marketing-art-direction.md`) + full landing page: hero with
+      real dashboard screenshot, problem, 5 feature showcases (dense real screenshots), trust, pricing
+      teaser (live tier cards), FAQ teaser, final CTA. Fixed middleware blocking public `/marketing`
+      assets; CSS-only reveal (no stranded content). Fresh-context subagent critique passed (its sole
+      P1 — sparse side-by-side screenshot — resolved by using the dense all-books roll-up)
 - [ ] Phase 4 — Pricing + features pages
 - [ ] Phase 5 — Demo tour, about, FAQ, legal drafts, `/signup` stub, 404
 - [ ] Phase 6 — Blog (MDX + RSS)
