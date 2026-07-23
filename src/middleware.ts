@@ -35,6 +35,9 @@ export async function middleware(request: NextRequest) {
     path === "/" ||
     path === "/login" ||
     path.startsWith("/auth") ||
+    // Metadata image routes (no file extension) fetched by unauthenticated crawlers.
+    path.endsWith("/opengraph-image") ||
+    path.endsWith("/twitter-image") ||
     publicPrefixes.some((p) => path === p || path.startsWith(p + "/"));
 
   if (!user && !isPublic) {

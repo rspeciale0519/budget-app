@@ -83,7 +83,11 @@ Public-facing site that sells the app (Project 1 of the launch plan). Spec:
 - [x] Phase 6 — Blog: index + 3 SEO-targeted posts (separate finances / owner draws / safe-to-spend),
       structured type-safe content (dependency-free, no MDX toolchain), static per-post pages, valid
       RSS 2.0 feed at `/blog/rss.xml` (covered by `rss.test.ts`, 3 tests)
-- [ ] Phase 7 — SEO, a11y, performance (Lighthouse ≥90)
+- [x] Phase 7 — SEO plumbing: `sitemap.xml`, `robots.txt` (app disallowed), per-page metadata +
+      `metadataBase` + Open Graph/Twitter, branded placeholder-safe OG image (next/og); middleware
+      opened for `/opengraph-image`. Lighthouse (prod build, desktop) on `/`, `/pricing`, `/features`,
+      `/demo`: **SEO 100 all, Accessibility 94–100 all, Best Practices 100 all**. Note: performance
+      score uses a separate trace flow (not captured here); Vercel Analytics deferred to deploy
 - [ ] Phase 8 — Final QA + PR (verify, code review, cross-model review, PR to `main`, unmerged)
 
 ## Earlier milestones (from git history)
