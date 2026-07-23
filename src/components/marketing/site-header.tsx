@@ -19,16 +19,22 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // The landing opens on the ledger's dark cover; the header sits transparent
+  // over it in paper ink until the page scrolls (or the mobile sheet opens),
+  // then becomes the usual light glass bar.
+  const onDark = pathname === "/" && !scrolled && !open;
+
   return (
     <header
       className={cn(
         "sticky top-0 z-50 border-b transition-colors duration-200",
-        scrolled ? "border-rule bg-paper/85 backdrop-blur-md" : "border-transparent bg-paper/0",
+        scrolled ? "border-rule bg-paper/95 backdrop-blur-md" : "border-transparent",
+        onDark ? "bg-[#14140f]" : !scrolled && "bg-paper/0",
       )}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-5 sm:px-8">
         <Link href="/" className="rounded-sm focus-visible:outline-none" aria-label={`${site.name} home`}>
-          <Wordmark />
+          <Wordmark onDark={onDark} />
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex" aria-label="Primary">
@@ -39,8 +45,10 @@ export function SiteHeader() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-sm transition-colors hover:text-ink",
-                  active ? "text-ink" : "text-muted",
+                  "text-sm transition-colors",
+                  onDark
+                    ? cn("hover:text-paper", active ? "text-paper" : "text-paper/60")
+                    : cn("hover:text-ink", active ? "text-ink" : "text-muted"),
                 )}
               >
                 {item.label}
@@ -50,7 +58,12 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Cta href={secondaryCta.href} variant="ghost" size="md">
+          <Cta
+            href={secondaryCta.href}
+            variant="ghost"
+            size="md"
+            className={onDark ? "text-paper hover:bg-white/10 hover:text-paper" : undefined}
+          >
             {secondaryCta.label}
           </Cta>
           <Cta href={primaryCta.href} variant="primary" size="md">
@@ -60,15 +73,36 @@ export function SiteHeader() {
 
         <button
           type="button"
-          className="-mr-1 flex h-10 w-10 items-center justify-center rounded-control text-ink md:hidden"
+          className={cn(
+            "-mr-1 flex h-10 w-10 items-center justify-center rounded-control md:hidden",
+            onDark ? "text-paper" : "text-ink",
+          )}
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
         >
           <span className="relative block h-4 w-5">
-            <span className={cn("absolute left-0 block h-0.5 w-5 bg-ink transition-all", open ? "top-1.5 rotate-45" : "top-0.5")} />
-            <span className={cn("absolute left-0 top-1.5 block h-0.5 w-5 bg-ink transition-opacity", open && "opacity-0")} />
-            <span className={cn("absolute left-0 block h-0.5 w-5 bg-ink transition-all", open ? "top-1.5 -rotate-45" : "top-[10px]")} />
+            <span
+              className={cn(
+                "absolute left-0 block h-0.5 w-5 transition-all",
+                onDark ? "bg-paper" : "bg-ink",
+                open ? "top-1.5 rotate-45" : "top-0.5",
+              )}
+            />
+            <span
+              className={cn(
+                "absolute left-0 top-1.5 block h-0.5 w-5 transition-opacity",
+                onDark ? "bg-paper" : "bg-ink",
+                open && "opacity-0",
+              )}
+            />
+            <span
+              className={cn(
+                "absolute left-0 block h-0.5 w-5 transition-all",
+                onDark ? "bg-paper" : "bg-ink",
+                open ? "top-1.5 -rotate-45" : "top-[10px]",
+              )}
+            />
           </span>
         </button>
       </div>

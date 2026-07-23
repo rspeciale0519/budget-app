@@ -50,7 +50,7 @@ function EntryRow({
 
 function Statement() {
   return (
-    <figure className="relative overflow-hidden rounded-card border border-rule-strong bg-surface shadow-lift">
+    <figure className="relative overflow-hidden rounded-card border border-rule-strong bg-surface shadow-overlay">
       {/* Statement masthead */}
       <div className={`${ROW} mkt-print border-b border-rule-strong`} style={delay(200)}>
         <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-dim">Statement · July 2026</span>
@@ -74,7 +74,7 @@ function Statement() {
                 Personal
               </span>
               <span
-                className="mkt-print rounded-full bg-credit-tint px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em] text-credit"
+                className="mkt-print rounded-full bg-credit-tint px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-credit"
                 style={delay(2050)}
               >
                 Counted once ↔
@@ -115,36 +115,49 @@ function Statement() {
 }
 
 export function LedgerHero() {
+  // The dark cover of the ledger book: ink ground, ivory statement lying on it,
+  // the arc glowing green. The body of the site is the paper inside.
   return (
-    <section className="relative overflow-hidden">
-      {/* Ruled-paper ground, fading out below the masthead. */}
+    <section className="relative overflow-hidden bg-[#14140f]">
+      {/* Ruled ground in faint light ink. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-40"
+        className="pointer-events-none absolute inset-0"
         style={{
           backgroundImage:
-            "linear-gradient(to bottom, transparent, transparent 47px, var(--rule) 47px, var(--rule) 48px)",
+            "linear-gradient(to bottom, transparent, transparent 47px, rgba(236,234,223,0.05) 47px, rgba(236,234,223,0.05) 48px)",
           backgroundSize: "100% 48px",
-          maskImage: "linear-gradient(to bottom, black 30%, transparent 85%)",
-          WebkitMaskImage: "linear-gradient(to bottom, black 30%, transparent 85%)",
         }}
       />
-      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-16 pt-14 sm:px-8 sm:pt-20 lg:grid-cols-12 lg:gap-8">
+      {/* A soft green lamp over the statement. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-40 top-0 h-[720px] w-[720px]"
+        style={{
+          background: "radial-gradient(closest-side, rgba(87,196,142,0.14), transparent 70%)",
+        }}
+      />
+      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-16 sm:px-8 sm:pt-24 lg:grid-cols-12 lg:gap-8">
         <div className="lg:col-span-6">
-          <p className="mkt-reveal font-mono text-[11px] uppercase tracking-[0.18em] text-credit">
+          <p
+            className="mkt-reveal font-mono text-[11px] uppercase tracking-[0.18em] text-credit"
+            style={{ filter: "brightness(1.7)" }}
+          >
             Personal + business · one statement
           </p>
           <h1
-            className="mkt-reveal mt-5 font-serif font-medium leading-[0.98] tracking-[-0.03em] text-ink"
-            style={{ ...delay(80), fontSize: "clamp(3rem, 6.5vw, 5.25rem)" }}
+            className="mkt-reveal mt-5 font-serif font-medium leading-[0.98] tracking-[-0.03em] text-paper"
+            style={{ ...delay(80), fontSize: "clamp(3rem, 6.5vw, 5.5rem)" }}
           >
             All your money.
             <br />
             Every business.
             <br />
-            <span className="text-credit">One screen.</span>
+            <span className="text-credit" style={{ filter: "brightness(1.7)" }}>
+              One screen.
+            </span>
           </h1>
-          <p className="mkt-reveal mt-6 max-w-md text-lg leading-relaxed text-muted" style={delay(160)}>
+          <p className="mkt-reveal mt-6 max-w-md text-lg leading-relaxed text-paper/75" style={delay(160)}>
             QuickBooks is too much. YNAB stops at personal. Run your household and every venture you
             own from one forward-looking ledger — and always know what&apos;s safe to spend.
           </p>
@@ -152,21 +165,29 @@ export function LedgerHero() {
             <Cta href={primaryCta.href} variant="primary" size="lg" className="w-full sm:w-auto">
               {primaryCta.label}
             </Cta>
-            <Cta href="/demo" variant="outline" size="lg" className="w-full sm:w-auto">
+            <Cta
+              href="/demo"
+              variant="outline"
+              size="lg"
+              className="w-full border-paper/25 bg-white/5 text-paper hover:border-paper/50 hover:bg-white/10 sm:w-auto"
+            >
               See it in action
             </Cta>
           </div>
-          <p className="mkt-reveal mt-4 text-xs text-dim" style={delay(300)}>
+          <p className="mkt-reveal mt-4 text-xs text-paper/45" style={delay(300)}>
             No card charged for {TRIAL_DAYS} days · cancel anytime ·{" "}
-            <a href={secondaryCta.href} className="underline underline-offset-2 hover:text-ink">
+            <a href={secondaryCta.href} className="underline underline-offset-2 hover:text-paper">
               already have an account?
             </a>
           </p>
         </div>
 
         <div className="lg:col-span-6 lg:pl-6">
-          <Statement />
-          <p className="mkt-print mt-3 text-center text-xs leading-relaxed text-dim" style={delay(1500)}>
+          <div className="relative">
+            {/* The ivory statement, lying on the dark desk. */}
+            <Statement />
+          </div>
+          <p className="mkt-print mt-4 text-center text-xs leading-relaxed text-paper/50" style={delay(1500)}>
             The owner draw leaves the business, lands in your pocket — and is never counted twice.
           </p>
         </div>
