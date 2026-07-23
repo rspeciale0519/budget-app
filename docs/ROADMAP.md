@@ -88,7 +88,11 @@ Public-facing site that sells the app (Project 1 of the launch plan). Spec:
       opened for `/opengraph-image`. Lighthouse (prod build, desktop) on `/`, `/pricing`, `/features`,
       `/demo`: **SEO 100 all, Accessibility 94–100 all, Best Practices 100 all**. Note: performance
       score uses a separate trace flow (not captured here); Vercel Analytics deferred to deploy
-- [ ] Phase 8 — Final QA + PR (verify, code review, cross-model review, PR to `main`, unmerged)
+- [x] Phase 8 — PR #2 opened to `main` (unmerged). Multi-agent `/code-review` (high) run: 10 verified
+      defects all fixed and re-verified (theme bleed, middleware matcher/session, demo-seed prod guard,
+      placeholder-domain env guard, single-source cleanups). Remaining sub-items: cross-model
+      adversarial review and a Lighthouse *performance*-category trace (a11y/SEO/best-practices already
+      captured at 94–100/100/100)
 
 ## Earlier milestones (from git history)
 
