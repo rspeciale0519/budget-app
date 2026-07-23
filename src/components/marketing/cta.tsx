@@ -22,12 +22,14 @@ export function Cta({
   variant = "primary",
   size = "md",
   className,
+  onClick,
   children,
 }: {
   href: string;
   variant?: Variant;
   size?: Size;
   className?: string;
+  onClick?: () => void;
   children: React.ReactNode;
 }) {
   const external = href.startsWith("mailto:") || href.startsWith("http");
@@ -40,13 +42,13 @@ export function Cta({
   );
   if (external) {
     return (
-      <a href={href} className={classes}>
+      <a href={href} className={classes} onClick={onClick}>
         {children}
       </a>
     );
   }
   return (
-    <Link href={href} className={classes}>
+    <Link href={href} className={classes} onClick={onClick}>
       {children}
     </Link>
   );

@@ -1,5 +1,7 @@
 // Shared marketing copy used across the landing FAQ teaser and the full FAQ page.
 
+import { TRIAL_DAYS } from "@/lib/site-config";
+
 export interface Faq {
   q: string;
   a: string;
@@ -15,7 +17,7 @@ export const faqs: Faq[] = [
     a: "Your books are isolated at the database with row-level security, every figure is computed in exact decimal, and an audit log records every change. A teammate you grant one business can never see your personal book.",
   },
   {
-    q: "What happens after the 14-day trial?",
+    q: `What happens after the ${TRIAL_DAYS}-day trial?`,
     a: "You pick a plan when you sign up and aren't charged until the trial ends. Cancel anytime before then and you pay nothing. After that it's a simple monthly or annual subscription you can cancel whenever you like.",
   },
   {

@@ -54,7 +54,7 @@ export function SiteHeader() {
             {secondaryCta.label}
           </Cta>
           <Cta href={primaryCta.href} variant="primary" size="md">
-            Start free trial
+            {primaryCta.shortLabel}
           </Cta>
         </div>
 
@@ -88,10 +88,10 @@ export function SiteHeader() {
             ))}
           </nav>
           <div className="mt-5 flex flex-col gap-2">
-            <Cta href={primaryCta.href} variant="primary" size="lg" className="w-full">
+            <Cta href={primaryCta.href} variant="primary" size="lg" className="w-full" onClick={() => setOpen(false)}>
               {primaryCta.label}
             </Cta>
-            <Cta href={secondaryCta.href} variant="outline" size="lg" className="w-full">
+            <Cta href={secondaryCta.href} variant="outline" size="lg" className="w-full" onClick={() => setOpen(false)}>
               {secondaryCta.label}
             </Cta>
           </div>

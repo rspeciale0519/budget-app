@@ -5,8 +5,11 @@ import { SiteFooter } from "./site-footer";
 // root landing page (which lives at "/" outside the group so it can also host
 // the authenticated app-dispatch).
 export function MarketingShell({ children }: { children: React.ReactNode }) {
+  // Force the light "Sterling" identity for the public site. data-theme="light"
+  // re-declares the light token values on this subtree, overriding any stored
+  // dark preference the boot script stamped on <html>.
   return (
-    <div className="flex min-h-dvh flex-col bg-paper">
+    <div data-theme="light" className="flex min-h-dvh flex-col bg-paper text-ink">
       <SiteHeader />
       <main className="flex-1">{children}</main>
       <SiteFooter />

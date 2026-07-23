@@ -66,7 +66,7 @@ export function PricingCards({ showToggle = true }: { showToggle?: boolean }) {
             </div>
             <div className="mt-5">
               <Cta href={primaryCta.href} variant={tier.highlight ? "primary" : "outline"} size="md" className="w-full">
-                Start free trial
+                {primaryCta.shortLabel}
               </Cta>
             </div>
             <p className="mt-3 text-center text-xs text-dim">{TRIAL_DAYS}-day trial · cancel anytime</p>

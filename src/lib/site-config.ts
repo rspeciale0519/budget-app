@@ -10,12 +10,19 @@ export const site = {
   description:
     "The budgeting and bill-tracking app for owner-operators — your personal money and every business, side by side.",
   email: "hello@ledger.example.com",
-  domain: "ledger.example.com",
+  // Placeholder until the launch rename (Project 3). A deploy sets
+  // NEXT_PUBLIC_SITE_DOMAIN so sitemap/robots/OG/canonical never ship the
+  // example host to production.
+  domain: process.env.NEXT_PUBLIC_SITE_DOMAIN ?? "ledger.example.com",
 } as const;
 
 export const TRIAL_DAYS = 14;
 
-export const primaryCta = { label: `Start your ${TRIAL_DAYS}-day free trial`, href: "/signup" } as const;
+export const primaryCta = {
+  label: `Start your ${TRIAL_DAYS}-day free trial`,
+  shortLabel: "Start free trial",
+  href: "/signup",
+} as const;
 export const secondaryCta = { label: "Log in", href: "/login" } as const;
 
 export const mainNav = [

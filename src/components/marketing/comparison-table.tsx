@@ -38,7 +38,7 @@ export function ComparisonTable() {
             <Fragment key={group.group}>
               <tr>
                 <td
-                  colSpan={4}
+                  colSpan={tiers.length + 1}
                   className="border-t border-rule-strong bg-raised/40 px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.12em] text-ink"
                 >
                   {group.group}
@@ -47,9 +47,9 @@ export function ComparisonTable() {
               {group.rows.map((row) => (
                 <tr key={row.label}>
                   <td className="border-t border-rule px-4 py-3 text-sm text-ink">{row.label}</td>
-                  <Cell value={row.starter} />
-                  <Cell value={row.pro} />
-                  <Cell value={row.team} />
+                  {tiers.map((t) => (
+                    <Cell key={t.id} value={row[t.id]} />
+                  ))}
                 </tr>
               ))}
             </Fragment>

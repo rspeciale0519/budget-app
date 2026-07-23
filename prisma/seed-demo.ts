@@ -170,7 +170,51 @@ async function seed(userId: string, data: DemoDataset) {
   }
 }
 
+// The demo user's password is committed to the repo, so this seed must never
+// touch a remote/production database. Accept only local/private/Tailscale hosts
+// for the Postgres write target and the Supabase auth API; reject the hosted
+// Supabase service outright.
+function hostOf(url: string): string {
+  try {
+    return new URL(url.replace(/^postgres(ql)?:/, "http:")).hostname;
+  } catch {
+    return "";
+  }
+}
+
+function isSafeHost(url: string): boolean {
+  const host = hostOf(url);
+  if (!host) return false;
+  if (/supabase\.(co|com)$/.test(host)) return false; // hosted Supabase = production
+  return (
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    host === "::1" ||
+    host === "0.0.0.0" ||
+    host.endsWith(".ts.net") || // Tailscale MagicDNS (local machine over the tailnet)
+    /^100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./.test(host) || // Tailscale CGNAT 100.64.0.0/10
+    /^10\./.test(host) ||
+    /^192\.168\./.test(host) ||
+    /^172\.(?:1[6-9]|2\d|3[01])\./.test(host)
+  );
+}
+
+function assertLocalTarget() {
+  // The seed writes ledger rows via DIRECT_URL and creates the auth user via
+  // SUPABASE_URL — those are the targets that must not be production.
+  const targets = [process.env.DIRECT_URL, process.env.DATABASE_URL, process.env.SUPABASE_URL].filter(
+    (v): v is string => Boolean(v),
+  );
+  if (targets.length === 0 || !targets.every(isSafeHost)) {
+    throw new Error(
+      "Refusing to run the demo seed: a database/Supabase URL is not local, private, or Tailscale. " +
+        "This seed provisions a user whose password is public in the repo and must never run against production.",
+    );
+  }
+}
+
 async function main() {
+  assertLocalTarget();
   const before = await nonDemoCounts();
   console.log(`[isolation] before: non-demo orgs=${before.orgs}, non-demo auth users=${before.users}`);
 
