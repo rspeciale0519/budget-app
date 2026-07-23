@@ -33,12 +33,6 @@ const features: Feature[] = [
     },
   },
   {
-    eyebrow: "The income bridge",
-    title: "Pay yourself once. Counted once.",
-    body: "Tag a draw from a business and it lands as personal income automatically — no double-entry, no double-counting. The combined roll-up nets it out so your total is always honest.",
-    points: ["One-tap owner draw → personal income", "Roll-up nets draws automatically", "Business teammates never see personal"],
-  },
-  {
     eyebrow: "Bills & calendar",
     title: "Know what's due before it's late.",
     body: "Every bill, recurring or one-off, on a month grid and an upcoming list — with one-click mark-paid and a nudge the moment something slips overdue.",
@@ -95,6 +89,11 @@ export function Features({ withHeader = true }: { withHeader?: boolean }) {
     <Section
       eyebrow={withHeader ? "What you get" : undefined}
       title={withHeader ? "Built for owner-operators — nothing an accountant demands." : undefined}
+      intro={
+        withHeader
+          ? "Forward-looking budgeting and bill-tracking over a simple ledger. Every tool answers a question you actually ask."
+          : undefined
+      }
     >
       <div>
         {features.map((f, i) => (

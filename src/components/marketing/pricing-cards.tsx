@@ -28,17 +28,30 @@ export function PricingCards({ showToggle = true }: { showToggle?: boolean }) {
           <button
             type="button"
             onClick={() => setAnnual(false)}
-            className={cn("rounded-control px-3 py-1.5 text-sm transition-colors", !annual ? "bg-ink text-paper" : "text-muted hover:text-ink")}
+            className={cn(
+              "rounded-control px-3 py-1.5 text-sm transition-colors",
+              !annual ? "bg-credit font-medium text-paper" : "text-muted hover:text-ink",
+            )}
           >
             Monthly
           </button>
           <button
             type="button"
             onClick={() => setAnnual(true)}
-            className={cn("rounded-control px-3 py-1.5 text-sm transition-colors", annual ? "bg-ink text-paper" : "text-muted hover:text-ink")}
+            className={cn(
+              "rounded-control px-3 py-1.5 text-sm transition-colors",
+              annual ? "bg-credit font-medium text-paper" : "text-muted hover:text-ink",
+            )}
           >
             Annual
-            <span className="ml-1.5 font-mono text-[10px] uppercase tracking-wide text-credit">2 months free</span>
+            <span
+              className={cn(
+                "ml-1.5 font-mono text-[10px] uppercase tracking-wide",
+                annual ? "text-paper/80" : "text-credit",
+              )}
+            >
+              2 months free
+            </span>
           </button>
         </div>
       )}

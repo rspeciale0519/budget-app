@@ -12,13 +12,13 @@ export const metadata: Metadata = {
 export default function FaqPage() {
   return (
     <>
-      <section className="mx-auto max-w-3xl px-5 pb-2 pt-20 sm:px-8 sm:pt-24">
+      <section className="mx-auto max-w-6xl px-5 pb-2 pt-20 sm:px-8 sm:pt-24">
         <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-credit">FAQ</p>
-        <h1 className="mt-4 font-serif text-4xl font-medium leading-[1.05] tracking-[-0.02em] text-ink sm:text-5xl">
+        <h1 className="mt-4 max-w-3xl font-serif text-4xl font-medium leading-[1.05] tracking-[-0.02em] text-ink sm:text-5xl">
           Questions worth answering before you trust us with your money.
         </h1>
       </section>
-      <section className="mx-auto max-w-3xl px-5 py-10 sm:px-8">
+      <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8 [&>*]:max-w-3xl">
         <FaqList items={faqs} />
         <div className="mt-12 rounded-card border border-rule bg-surface p-6 text-center">
           <p className="font-serif text-lg text-ink">Still have a question?</p>
