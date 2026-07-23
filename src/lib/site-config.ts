@@ -50,7 +50,7 @@ export const tiers: Tier[] = [
     name: "Starter",
     monthly: 9,
     annual: 90,
-    tagline: "Get your own money — and your first business — in order.",
+    tagline: "Get your own money in order, with your first business alongside it.",
     highlight: false,
     books: "Personal + 1 business",
     seats: 1,
