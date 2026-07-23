@@ -2,12 +2,23 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { listAccessibleWorkspaces } from "@/services/authz";
 import { bootstrapOrgForUser } from "@/services/membership-service";
+import { MarketingShell } from "@/components/marketing/marketing-shell";
+import { Landing } from "@/components/marketing/landing";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  // Anonymous visitors get the marketing landing page. Authenticated users keep
+  // the exact same app-dispatch as before.
+  if (!user) {
+    return (
+      <MarketingShell>
+        <Landing />
+      </MarketingShell>
+    );
+  }
+
   let workspaces = await listAccessibleWorkspaces(user.id);
   if (workspaces.length === 0) {
     // First run: provision an org + Personal workspace for this user.

@@ -54,6 +54,48 @@
       (one additive Goal migration, bills-pattern materializer), debt due-day chips
 - [x] Phase 5 — Verify & merge: gates green, browser matrix (desktop light+dark, mobile), merged
 
+## Marketing Website (plan: `.claude/plans/feature-marketing-site.md`, branch `feature/marketing-site`)
+
+Public-facing site that sells the app (Project 1 of the launch plan). Spec:
+`docs/superpowers/specs/2026-07-22-marketing-site-design.md`; build order:
+`docs/MARKETING_SITE_BUILD_SPEC.md`.
+
+- [x] Phase 1 — Branch + camera-ready demo seed (isolated demo auth user + org): `pnpm db:seed:demo`
+      creates `demo@example.com` + Demo org with 3 books, 41 transactions, 11 bills, 4 goals, 2
+      owner-draw bridges; idempotent (re-run no-op); isolation proven (non-demo orgs/users unchanged);
+      login + dashboard screenshotted via chrome-devtools
+- [x] Phase 2 — Marketing shell: `(marketing)` route group + shared header/footer, `site-config.ts`
+      (single source for placeholder name + locked pricing tiers), `/` split (anonymous → landing,
+      authenticated → unchanged dispatch, regression-tested), middleware opened to public marketing
+      routes (app routes still gated), stub routes for every sitemap page (all 200). Also serialized
+      the DB integration suite (`fileParallelism: false`) to remove pre-existing parallel flakiness
+- [x] Phase 3 — Art direction (`docs/temp/marketing-art-direction.md`) + full landing page: hero with
+      real dashboard screenshot, problem, 5 feature showcases (dense real screenshots), trust, pricing
+      teaser (live tier cards), FAQ teaser, final CTA. Fixed middleware blocking public `/marketing`
+      assets; CSS-only reveal (no stranded content). Fresh-context subagent critique passed (its sole
+      P1 — sparse side-by-side screenshot — resolved by using the dense all-books roll-up)
+- [x] Phase 4 — Pricing page (cards with monthly/annual toggle, Pro emphasized, full comparison
+      table from the locked matrix, anxiety FAQ) + features page (reuses the critiqued showcase, trust,
+      CTA). Prices verified on-page ($9/$19/$39); both statically prerendered
+- [x] Phase 5 — Demo tour (numbered "morning review" with real screenshots), About (founder story),
+      FAQ (full accordion + contact), `/signup` plan-select with marked checkout-handoff stub, branded
+      marketing 404. Legal drafts with DRAFT banners done in Phase 2. All statically prerendered
+- [x] Phase 6 — Blog: index + 3 SEO-targeted posts (separate finances / owner draws / safe-to-spend),
+      structured type-safe content (dependency-free, no MDX toolchain), static per-post pages, valid
+      RSS 2.0 feed at `/blog/rss.xml` (covered by `rss.test.ts`, 3 tests)
+- [x] Phase 7 — SEO plumbing: `sitemap.xml`, `robots.txt` (app disallowed), per-page metadata +
+      `metadataBase` + Open Graph/Twitter, branded placeholder-safe OG image (next/og); middleware
+      opened for `/opengraph-image`. Lighthouse (prod build, desktop) on `/`, `/pricing`, `/features`,
+      `/demo` (desktop): **Performance 100 all (LCP 0.7–0.8s, TBT 0, CLS 0), SEO 100 all, Accessibility
+      94–100, Best Practices 100 all** (perf via `npx lighthouse --preset=desktop` against the prod
+      build). Mobile-throttled performance is lower (~83 on the landing, hero-image LCP) — a known
+      caveat, not blocking desktop ≥90. Vercel Analytics deferred to deploy
+- [x] Phase 8 — PR #2 opened to `main` (unmerged). Multi-agent `/code-review` (high) run: 10 verified
+      defects all fixed and re-verified (theme bleed, middleware matcher/session, demo-seed prod guard,
+      placeholder-domain env guard, single-source cleanups). Remaining sub-items: cross-model
+      adversarial review and a Lighthouse *performance*-category trace (a11y/SEO/best-practices already
+      captured at 94–100/100/100)
+
 ## Earlier milestones (from git history)
 
 - [x] Phases through 2.x of the original build (see git log)
