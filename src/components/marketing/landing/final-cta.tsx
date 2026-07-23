@@ -1,11 +1,14 @@
 import { primaryCta, TRIAL_DAYS } from "@/lib/site-config";
 import { Cta } from "../cta";
 import { Reveal } from "./reveal";
+import { Ripple } from "@/components/canvasui/Ripple";
 
 // The closing statement: ink paper, the bridge glyph drawn in green, one CTA.
+// The back cover ripples like the front — still water, disturbed on touch.
 export function FinalCta() {
   return (
     <section className="border-t border-rule bg-ink">
+      <Ripple trigger="click" interval={10} amplitude={0.45} shine={1.1} rings={2} wavelength={90} speed={0.5} decay={0.9}>
       <div className="mx-auto max-w-6xl px-5 py-24 text-center sm:px-8 sm:py-28">
         <Reveal>
           <svg aria-hidden viewBox="0 0 120 32" className="mx-auto h-8 w-30" fill="none">
@@ -30,6 +33,7 @@ export function FinalCta() {
           </div>
         </Reveal>
       </div>
+      </Ripple>
     </section>
   );
 }

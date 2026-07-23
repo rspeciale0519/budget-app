@@ -1,5 +1,6 @@
 import { primaryCta, secondaryCta, TRIAL_DAYS } from "@/lib/site-config";
 import { Cta } from "../cta";
+import { Ripple } from "@/components/canvasui/Ripple";
 
 // The hero performs the product's thesis in type: a statement that prints
 // itself, then draws the owner-draw bridge from the business block to the
@@ -119,6 +120,10 @@ export function LedgerHero() {
   // the arc glowing green. The body of the site is the paper inside.
   return (
     <section className="relative overflow-hidden bg-[#14140f]">
+      {/* Still water on the cover: soft ambient rings of light, and a splash on
+          every click. Pure WebGL overlay — works in every modern browser; the
+          content beneath stays ordinary HTML. */}
+      <Ripple trigger="click" interval={7} amplitude={0.5} shine={1.2} rings={3} wavelength={95} speed={0.5} decay={0.85}>
       {/* Ruled ground in faint light ink. */}
       <div
         aria-hidden
@@ -192,6 +197,7 @@ export function LedgerHero() {
           </p>
         </div>
       </div>
+      </Ripple>
     </section>
   );
 }
