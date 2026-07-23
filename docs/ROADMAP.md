@@ -86,8 +86,10 @@ Public-facing site that sells the app (Project 1 of the launch plan). Spec:
 - [x] Phase 7 — SEO plumbing: `sitemap.xml`, `robots.txt` (app disallowed), per-page metadata +
       `metadataBase` + Open Graph/Twitter, branded placeholder-safe OG image (next/og); middleware
       opened for `/opengraph-image`. Lighthouse (prod build, desktop) on `/`, `/pricing`, `/features`,
-      `/demo`: **SEO 100 all, Accessibility 94–100 all, Best Practices 100 all**. Note: performance
-      score uses a separate trace flow (not captured here); Vercel Analytics deferred to deploy
+      `/demo` (desktop): **Performance 100 all (LCP 0.7–0.8s, TBT 0, CLS 0), SEO 100 all, Accessibility
+      94–100, Best Practices 100 all** (perf via `npx lighthouse --preset=desktop` against the prod
+      build). Mobile-throttled performance is lower (~83 on the landing, hero-image LCP) — a known
+      caveat, not blocking desktop ≥90. Vercel Analytics deferred to deploy
 - [x] Phase 8 — PR #2 opened to `main` (unmerged). Multi-agent `/code-review` (high) run: 10 verified
       defects all fixed and re-verified (theme bleed, middleware matcher/session, demo-seed prod guard,
       placeholder-domain env guard, single-source cleanups). Remaining sub-items: cross-model
